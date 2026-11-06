@@ -1,0 +1,25 @@
+name: NAS CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: read
+concurrency:
+  group: nas-ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    uses: ./.github/workflows/test.yml
+  image:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Validate deployable image
+        run: docker build --build-arg MA_REVISION="$GITHUB_SHA" -f deploy/nas/Dockerfile -t ma-frontend:test .
+      - name: Verify nginx configuration
+        run: docker run --rm -e MA_BACKEND_URL=http://127.0.0.1:8095 ma-frontend:test nginx -t

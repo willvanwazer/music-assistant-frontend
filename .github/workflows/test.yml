@@ -1,11 +1,6 @@
 name: Test and Lint Vue frontend
 on:
-  # pull_request covers PR branches, so push only needs to catch commits
-  # landing directly on main - otherwise every PR runs the suite twice.
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_call:
   workflow_dispatch:
 
 # Supersede in-flight runs for a ref instead of running them to completion.
@@ -18,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  NODE_VERSION: "22.x" # set this to the node version to use
+  NODE_VERSION: "26.x" # set this to the node version to use
   PYTHON_VERSION: "3.12" # set this to the python version to use
 
 jobs:
