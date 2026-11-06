@@ -370,6 +370,10 @@ import EditorialShelf, {
 } from "@/components/discover/EditorialShelf.vue";
 import EditorialTimeline from "@/components/discover/EditorialTimeline.vue";
 import {
+  isImportRecommendation,
+  topPickItems,
+} from "@/components/discover/utils/topPicks";
+import {
   DEFAULT_PRIORITY_ROWS,
   GENRES_ROW_ID,
   IN_PROGRESS_ROW_ID,
@@ -574,7 +578,12 @@ const buildHeroEntries = (randomize = false): HeroEntry[] => {
   // path stays deterministic so repeated builds are content-equal.
   const rows = recommendations.value
     .filter((f) => shownRecRowIds.value.has(f.uri))
-    .map((f) => ({ tag: f.name, items: rowItemsMap.value.get(f.uri) ?? [] }))
+    .map((f) => ({
+      tag: isImportRecommendation(f)
+        ? $t("listening_home.new_release")
+        : f.name,
+      items: topPickItems(f, rowItemsMap.value.get(f.uri) ?? []),
+    }))
     .filter((r) => r.items.length > 0)
     .map((r) => ({
       tag: r.tag,

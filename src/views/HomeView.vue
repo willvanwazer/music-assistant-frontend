@@ -90,6 +90,7 @@
       </Button>
     </Alert>
 
+    <ListeningHighlights />
     <HomeWidgetRows :edit-mode="editMode" />
 
     <!-- Floating exit button while editing the home screen -->
@@ -106,6 +107,7 @@
 
 <script setup lang="ts">
 import HomeWidgetRows from "@/components/HomeWidgetRows.vue";
+import ListeningHighlights from "@/components/discover/ListeningHighlights.vue";
 import Toolbar from "@/components/Toolbar.vue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";

@@ -2408,5 +2408,21 @@
     "command_center_navigate": "navigate",
     "command_center_open": "open",
     "command_center_keep_typing": "Keep typing to search...",
-    "screens": "Screens"
+    "screens": "Screens",
+    "listening_home": {
+        "recent_title": "Recently played albums & playlists",
+        "recent_empty": "Albums and playlists you play will appear here.",
+        "recent_error": "Listening history is unavailable. Try refreshing.",
+        "podcasts_subtitle": "Your queue and the shows you are listening to.",
+        "all_podcasts": "All podcasts",
+        "up_next": "Up next",
+        "active_podcasts": "Active podcasts",
+        "active_subtitle": "Shows with episodes you have started in Pocket Casts.",
+        "queue_empty": "Your Pocket Casts Up Next queue is empty.",
+        "queue_error": "Your podcast queue is unavailable. Try refreshing.",
+        "progress_empty": "Shows appear here when you start listening to an episode.",
+        "progress_error": "Podcast listening progress is unavailable. Try refreshing.",
+        "partial_error": "Some podcast activity could not be refreshed. Try again in a moment.",
+        "new_release": "New release"
+    }
 }

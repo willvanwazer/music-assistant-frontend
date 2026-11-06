@@ -1542,6 +1542,21 @@ export class MusicAssistantApi {
     });
   }
 
+  public async getRecentlyPlayedAlbumsAndPlaylists(
+    limit = 20,
+  ): Promise<ItemMapping[]> {
+    return this.sendCommand(
+      "music/recently_played_items",
+      {
+        limit,
+        media_types: [MediaType.ALBUM, MediaType.PLAYLIST],
+        fully_played_only: false,
+        user_initiated_only: true,
+      },
+      { suppressGlobalError: true },
+    );
+  }
+
   public async getInProgressItems(limit = 10): Promise<ItemMapping[]> {
     return this.sendCommand("music/in_progress_items", {
       limit,
