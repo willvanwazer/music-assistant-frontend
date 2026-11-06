@@ -1,0 +1,52 @@
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+
+server {
+    listen 8080;
+    server_name _;
+    server_tokens off;
+    root /srv/frontend/current;
+    access_log off;
+    client_max_body_size 32m;
+
+    location = / {
+        try_files /index.html =503;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location = /sw.js {
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location ~ ^/(favicon\.(ico|svg)|apple-touch-icon\.png|pwa-[0-9]+x[0-9]+\.png|manifest\.webmanifest|robots\.txt)$ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Retain hashed assets from previous builds for already-open browser tabs.
+    location /assets/ {
+        alias /srv/frontend/assets/;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    # Keep authentication, API, artwork, audio and WebSocket requests on the
+    # existing backend. No Home Assistant ingress identity is synthesized.
+    location / {
+        proxy_pass ${MA_BACKEND_URL};
+        proxy_http_version 1.1;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 3600s;
+        proxy_buffering off;
+    }
+}

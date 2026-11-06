@@ -1,0 +1,29 @@
+services:
+  frontend:
+    image: nginxinc/nginx-unprivileged@sha256:b5047b9b76845eac124358373c6852377c52e4b05834a47647e955dd91cb8f1e
+    restart: unless-stopped
+    ports:
+      - "${MA_BIND_IP:-127.0.0.1}:${MA_FRONTEND_PORT:-8097}:8080"
+    environment:
+      MA_BACKEND_URL: ${MA_BACKEND_URL:?Set the Music Assistant backend URL}
+      NGINX_ENVSUBST_FILTER: ^MA_BACKEND_URL$
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs:
+      - /tmp
+      - /etc/nginx/conf.d:uid=101,gid=101
+    volumes:
+      - ./site:/srv/frontend:ro
+      - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    healthcheck:
+      test: [CMD, wget, -q, -O, /dev/null, "http://127.0.0.1:8080/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "2"
