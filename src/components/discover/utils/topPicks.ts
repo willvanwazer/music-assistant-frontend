@@ -1,12 +1,11 @@
-import type {
-  MediaItemTypeOrItemMapping,
-  RecommendationFolder,
+import {
+  MediaType,
+  type MediaItemTypeOrItemMapping,
+  type RecommendationFolder,
 } from "@/plugins/api/interfaces";
 
 export function isImportRecommendation(folder: RecommendationFolder): boolean {
-  return ["recently_added_tracks", "recently_added_albums"].includes(
-    folder.item_id,
-  );
+  return /^recently[-_]added(?:[-_]|$)/.test(folder.item_id);
 }
 
 export function topPickItems(
@@ -14,8 +13,9 @@ export function topPickItems(
   items: MediaItemTypeOrItemMapping[],
   now = Date.now(),
 ): MediaItemTypeOrItemMapping[] {
-  if (!isImportRecommendation(folder)) return items;
-  return items.filter((item) => {
+  const media = items.filter((item) => item.media_type !== MediaType.FOLDER);
+  if (!isImportRecommendation(folder)) return media;
+  return media.filter((item) => {
     const release =
       "metadata" in item ? item.metadata?.release_date : undefined;
     // Import timestamps and a year alone cannot establish that a release is new.

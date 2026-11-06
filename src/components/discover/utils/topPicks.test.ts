@@ -45,4 +45,23 @@ describe("Top picks release recency", () => {
       ),
     ).toEqual([old]);
   });
+
+  it("applies the same release rule to Audiobookshelf imports and excludes navigation folders", () => {
+    const recent = album("2026-10-01");
+    expect(
+      topPickItems(
+        { item_id: "recently-added" } as RecommendationFolder,
+        [album("1987-03-09"), recent],
+        now,
+      ),
+    ).toEqual([recent]);
+    const navigation = { media_type: MediaType.FOLDER } as unknown as Album;
+    expect(
+      topPickItems(
+        { item_id: "browse" } as RecommendationFolder,
+        [navigation],
+        now,
+      ),
+    ).toEqual([]);
+  });
 });
