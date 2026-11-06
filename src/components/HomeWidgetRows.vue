@@ -1165,9 +1165,10 @@ onBeforeUnmount(() => {
 }
 .ed-players__label {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 .ed-players__count {
   font-size: 12px;
@@ -1220,9 +1221,10 @@ onBeforeUnmount(() => {
 }
 .ed-hero-row__title {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
+  font-family: var(--font-heading);
+  font-size: 30px;
+  font-weight: 500;
+  letter-spacing: -0.015em;
   color: rgb(var(--v-theme-on-background));
 }
 .ed-hero-refresh--spinning {
@@ -1316,9 +1318,10 @@ onBeforeUnmount(() => {
 }
 .ed-genres__title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: rgb(var(--v-theme-on-background));
 }
 .ed-genres__grid {

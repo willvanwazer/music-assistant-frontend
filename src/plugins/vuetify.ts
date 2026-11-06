@@ -46,27 +46,30 @@ export default createVuetify(
       // the public id by name and overwrite the runtime CSS variables.
       stylesheetId: "mass-vuetify-theme",
       defaultTheme: "dark",
+      // Keep in lockstep with the :root / .dark tokens in styles/style.css.
       themes: {
         light: {
           dark: false,
           colors: {
-            fg: "#000000",
-            background: "#f5f5f5",
-            overlay: "#e7e7e7ff",
-            panel: "#ffffff",
+            fg: "#1c1c1e",
+            background: "#ffffff",
+            surface: "#ffffff",
+            overlay: "#ededf0ff",
+            panel: "#f6f6f8",
             default: "#ffffff",
-            primary: "#03a9f4",
+            primary: "#6462ea",
           },
         },
         dark: {
           dark: true,
           colors: {
-            fg: "#ffffff",
+            fg: "#f5f5f5",
             background: "#181818",
+            surface: "#242424",
             overlay: "#181818",
-            panel: "#232323",
+            panel: "#242424",
             default: "#000000",
-            primary: "#03a9f4",
+            primary: "#7c7fe6",
           },
         },
       },

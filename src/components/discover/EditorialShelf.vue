@@ -242,9 +242,10 @@ onBeforeUnmount(() => {
 }
 .ed-shelf__title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   color: rgb(var(--v-theme-on-background));
   white-space: nowrap;
   overflow: hidden;

@@ -111,7 +111,8 @@
             <!-- current media title -->
             <v-card-title
               v-else-if="store.activePlayer?.current_media?.title"
-              :style="`font-size: ${titleFontSize};font-weight:600;cursor:pointer;`"
+              class="ma-display"
+              :style="`font-size: ${titleFontSize};font-weight:500;cursor:pointer;`"
               @click="openCurrentTrackDetails"
             >
               <MarqueeText :sync="playerMarqueeSync">

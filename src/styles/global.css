@@ -7,6 +7,45 @@ html {
   box-sizing: border-box;
 }
 
+/* The body face. plugins/vuetify.css pulls in Vuetify's precompiled stylesheet,
+   which never sees styles/settings.scss, so its html rule and typography
+   helpers (.text-h1 … .text-overline, and their breakpoint variants) still name
+   Roboto - which is no longer shipped. :root outranks both without !important,
+   so a scoped rule or .ma-display can still set its own face. */
+:root,
+:root
+  :is(
+    .text-h1,
+    .text-h2,
+    .text-h3,
+    .text-h4,
+    .text-h5,
+    .text-h6,
+    .text-subtitle-1,
+    .text-subtitle-2,
+    .text-body-1,
+    .text-body-2,
+    .text-button,
+    .text-caption,
+    .text-overline,
+    [class*="text-sm-"],
+    [class*="text-md-"],
+    [class*="text-lg-"],
+    [class*="text-xl-"],
+    [class*="text-xxl-"]
+  ) {
+  font-family: var(--font-body);
+}
+
+/* Display serif for naming things: page and item titles, section headings and
+   the playing track. Same as the font-display utility, for scoped styles. */
+.ma-display {
+  font-family: var(--font-heading) !important;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-optical-sizing: auto;
+}
+
 *,
 ::before,
 ::after {

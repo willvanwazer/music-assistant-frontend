@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music Assistant — Liner Notes redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..600&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&family=Instrument+Serif:ital@0;1&family=Gloock&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="doc t-dark a-roon f-playfair">
+
+<nav class="doc-nav"><div class="wrap">
+  <span class="mark"><span style="color:var(--accent);display:flex"><svg viewBox="0 0 28 28" width="22" height="22"><rect width="28" height="28" rx="8" fill="currentColor"/><path d="M7 19a7 7 0 0 1 14 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M10.5 19a3.5 3.5 0 0 1 7 0" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" opacity=".75"/><circle cx="14" cy="19" r="1.3" fill="#fff"/></svg></span>Liner Notes</span>
+  <div class="links"><a href="#prototype">Prototype</a><a href="#research">Research</a><a href="#screens">Screens</a><a href="#mobile">Mobile</a><a href="#system">System</a><a href="#plan">Build plan</a></div>
+  <div class="ctrls">
+    <div class="seg"><button data-theme="dark" class="on">Dark</button><button data-theme="light">Light</button></div>
+    <div class="swatches" title="Accent">
+      <button data-accent="roon" style="background:#7c7fe6" title="Roon violet (default)" class="on"></button>
+      <button data-accent="violet" style="background:#a48bff" title="Violet"></button>
+      <button data-accent="amber" style="background:#f39a4a" title="Amber"></button>
+      <button data-accent="blue" style="background:#3ab8f5" title="Music Assistant blue"></button>
+      <button data-accent="rose" style="background:#f2809a" title="Rose"></button>
+      <button data-accent="green" style="background:#54c793" title="Green"></button>
+    </div>
+    <select data-font title="Display typeface">
+      <option value="playfair">Playfair Display</option>
+      <option value="newsreader">Newsreader</option>
+      <option value="instrument">Instrument Serif</option>
+      <option value="gloock">Gloock</option>
+    </select>
+  </div>
+</div></nav>
+
+<header class="hero-doc"><div class="wrap">
+  <div class="kicker">Music Assistant · design direction · November 2026</div>
+  <h1 class="disp">Liner Notes — a quieter, <em>richer</em> Music Assistant</h1>
+  <p class="lede">A redesign that borrows Roon’s magazine-like seriousness and pairs it with the art-driven immersion of Plexamp and Apple Music, then fixes what Music Assistant users complain about most: not knowing which speaker they’re controlling, imprecise volume, and big libraries that are hard to get around. Everything below is clickable, in both themes.</p>
+  <div class="principles">
+    <div><i>01</i><b class="disp">The art is the only colour</b><span>Chrome stays neutral grey, like Roon. Colour comes from the record that’s playing: washes, Now Playing, room cards.</span></div>
+    <div><i>02</i><b class="disp">Editorial type</b><span>A display serif names things (artists, albums, rooms, big numbers). Inter does everything functional.</span></div>
+    <div><i>03</i><b class="disp">Rooms are first-class</b><span>The room you’re controlling is always named and one click away. Groups get a real mixer.</span></div>
+    <div><i>04</i><b class="disp">Never crop the cover</b><span>Album art is shown whole and square, with captions beneath it — no text stamped on top.</span></div>
+  </div>
+</div></header>
+
+<section class="sec-doc" id="prototype"><div class="wrap">
+  <header><div><span class="num">01</span><h2 class="disp">Live prototype</h2></div><p>A working 1440 × 900 desktop app. Music really “plays”: the waveform moves, lyrics follow along, and the colour wash crossfades when the record changes. Click albums, artists, rooms, the quality dot and the room button. Use the controls at the top of the page to switch theme, accent and display face.</p></header>
+  <div class="jump">
+    <button data-j="home">Home</button><button data-j="albums">Albums</button><button data-j="artist">Artist</button><button data-j="album">Album</button><button data-j="now">Now Playing</button><button data-j="lyricsj">Lyrics</button><button data-j="rooms">Rooms</button><button data-j="search">Search</button>
+  </div>
+  <div class="stage" data-fit><div id="app"></div></div>
+  <div class="proto-tips"><span><kbd>⌘K</kbd>Search</span><span><kbd>Space</kbd>Play / pause</span><span><kbd>⌘E</kbd>Now Playing</span><span><kbd>⌘←</kbd>Back</span><span><kbd>Esc</kbd>Close</span><span>Click the waveform to seek · click a lyric line to jump · hover covers for Play</span></div>
+</div></section>
+
+<section class="sec-doc" id="research"><div class="wrap">
+  <header><div><span class="num">02</span><h2 class="disp">What the research says</h2></div><p>I read Roon’s theme file and help centre, sampled colours from real screenshots, and surveyed Plexamp, Apple Music, Spotify, Tidal, Qobuz, the Sonos redesign, and indie players. I also read about 60 Music Assistant discussions to see what users actually ask for. Below is what each one taught, and what this design takes from it.</p></header>
+  <div class="r-grid">
+    <div class="r-card">
+      <h3 class="disp">Roon</h3><div class="sub">The reference · 1.8 design, refined through 2.74</div>
+      <ul>
+        <li><b>A “museum” and a “music magazine”.</b> Neutral space, bold editorial type: Grifo for titles, Lato for everything else.</li>
+        <li><b>Neutral chrome, one accent.</b> Page #181818, panels #242424, accent #6B6ED9. It never tints the UI from artwork, but it blurs the art behind Now Playing.</li>
+        <li><b>Footer has the room picker.</b> The zone button sits bottom-right next to volume, with a signal-path light and a waveform seek bar.</li>
+        <li><b>Focus, linked credits and reviews</b> are what fans love most.</li>
+        <li><b>Complaints:</b> the greeting wastes space, credits shown as photo bubbles, grey-on-grey contrast, lyrics taking over Now Playing, nothing can be reordered.</li>
+      </ul>
+      <div class="swatch-row"><span><i style="background:#181818"></i>#181818</span><span><i style="background:#242424"></i>#242424</span><span><i style="background:#6b6ed9"></i>#6B6ED9</span><span><i style="background:#525f9a"></i>#525F9A band</span><span><i style="background:#a8a8a8"></i>#A8A8A8</span></div>
+      <div class="steal"><b>Taken</b>Serif + sans split, neutral greys, violet accent, footer room button, waveform seek, signal-path dot, Focus, Play-now split button, stat tiles, linked credits. Credits become a list grouped by role, and the greeting is kept compact.</div>
+    </div>
+    <div class="r-card">
+      <h3 class="disp">Plexamp</h3><div class="sub">The self-hosted favourite</div>
+      <ul>
+        <li><b>“Ultrablur”.</b> A gradient of several colours from four corner colours of the art. Plex computes them on the server and caches them.</li>
+        <li>Background styles: Flat / Smooth / Ultrablur. Colours can be frozen, or you can pick plain Black / White themes.</li>
+        <li>The seek bar and buttons are tinted with the album’s colours.</li>
+        <li><b>Complaint:</b> text becomes unreadable on some “Smooth” backgrounds, because there’s no contrast check.</li>
+      </ul>
+      <div class="steal"><b>Taken</b>Now Playing’s drifting ultrablur. Music Assistant already gets an artwork palette from its server (<code>paletteFromServer</code>), so this is cheap. Text sits on a veil so it stays readable.</div>
+    </div>
+    <div class="r-card">
+      <h3 class="disp">Apple Music · Spotify</h3><div class="sub">Mainstream patterns</div>
+      <ul>
+        <li><b>Apple:</b> line-by-line lyrics with the current line bright and the rest dimmed; animated art; the AirPlay picker with a checkbox and slider for each speaker. Its Tahoe glass is criticised as “much harder to read”.</li>
+        <li><b>Spotify:</b> a Now Playing panel on the right with stacked cards. Connect names the device in colour: “Playing on Kitchen”.</li>
+        <li>Spotify forcing its panel open, and dropping full-screen lyrics, both drew backlash.</li>
+      </ul>
+      <div class="steal"><b>Taken</b>The lyrics typography, click a line to seek, the room always named in the player, and a panel that opens only when you ask for it.</div>
+    </div>
+    <div class="r-card">
+      <h3 class="disp">Tidal · Qobuz</h3><div class="sub">Hi-res and liner notes</div>
+      <ul>
+        <li><b>Tidal:</b> credits are one tap away and link to each contributor’s other work. Removing them in 2025 caused an outcry.</li>
+        <li><b>Qobuz:</b> reviews, bios, digital booklets and the file’s technical details shown alongside the art. The background adapts to the cover.</li>
+        <li>Tidal’s “Max” label hides the real sample rate, and some devices quietly play at a lower quality.</li>
+      </ul>
+      <div class="steal"><b>Taken</b>Credits on the album page, an “About this album” rail, and quality labels that show the real format each speaker receives.</div>
+    </div>
+    <div class="r-card">
+      <h3 class="disp">Sonos</h3><div class="sub">The cautionary tale</div>
+      <ul>
+        <li>The 2024 rewrite shipped without queue editing, a sleep timer, local library search or a volume number. It cost $20–30M and the CEO stepped down.</li>
+        <li>The recovery: tabs came back, a System view lists every room (sortable by playing / A–Z), group badges show how many rooms are in a group, and Play lets you pick the room.</li>
+      </ul>
+      <div class="steal"><b>Taken</b>The Rooms drawer sorted by Playing / A–Z, “Play in…” under the Play button, a group count on the room button. Also a lesson: change things gradually, never as one big rewrite.</div>
+    </div>
+    <div class="r-card">
+      <h3 class="disp">Indie players</h3><div class="sub">Albums · Doppler · Spite · Feishin · Marvis</div>
+      <ul>
+        <li><b>Doppler</b> uses the whole window width for album grids. <b>Spite:</b> it shouldn’t “feel like managing a spreadsheet”.</li>
+        <li><b>Albums</b> has smart filters you can save, and anniversaries.</li>
+        <li><b>Feishin</b> has a full-screen player with tabs (Up next / Lyrics / Related) and keeps “Up next” in place when you shuffle.</li>
+        <li><b>Marvis</b> has deep customisation, but its default look is “bland”.</li>
+      </ul>
+      <div class="steal"><b>Taken</b>Dense grids that fill the width, Focus saved as a smart playlist, the tabbed Now Playing panel, and good defaults rather than a pile of settings.</div>
+    </div>
+    <div class="r-card r-wide">
+      <h3 class="disp">What Music Assistant users keep asking for</h3><div class="sub">From GitHub Discussions and Home Assistant community threads (↑ = upvotes)</div>
+      <table class="fb-table">
+        <tr><th>Request</th><th>Users said</th><th>How this design answers it</th></tr>
+        <tr><td><b>Know which speaker you’re controlling</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/2328">#2328</a> ↑22 · <a href="https://github.com/orgs/music-assistant/discussions/4226">#4226</a></span></td><td><q>I don’t have good awareness of what speaker is currently selected</q></td><td>The room is named on the player bar, in the sidebar Rooms list, on Now Playing and in every Play tooltip. Play ▾ has “Play in…”.</td></tr>
+        <tr><td><b>Precise volume, not just a slider</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/5218">#5218</a> ↑25 · <a href="https://github.com/orgs/music-assistant/discussions/6859">#6859</a></span></td><td><q>frustrating and imprecise when using touch devices</q></td><td>Every volume has − / + steps and a number. On mobile the step buttons are 44 px.</td></tr>
+        <tr><td><b>Per-member group mixer</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/6475">#6475</a> · <a href="https://github.com/orgs/music-assistant/discussions/4535">#4535</a></span></td><td><q>per-player group volume</q> loss made a user roll back</td><td>The selected group in Rooms opens into a mixer, with a slider, number and remove button for each member.</td></tr>
+        <tr><td><b>A–Z jump in big libraries</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/2554">#2554</a> ↑12</span></td><td><q>Scrolling through artists to ‘K’ is next to impossible</q></td><td>Letter sections plus an A–Z scrubber on Albums (desktop and mobile).</td></tr>
+        <tr><td><b>Visible sort</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/6007">#6007</a></span></td><td><q>Current sort is not immediately visible</q></td><td>A sort chip in the toolbar always reads “Sort · Artist A–Z”.</td></tr>
+        <tr><td><b>Back button</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/2736">#2736</a> ↑27</span></td><td><q>There’s no back button on my wall tablet</q></td><td>Back / forward in the top bar (⌘← / ⌘→), as in Roon.</td></tr>
+        <tr><td><b>Roon-Valence-style linked bios</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/5497">#5497</a> ↑8</span></td><td><q>inspired by Roon Valence</q></td><td>Serif bios with linked people and albums; credits linked by role.</td></tr>
+        <tr><td><b>Queue time left; tap a row to jump</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/4111">#4111</a> ↑7 · <a href="https://github.com/orgs/music-assistant/discussions/6593">#6593</a></span></td><td>Show remaining queue time; tap “up next” to play it</td><td>“32 min left in queue”; every Up next row plays when clicked. Autoplay is a one-line toggle, not a banner (<a href="https://github.com/orgs/music-assistant/discussions/6200">#6200</a>).</td></tr>
+        <tr><td><b>Honest quality labels</b> <span class="up"><a href="https://github.com/orgs/music-assistant/discussions/6480">#6480</a></span></td><td>320 kbps shouldn’t be called “Low quality”</td><td>Roon’s four signal colours, but described as what is delivered: “Lossless”, “Enhanced”, “High quality”, “Lossy source”.</td></tr>
+      </table>
+    </div>
+  </div>
+</div></section>
+
+<section class="sec-doc" id="screens"><div class="wrap">
+  <header><div><span class="num">03</span><h2 class="disp">Every screen, both themes</h2></div><p>The same screens rendered dark and light from one set of tokens. In light mode the art washes are mixed with white, Now Playing becomes frosted rather than smoky, and the activity band turns into a saturated violet, as in Roon’s light theme.</p></header>
+  <div id="gallery-pairs"></div>
+</div></section>
+
+<section class="sec-doc" id="mobile"><div class="wrap">
+  <header><div><span class="num">04</span><h2 class="disp">Mobile</h2></div><p>Same tokens and type. Navigation moves to a bottom tab bar with a dedicated Rooms tab, and the mini player always names the room. These follow the theme, accent and typeface controls above.</p></header>
+  <div class="phones" id="phones"></div>
+</div></section>
+
+<section class="sec-doc" id="system"><div class="wrap">
+  <header><div><span class="num">05</span><h2 class="disp">Design system</h2></div><p>Colour values follow Roon’s theme file closely (dark #181818 / #242424; light #FFFFFF / #F7F8F9). The accent is a single hue with a dark-mode and a light-mode value. Signal colours are fixed so their meaning never changes with the accent.</p></header>
+  <div id="system-live" class="sys-grid"></div>
+  <div class="sys-card" style="margin-top:18px"><h3 class="disp">Colour tokens</h3><table class="tok-table" id="tok"></table>
+    <p class="muted" style="font-size:13px;margin-top:14px">Motion: hovers 150 ms; panels and popovers 220–450 ms on <code style="font:12px 'SF Mono',Menlo,monospace">cubic-bezier(.22,1,.36,1)</code>; the artwork tint crossfades over 900 ms using registered CSS properties. The drifting ultrablur and equaliser bars stop when <code style="font:12px 'SF Mono',Menlo,monospace">prefers-reduced-motion</code> is set.</p>
+  </div>
+</div></section>
+
+<section class="sec-doc" id="plan"><div class="wrap">
+  <header><div><span class="num">06</span><h2 class="disp">How to build it in this repo</h2></div><p>Upstream is already mid-redesign: 2.11 has new artist and album pages, and is moving from Vuetify to shadcn-vue / Tailwind. So this should land as small, token-first steps that rebase cleanly, not a big rewrite like Sonos’s.</p></header>
+  <div class="plan">
+    <div class="step"><span class="num">STEP 1 · FOUNDATIONS</span><h3 class="disp">Tokens, type, theme</h3><ul>
+      <li>Replace the light/dark values in <code>src/styles/style.css</code> (<code>:root</code> and <code>.dark</code>) with the token table, and mirror them in <code>src/plugins/vuetify.ts</code>. Both systems must stay in step.</li>
+      <li>Add the display serif plus Inter, retiring Roboto in <code>vite.config.ts</code>, and a <code>.font-display</code> utility. Update h1–h6 in <code>global.css</code>.</li>
+      <li>Swap the primary colour from #03a9f4 to the accent token; add <code>--sig-*</code> colours.</li>
+    </ul></div>
+    <div class="step"><span class="num">STEP 2 · SHELL</span><h3 class="disp">Sidebar, top bar, player bar</h3><ul>
+      <li><code>AppSidebar.vue</code>: quieter nav, a live <b>Rooms</b> section in place of (or above) Shortcuts.</li>
+      <li>Top bar: back/forward and a search pill that opens the existing <code>CommandCenter</code>.</li>
+      <li><code>PlayerOSD/Player.vue</code>: serif title, waveform seek as the default, signal dot, − / + volume, room button with a group count.</li>
+    </ul></div>
+    <div class="step"><span class="num">STEP 3 · ROOMS</span><h3 class="disp">Rooms drawer</h3><ul>
+      <li>Turn <code>PlayerSelect.vue</code> from a popover into a right-hand drawer: sort by Playing / A–Z; the selected group expands into a member mixer with “+ Room” chips and Transfer queue.</li>
+      <li>Reuse <code>PlayerCard</code> logic for power, volume and child volumes.</li>
+    </ul></div>
+    <div class="step"><span class="num">STEP 4 · PAGES</span><h3 class="disp">Album, artist, library</h3><ul>
+      <li><code>InfoHeader.vue</code>: art-tinted wash from the palette and a compact header, so tracks show without scrolling.</li>
+      <li><code>AlbumDetails.vue</code>: right rail with About, Credits, Available from (from <code>ProviderDetails</code>), Versions and Tags.</li>
+      <li><code>ArtistDetails.vue</code>: tabs instead of stacked sections; discography before the bio.</li>
+      <li><code>ItemsListing.vue</code>: Focus chips, a visible sort chip, letter sections and an A–Z scrubber.</li>
+    </ul></div>
+    <div class="step"><span class="num">STEP 5 · NOW PLAYING</span><h3 class="disp">Immersive view</h3><ul>
+      <li><code>PlayerFullscreen.vue</code>: ultrablur from the palette with a veil and grain, large cover, serif title, a frosted right panel with tabs (Up next / Lyrics / Credits / Artist).</li>
+      <li>Keep the existing visualizer as another background option, with a “freeze colours” setting.</li>
+    </ul></div>
+    <div class="step"><span class="num">STEP 6 · HOME</span><h3 class="disp">Discover → Home</h3><ul>
+      <li><code>HomeWidgetRows.vue</code> rows: a compact greeting with stats, an “Around the house” rooms row, a Recent activity band, new releases, playlists, radio and a genre mosaic.</li>
+      <li>Keep row reordering and hiding (users asked for it; Roon can’t do it).</li>
+    </ul></div>
+  </div>
+</div></section>
+
+<footer class="foot"><div class="wrap">Prototype data is fictional. Album covers are generated SVGs; artist and genre photos are free-licence images from Unsplash. Display faces are from Google Fonts — Grifo, Roon’s own serif, is commercial, so Playfair Display stands in by default.</div></footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

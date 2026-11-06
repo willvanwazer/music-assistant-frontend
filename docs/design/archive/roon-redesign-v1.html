@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Music Assistant — Roon-style redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   DESIGN TOKENS
+   Two themes. Every surface in the mockups reads from these,
+   and they map 1:1 onto the shadcn vars in src/styles/style.css
+   (see the token table at the bottom of the page).
+   ============================================================ */
+.t-dark {
+  --bg: #161618;
+  --bg-elev: #1d1d20;
+  --sidebar: #111113;
+  --surface: #26262a;
+  --surface-2: #2e2e33;
+  --hover: rgba(255, 255, 255, 0.05);
+  --active: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.07);
+  --text: #f3f3f5;
+  --text-2: #a3a3ad;
+  --text-3: #6c6c76;
+  --accent: #8d7ff7;
+  --accent-soft: rgba(141, 127, 247, 0.16);
+  --accent-ink: #ffffff;
+  --bar: #1a1a1d;
+  --hero-opacity: 0.55;
+  --np-overlay: rgba(12, 12, 14, 0.62);
+  --scrim: rgba(0, 0, 0, 0.5);
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --art-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --good: #5fd39a;
+  color-scheme: dark;
+}
+.t-light {
+  --bg: #ffffff;
+  --bg-elev: #f8f8fa;
+  --sidebar: #f3f3f6;
+  --surface: #ececf1;
+  --surface-2: #e3e3ea;
+  --hover: rgba(20, 20, 40, 0.04);
+  --active: rgba(20, 20, 40, 0.07);
+  --border: rgba(20, 20, 40, 0.08);
+  --text: #17171b;
+  --text-2: #5c5c68;
+  --text-3: #9b9ba6;
+  --accent: #6a58e6;
+  --accent-soft: rgba(106, 88, 230, 0.1);
+  --accent-ink: #ffffff;
+  --bar: #fbfbfc;
+  --hero-opacity: 0.32;
+  --np-overlay: rgba(250, 250, 252, 0.6);
+  --scrim: rgba(20, 20, 30, 0.28);
+  --shadow: 0 24px 60px rgba(30, 30, 60, 0.18);
+  --art-shadow: 0 10px 28px rgba(30, 30, 60, 0.18);
+  --good: #1f9d63;
+  color-scheme: light;
+}
+
+/* ---------- page chrome (not part of the design) ---------- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Inter, system-ui, sans-serif;
+  background: #0c0c0e;
+  color: #e9e9ee;
+  -webkit-font-smoothing: antialiased;
+}
+body.page-light { background: #e9e9ee; color: #17171b; }
+.page { max-width: 1680px; margin: 0 auto; padding: 48px 40px 120px; }
+.page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 40px; flex-wrap: wrap; }
+.page-head h1 { font-family: Newsreader, serif; font-weight: 500; font-size: 44px; letter-spacing: -0.01em; }
+.page-head p { opacity: 0.65; max-width: 640px; line-height: 1.55; margin-top: 10px; font-size: 15px; }
+.seg { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(127, 127, 140, 0.18); }
+.seg button { border: 0; background: transparent; color: inherit; font: 500 13px Inter; padding: 8px 16px; border-radius: 999px; cursor: pointer; opacity: 0.7; }
+.seg button.on { background: #8d7ff7; color: #fff; opacity: 1; }
+.board { margin-bottom: 72px; }
+.board > header { display: flex; gap: 20px; align-items: baseline; margin-bottom: 16px; flex-wrap: wrap; }
+.board > header h2 { font: 600 13px Inter; text-transform: uppercase; letter-spacing: 0.12em; opacity: 0.55; min-width: 200px; }
+.board > header p { font-size: 14px; opacity: 0.8; line-height: 1.5; max-width: 900px; }
+.stage { display: flex; gap: 24px; }
+.stage > .cell { flex: 1; min-width: 0; }
+.stage.mobile { justify-content: flex-start; flex-wrap: wrap; }
+.stage.mobile > .cell { flex: 0 0 auto; }
+.cell-label { font: 500 12px Inter; opacity: 0.5; margin-bottom: 8px; }
+
+/* ============================================================
+   DESKTOP ARTBOARD
+   ============================================================ */
+.ab {
+  width: 1280px; height: 800px;
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  grid-template-rows: 1fr 84px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+  position: relative;
+  border-radius: 14px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+.serif { font-family: Newsreader, Georgia, serif; font-optical-sizing: auto; }
+svg.i { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* sidebar */
+.side { background: var(--sidebar); border-right: 1px solid var(--border); padding: 20px 12px 16px; display: flex; flex-direction: column; gap: 1px; overflow: hidden; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 2px 10px 18px; font: 600 15px Inter; letter-spacing: -0.01em; }
+.brand .mark { width: 22px; height: 22px; border-radius: 6px; background: conic-gradient(from 200deg, var(--accent), #c9a7ff, var(--accent)); position: relative; }
+.brand .mark::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--sidebar); }
+.search { display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border-radius: 8px; background: var(--active); color: var(--text-3); margin-bottom: 14px; font-size: 13px; }
+.search kbd { margin-left: auto; font: 500 11px Inter; color: var(--text-3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+.grp { font: 600 11px Inter; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); padding: 14px 10px 6px; }
+.nav { display: flex; align-items: center; gap: 12px; height: 34px; padding: 0 10px; border-radius: 8px; color: var(--text-2); font-weight: 500; font-size: 13.5px; }
+.nav .n { margin-left: auto; font-size: 12px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.nav.on { color: var(--text); background: var(--active); }
+.nav.on svg { color: var(--accent); }
+.side .spacer { flex: 1; }
+.me { display: flex; align-items: center; gap: 10px; padding: 10px; border-top: 1px solid var(--border); margin-top: 8px; padding-top: 14px; }
+.avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #8d7ff7, #f2a07b); color: #fff; font: 600 11px Inter; display: grid; place-items: center; }
+.me .who { font-size: 13px; font-weight: 500; }
+.me .who small { display: block; font-size: 11.5px; color: var(--text-3); font-weight: 400; }
+.me svg { margin-left: auto; color: var(--text-3); }
+
+/* main */
+.main { position: relative; overflow: hidden; }
+.topnav { position: absolute; top: 18px; left: 28px; right: 28px; display: flex; gap: 8px; z-index: 5; align-items: center; }
+.circ { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--active); color: var(--text-2); backdrop-filter: blur(12px); }
+.topnav .right { margin-left: auto; display: flex; gap: 8px; }
+.eyebrow { font: 600 11.5px Inter; text-transform: uppercase; letter-spacing: 0.14em; color: var(--text-2); }
+
+/* hero with blurred art backdrop — the signature Roon move */
+.hero { position: relative; isolation: isolate; overflow: hidden; }
+.hero .bg { position: absolute; inset: -80px; z-index: -2; filter: blur(70px) saturate(1.3); opacity: var(--hero-opacity); }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(to bottom, transparent 30%, var(--bg)); }
+
+/* album art (generated — no real covers in mockups) */
+.art { position: relative; aspect-ratio: 1; border-radius: 4px; overflow: hidden; box-shadow: var(--art-shadow); }
+.art::before { content: ""; position: absolute; inset: 0; background: var(--g); }
+.art::after { content: ""; position: absolute; }
+.art.s0::after { width: 46%; height: 46%; left: 27%; top: 27%; border-radius: 50%; border: 2px solid rgba(255,255,255,.55); }
+.art.s1::after { left: 0; right: 0; top: 58%; height: 3px; background: rgba(255,255,255,.6); box-shadow: 0 10px 0 rgba(255,255,255,.35), 0 20px 0 rgba(255,255,255,.18); }
+.art.s2::after { width: 30%; height: 60%; right: 14%; bottom: 0; background: rgba(0,0,0,.35); border-radius: 999px 999px 0 0; }
+.art.s3::after { inset: 14%; border: 1px solid rgba(255,255,255,.4); }
+.art .lbl { position: absolute; left: 9%; bottom: 8%; right: 9%; color: rgba(255,255,255,.88); font: 500 11px Newsreader, serif; letter-spacing: .02em; z-index: 1; text-shadow: 0 1px 6px rgba(0,0,0,.4); }
+
+/* section rows */
+.sec { padding: 0 40px; margin-bottom: 30px; }
+.sec-h { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.sec-h h3 { font: 500 22px Newsreader, serif; letter-spacing: -0.005em; }
+.sec-h a { font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+.row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 22px; }
+.card { min-width: 0; }
+.card .t { margin-top: 10px; font-weight: 500; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card .s { margin-top: 2px; font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card.hov .art { outline: 2px solid var(--accent); outline-offset: 3px; }
+.card .play-ov { position: absolute; right: 8px; bottom: 8px; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; z-index: 2; box-shadow: 0 6px 16px rgba(0,0,0,.35); }
+
+/* buttons */
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 18px; border-radius: 999px; font: 600 13px Inter; color: var(--text); background: var(--active); }
+.btn.pri { background: var(--accent); color: var(--accent-ink); }
+.btn.icon { width: 38px; padding: 0; justify-content: center; }
+.btn svg { width: 16px; height: 16px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; font: 500 12px Inter; color: var(--text-2); border: 1px solid var(--border); }
+.hq { display: inline-flex; align-items: center; gap: 7px; font: 600 11.5px Inter; letter-spacing: .02em; color: var(--text-2); }
+.hq .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.hq.lossless .dot { background: #b59bff; }
+
+/* transport bar */
+.tb { grid-column: 1 / -1; background: var(--bar); border-top: 1px solid var(--border); display: grid; grid-template-columns: 340px 1fr 340px; align-items: center; padding: 0 20px; gap: 20px; position: relative; z-index: 3; }
+.tb .np { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.tb .np .art { width: 52px; flex: none; border-radius: 3px; }
+.tb .np .t { font: 500 16px Newsreader, serif; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb .np .s { font-size: 12.5px; color: var(--text-2); }
+.ctl { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.ctl .btns { display: flex; align-items: center; gap: 22px; color: var(--text-2); }
+.ctl .btns .on { color: var(--accent); }
+.playbtn { width: 38px; height: 38px; border-radius: 50%; background: var(--text); color: var(--bg); display: grid; place-items: center; }
+.playbtn svg { width: 16px; height: 16px; }
+.prog { display: flex; align-items: center; gap: 10px; width: 100%; max-width: 520px; font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.bar { flex: 1; height: 3px; border-radius: 3px; background: var(--surface-2); position: relative; }
+.bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; background: var(--text); }
+.bar > i::after { content: ""; position: absolute; right: -5px; top: -4px; width: 11px; height: 11px; border-radius: 50%; background: var(--text); }
+.tb .rt { display: flex; align-items: center; gap: 16px; justify-content: flex-end; color: var(--text-2); }
+.vol { display: flex; align-items: center; gap: 8px; width: 110px; }
+.vol .bar > i { background: var(--text-2); }
+.vol .bar > i::after { display: none; }
+.zone { white-space: nowrap; display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 10px; border-radius: 8px; background: var(--active); color: var(--text); font-weight: 500; font-size: 13px; }
+.zone svg { color: var(--accent); }
+.zone .chev { color: var(--text-3); width: 14px; height: 14px; }
+.zone.open { box-shadow: 0 0 0 2px var(--accent); }
+
+/* equalizer */
+.eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; width: 14px; }
+.eq i { width: 3px; background: var(--accent); border-radius: 1px; animation: eq 0.9s ease-in-out infinite; }
+.eq i:nth-child(2) { animation-delay: -0.3s; }
+.eq i:nth-child(3) { animation-delay: -0.6s; }
+@keyframes eq { 0%, 100% { height: 30%; } 50% { height: 100%; } }
+
+/* ---------- HOME ---------- */
+.home-hero { padding: 84px 40px 34px; }
+.home-hero h1 { font-weight: 500; font-size: 52px; letter-spacing: -0.015em; margin: 10px 0 26px; }
+.stats { display: flex; gap: 44px; }
+.stats a { display: block; }
+.stats b { display: block; font: 400 40px Newsreader, serif; letter-spacing: -0.01em; font-variant-numeric: lining-nums; }
+.stats span { font-size: 12.5px; color: var(--text-2); font-weight: 500; }
+
+/* ---------- ARTIST ---------- */
+.artist-hero { padding: 88px 40px 30px; display: flex; gap: 34px; align-items: flex-end; }
+.portrait { width: 230px; height: 230px; border-radius: 6px; flex: none; position: relative; overflow: hidden; box-shadow: var(--art-shadow); background: var(--g); }
+.portrait::after { content: ""; position: absolute; width: 56%; height: 70%; left: 22%; bottom: -8%; border-radius: 50% 50% 0 0; background: rgba(0,0,0,.28); }
+.portrait::before { content: ""; position: absolute; width: 28%; height: 28%; left: 36%; top: 20%; border-radius: 50%; background: rgba(0,0,0,.28); }
+.artist-hero h1 { font-weight: 500; font-size: 66px; line-height: 1; letter-spacing: -0.02em; margin: 10px 0 12px; }
+.artist-hero .meta { color: var(--text-2); font-size: 13.5px; display: flex; gap: 10px; align-items: center; }
+.artist-hero .bio { margin-top: 14px; max-width: 640px; color: var(--text-2); line-height: 1.6; font-size: 14px; }
+.artist-hero .bio a { color: var(--accent); font-weight: 500; }
+.actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+.tabs { display: flex; gap: 28px; padding: 0 40px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+.tabs a { padding: 12px 0; font-weight: 500; font-size: 13.5px; color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tabs a.on { color: var(--text); border-color: var(--accent); }
+.filters { display: flex; gap: 8px; align-items: center; padding: 0 40px; margin-bottom: 18px; }
+.filters .pill.on { background: var(--text); color: var(--bg); border-color: transparent; }
+.filters .sort { margin-left: auto; font-size: 12.5px; color: var(--text-2); display: flex; gap: 6px; align-items: center; }
+
+/* ---------- ALBUM ---------- */
+.album-hero { padding: 80px 40px 28px; display: flex; gap: 36px; align-items: flex-end; }
+.album-hero .art { width: 250px; flex: none; }
+.album-hero h1 { font-weight: 500; font-size: 52px; line-height: 1.02; letter-spacing: -0.015em; margin: 10px 0 10px; }
+.album-hero .by { font-size: 16px; display: flex; gap: 8px; align-items: center; color: var(--text-2); }
+.album-hero .by a { color: var(--accent); font-weight: 600; }
+.album-hero .line { display: flex; gap: 14px; align-items: center; margin-top: 12px; color: var(--text-2); font-size: 13px; }
+.review { margin-top: 14px; font: italic 400 15px/1.5 Newsreader, serif; color: var(--text-2); max-width: 600px; }
+.album-body { display: grid; grid-template-columns: 1fr 270px; gap: 40px; padding: 0 40px; }
+.tl-h, .tl-r { display: grid; grid-template-columns: 36px 1fr 120px 56px; align-items: center; gap: 8px; }
+.tl-h { font: 600 11px Inter; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); padding: 0 12px 8px; border-bottom: 1px solid var(--border); }
+.tl-r { height: 48px; padding: 0 12px; border-radius: 6px; font-size: 13.5px; }
+.tl-r .n { color: var(--text-3); font-variant-numeric: tabular-nums; }
+.tl-r .tt { font-weight: 500; }
+.tl-r .tt small { display: block; font-size: 12px; color: var(--text-3); font-weight: 400; margin-top: 1px; }
+.tl-r .d { color: var(--text-2); font-variant-numeric: tabular-nums; text-align: right; }
+.tl-r .x { color: var(--text-3); display: flex; gap: 12px; justify-content: flex-end; }
+.tl-r.playing { background: var(--accent-soft); }
+.tl-r.playing .tt { color: var(--accent); }
+.tl-r.hover { background: var(--hover); }
+.aside h4 { font: 600 11px Inter; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-3); margin-bottom: 10px; }
+.kv { display: grid; grid-template-columns: 92px 1fr; gap: 7px 12px; font-size: 13px; margin-bottom: 24px; }
+.kv dt { color: var(--text-3); }
+.kv dd a { color: var(--text); border-bottom: 1px solid var(--border); }
+.prov { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px; font-size: 13px; }
+.prov.on { background: var(--active); }
+.prov .pi { width: 22px; height: 22px; border-radius: 5px; display: grid; place-items: center; font: 700 10px Inter; color: #fff; }
+.prov small { margin-left: auto; color: var(--text-3); font-size: 11.5px; }
+.prov svg { color: var(--accent); width: 15px; height: 15px; }
+
+/* ---------- NOW PLAYING ---------- */
+.np-main { grid-column: 1 / -1; position: relative; overflow: hidden; isolation: isolate; }
+.np-main .bg { position: absolute; inset: -120px; z-index: -2; background: var(--g); filter: blur(90px) saturate(1.4); }
+.np-main::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--np-overlay); }
+.np-wrap { display: grid; grid-template-columns: 440px 1fr; gap: 64px; align-items: center; height: 100%; padding: 40px 80px 40px; }
+.np-wrap .art { width: 440px; border-radius: 6px; box-shadow: var(--shadow); }
+.np-wrap h1 { font-weight: 500; font-size: 60px; line-height: 1; letter-spacing: -0.02em; margin: 14px 0 14px; }
+.np-wrap .artist { font-size: 22px; font-weight: 500; }
+.np-wrap .album { font: italic 400 18px Newsreader, serif; color: var(--text-2); margin-top: 6px; }
+.np-wrap .chips { display: flex; gap: 10px; margin-top: 22px; align-items: center; flex-wrap: wrap; }
+.np-wrap .chip { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 999px; background: var(--active); font: 500 12px Inter; color: var(--text); backdrop-filter: blur(10px); }
+.np-wrap .chip svg { width: 14px; height: 14px; color: var(--accent); }
+.np-progress { margin-top: 34px; max-width: 560px; }
+.np-progress .bar { height: 4px; background: var(--active); }
+.np-progress .times { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-2); margin-top: 8px; font-variant-numeric: tabular-nums; }
+.upnext { margin-top: 30px; max-width: 560px; }
+.upnext h4 { font: 600 11px Inter; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-2); margin-bottom: 8px; }
+.upnext .u { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-top: 1px solid var(--border); font-size: 13px; }
+.upnext .u .art { width: 34px; border-radius: 2px; box-shadow: none; }
+.upnext .u span { color: var(--text-2); margin-left: auto; font-variant-numeric: tabular-nums; }
+.np-top { position: absolute; top: 20px; left: 28px; right: 28px; display: flex; align-items: center; gap: 10px; z-index: 2; }
+.np-top .tabsm { margin: 0 auto; display: flex; gap: 4px; background: var(--active); padding: 4px; border-radius: 999px; backdrop-filter: blur(10px); }
+.np-top .tabsm a { padding: 6px 14px; border-radius: 999px; font: 500 12.5px Inter; color: var(--text-2); }
+.np-top .tabsm a.on { background: var(--bg); color: var(--text); }
+.tb.glass { background: color-mix(in srgb, var(--bar) 70%, transparent); backdrop-filter: blur(30px); }
+
+/* ---------- PLAYERS POPOVER ---------- */
+.scrim { position: absolute; inset: 0 0 84px 0; background: var(--scrim); z-index: 8; }
+.pop { position: absolute; right: 16px; bottom: 96px; width: 400px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); z-index: 9; overflow: hidden; }
+.pop-h { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px 10px; }
+.pop-h h3 { font: 500 22px Newsreader, serif; }
+.pop-h a { font: 600 12.5px Inter; color: var(--accent); }
+.pl { padding: 12px 18px; border-top: 1px solid var(--border); }
+.pl.sel { background: var(--accent-soft); }
+.pl .top { display: flex; align-items: center; gap: 12px; }
+.pl .ic { width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; background: var(--active); color: var(--text-2); }
+.pl.sel .ic { background: var(--accent); color: #fff; }
+.pl .nm { font-weight: 600; font-size: 13.5px; }
+.pl .nm small { display: block; font-weight: 400; font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.pl .st { margin-left: auto; display: flex; align-items: center; gap: 8px; color: var(--text-3); font-size: 12px; }
+.pl .v { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding-left: 46px; color: var(--text-3); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.pl .v .bar > i { background: var(--accent); }
+.pl .v .bar > i::after { background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.pl .members { padding-left: 46px; margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.pl .members div { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-2); }
+.pl .members .bar { max-width: 150px; }
+.pl .members .bar > i { background: var(--text-3); }
+.pl .members .bar > i::after { display: none; }
+.toggle { width: 30px; height: 18px; border-radius: 999px; background: var(--surface-2); position: relative; }
+.toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+.toggle.on { background: var(--accent); }
+.toggle.on::after { left: 14px; }
+.pop-f { padding: 12px 18px 16px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+.pop-f .btn { height: 34px; font-size: 12.5px; flex: 1; justify-content: center; }
+
+/* ============================================================
+   MOBILE ARTBOARD
+   ============================================================ */
+.mb { width: 390px; height: 844px; border-radius: 44px; overflow: hidden; position: relative; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; font-size: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.35), 0 0 0 10px #050506; isolation: isolate; }
+.mb .status { height: 50px; display: flex; justify-content: space-between; align-items: flex-end; padding: 0 30px 6px; font: 600 15px Inter; }
+.mb .m-pad { padding: 0 20px; }
+.mb h1 { font-weight: 500; font-size: 36px; letter-spacing: -0.015em; margin: 6px 0 18px; }
+.mstats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 26px; }
+.mstats div { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.mstats b { display: block; font: 400 28px Newsreader, serif; }
+.mstats span { font-size: 12px; color: var(--text-2); font-weight: 500; }
+.mgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.mini { position: absolute; left: 12px; right: 12px; bottom: 96px; height: 62px; border-radius: 14px; background: color-mix(in srgb, var(--bg-elev) 82%, transparent); backdrop-filter: blur(24px); border: 1px solid var(--border); display: flex; align-items: center; gap: 12px; padding: 0 14px 0 8px; box-shadow: var(--shadow); z-index: 3; overflow: hidden; }
+.mini .art { width: 46px; border-radius: 6px; flex: none; }
+.mini .t { font: 500 15px Newsreader, serif; }
+.mini .s { font-size: 12px; color: var(--text-2); display: flex; gap: 6px; align-items: center; }
+.mini .s svg { width: 12px; height: 12px; color: var(--accent); }
+.mini .acts { margin-left: auto; display: flex; gap: 16px; align-items: center; }
+.mini .p { position: absolute; left: 0; bottom: 0; height: 2px; width: 38%; background: var(--accent); }
+.tabbar { position: absolute; left: 0; right: 0; bottom: 0; height: 88px; background: color-mix(in srgb, var(--bar) 85%, transparent); backdrop-filter: blur(24px); border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); padding: 10px 10px 0; z-index: 2; }
+.tabbar a { display: flex; flex-direction: column; align-items: center; gap: 5px; font: 500 10.5px Inter; color: var(--text-3); }
+.tabbar a.on { color: var(--accent); }
+.tabbar svg { width: 22px; height: 22px; }
+.mnp .bg { position: absolute; inset: -100px; z-index: -2; background: var(--g); filter: blur(70px) saturate(1.4); }
+.mnp::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--np-overlay); }
+.mnp .hdr { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 0; }
+.mnp .hdr .zn { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-2); }
+.mnp .hdr .zn b { font-size: 13px; color: var(--text); font-weight: 600; display: flex; gap: 6px; align-items: center; }
+.mnp .hdr .zn b svg { width: 14px; height: 14px; color: var(--accent); }
+.mnp .art.big { width: 330px; margin: 30px auto 0; border-radius: 8px; box-shadow: var(--shadow); }
+.mnp .ti { padding: 28px 30px 0; display: flex; align-items: flex-end; gap: 10px; }
+.mnp .ti h2 { font: 500 30px/1.05 Newsreader, serif; letter-spacing: -0.01em; }
+.mnp .ti p { color: var(--text-2); margin-top: 6px; font-size: 15px; }
+.mnp .ti svg { margin-left: auto; color: var(--accent); width: 22px; height: 22px; }
+.mnp .pg { padding: 22px 30px 0; }
+.mnp .pg .bar { height: 4px; background: var(--active); }
+.mnp .pg .times { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-2); margin-top: 8px; font-variant-numeric: tabular-nums; }
+.mnp .cx { display: flex; justify-content: space-between; align-items: center; padding: 16px 38px 0; color: var(--text); }
+.mnp .cx .pb { width: 68px; height: 68px; border-radius: 50%; background: var(--text); color: var(--bg); display: grid; place-items: center; }
+.mnp .cx .pb svg { width: 26px; height: 26px; }
+.mnp .cx svg { width: 26px; height: 26px; }
+.mnp .cx .sm svg { width: 20px; height: 20px; color: var(--text-2); }
+.mnp .ft { display: flex; justify-content: space-between; align-items: center; padding: 28px 30px 0; color: var(--text-2); }
+
+/* ---------- token table ---------- */
+.tokens { width: 100%; border-collapse: collapse; font-size: 13px; }
+.tokens th, .tokens td { text-align: left; padding: 10px 12px; border-bottom: 1px solid rgba(127,127,140,.2); }
+.tokens th { font: 600 11px Inter; text-transform: uppercase; letter-spacing: .1em; opacity: .55; }
+.tokens code { font: 12px ui-monospace, Menlo, monospace; }
+.sw { display: inline-block; width: 16px; height: 16px; border-radius: 4px; vertical-align: -3px; margin-right: 8px; border: 1px solid rgba(127,127,140,.35); }
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 28px; }
+.notes div { padding: 18px 20px; border-radius: 12px; background: rgba(127,127,140,.1); line-height: 1.55; font-size: 14px; }
+.notes h4 { font: 500 19px Newsreader, serif; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <div>
+      <h1>Music Assistant, redesigned in the spirit of Roon</h1>
+      <p>Editorial serif headlines, big art-led heroes with blurred colour wash, a quiet charcoal (or paper-white) canvas, one violet accent, and a single bottom transport bar with the player picker. Every screen is drawn in both themes from the same token set. Album art is generated placeholders.</p>
+    </div>
+    <div class="seg" id="mode">
+      <button data-m="dark" class="on">Dark</button>
+      <button data-m="light">Light</button>
+      <button data-m="both">Side by side</button>
+    </div>
+  </div>
+  <div id="boards"></div>
+
+  <section class="board">
+    <header><h2>Tokens</h2><p>Drop-in values for the existing shadcn variables in <code>src/styles/style.css</code>; the Vuetify theme in <code>src/plugins</code> should take the same values so both component sets agree.</p></header>
+    <table class="tokens" id="tok"></table>
+    <div class="notes">
+      <div><h4>Type</h4>Newsreader (display serif, stand-in for Roon's Grifo) for page titles, album/artist/track names in heroes and the transport bar, section headings and big numerals. Inter for everything functional: nav, metadata, buttons, tables.</div>
+      <div><h4>Colour</h4>Neutral greys with a faint cool cast; colour comes from the artwork, not the chrome. One accent (violet) marks the active nav item, the playing row, the selected player and primary actions — nothing else.</div>
+      <div><h4>Shape</h4>Square-ish album art (4px radius), pills for actions and chips, 8px rows. No cards-with-borders on browse pages: content sits directly on the canvas, separated by whitespace and hairlines.</div>
+      <div><h4>Music Assistant specifics</h4>Provider choice per album ("Available from"), quality/signal dot, players & groups popover with per-member volume, and the existing Radio / Podcasts / Audiobooks / Browse sections all keep a home in the new shell.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ---------------- icons ---------------- */
+const P = {
+  home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  disc: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5"/>',
+  music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  list: '<path d="M3 6h12M3 12h12M3 18h8"/><path d="M17 18V8l4-1"/><circle cx="15" cy="18" r="2"/>',
+  tag: '<path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+  radio: '<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19 5a10 10 0 0 1 0 14M5 19A10 10 0 0 1 5 5"/>',
+  mic: '<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v4"/>',
+  book: '<path d="M4 5a2 2 0 0 1 2-2h14v15H6a2 2 0 0 0-2 2z"/><path d="M4 20a2 2 0 0 0 2 2h14v-4"/>',
+  folder: '<path d="M3 6a1 1 0 0 1 1-1h5l2 2h9a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  play: '<path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/>',
+  pause: '<rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" stroke="none"/>',
+  prev: '<path d="M19 20 9 12l10-8z" fill="currentColor"/><path d="M5 19V5"/>',
+  next: '<path d="m5 4 10 8-10 8z" fill="currentColor"/><path d="M19 5v14"/>',
+  shuffle: '<path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>',
+  repeat: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  heart: '<path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',
+  heartf: '<path fill="currentColor" d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/>',
+  more: '<circle cx="5" cy="12" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/><circle cx="19" cy="12" r="1.3" fill="currentColor"/>',
+  queue: '<path d="M3 6h18M3 12h18M3 18h11"/><path d="m18 15 3 3-3 3"/>',
+  speaker: '<rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="4"/><circle cx="12" cy="6" r="1"/>',
+  tv: '<rect x="2" y="5" width="20" height="13" rx="2"/><path d="M8 21h8"/>',
+  laptop: '<rect x="4" y="4" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',
+  vol: '<path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/>',
+  chevL: '<path d="m15 18-6-6 6-6"/>',
+  chevR: '<path d="m9 18 6-6-6-6"/>',
+  chevD: '<path d="m6 9 6 6 6-6"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  link: '<path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/>',
+  lyrics: '<path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="17" r="2.5"/><path d="M20.5 17V10"/>',
+  wave: '<path d="M2 12h2l2-6 3 12 3-15 3 18 3-12 2 3h2"/>',
+  radioStart: '<circle cx="12" cy="12" r="2"/><path d="M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4"/>',
+  sliders: '<path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/>',
+};
+const I = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
+
+/* ---------------- data ---------------- */
+const A = [
+  { t: 'Low Tide Hymnal', a: 'The Marigold Static', y: 2019, c: ['#e8a87c', '#5b3a6e', '#1d1a2b'] },
+  { t: 'Paper Lanterns', a: 'Ines Calder', y: 2022, c: ['#f4d35e', '#ee964b', '#2b2d42'] },
+  { t: 'Northbound', a: 'Halvard Quartet', y: 1978, c: ['#9ad1d4', '#1f5673', '#0b1d26'] },
+  { t: 'Velvet Arithmetic', a: 'Okon & the Saints', y: 2016, c: ['#ff6b6b', '#4d194d', '#120d1a'] },
+  { t: 'Glass Orchard', a: 'Mira Solenne', y: 2024, c: ['#c8e7a7', '#3e7b47', '#0f2016'] },
+  { t: 'Sodium Nights', a: 'Teo Varga Trio', y: 1964, c: ['#ffb347', '#8a2be2', '#0d0d17'] },
+  { t: 'A Small Weather', a: 'Juniper Ash', y: 2021, c: ['#d8e2dc', '#9d8189', '#3a2e39'] },
+  { t: 'Coastal Grammar', a: 'Ferro Lune', y: 2018, c: ['#86bbd8', '#33658a', '#2f4858'] },
+  { t: 'Ember Theory', a: 'The Marigold Static', y: 2023, c: ['#f26419', '#c33c54', '#1b1b1b'] },
+  { t: 'Concerto for Quiet Rooms', a: 'Lena Moravec', y: 2012, c: ['#e9d8a6', '#94d2bd', '#001219'] },
+  { t: 'Holloway', a: 'Dunmore', y: 2009, c: ['#bfa2db', '#3c2a4d', '#120c18'] },
+  { t: 'Sunday Static', a: 'Ines Calder', y: 2020, c: ['#ffd6a5', '#ff8fab', '#3d2c3e'] },
+];
+const DISCO = [
+  { t: 'Ember Theory', y: 2023, k: 8 }, { t: 'Harbour Lights (Live)', y: 2021, c: ['#ffe066', '#247ba0', '#0b132b'] },
+  { t: 'Low Tide Hymnal', y: 2019, k: 0 }, { t: 'Satellite Choir', y: 2016, c: ['#b8f2e6', '#5e6472', '#1b1f2a'] },
+  { t: 'Tin Roof Sermons', y: 2014, c: ['#f7b267', '#f25c54', '#2d1e2f'] }, { t: 'Marigold', y: 2012, c: ['#ffcf56', '#d17a22', '#3b1f0e'] },
+];
+const g = c => `radial-gradient(circle at 28% 26%, ${c[0]} 0%, transparent 58%), radial-gradient(circle at 78% 82%, ${c[1]} 0%, transparent 60%), linear-gradient(160deg, ${c[1]}, ${c[2]})`;
+const art = (al, i = 0, extra = '', label = false) =>
+  `<div class="art s${i % 4} ${extra}" style="--g:${g(al.c)}">${label ? `<div class="lbl">${al.t}</div>` : ''}</div>`;
+const NOW = { ...A[8], track: 'Slow Combustion', n: 4 };
+
+/* ---------------- shell pieces ---------------- */
+function side(active) {
+  const n = (k, ic, label, num = '') =>
+    `<div class="nav ${active === k ? 'on' : ''}">${I(ic)}${label}${num ? `<span class="n">${num}</span>` : ''}</div>`;
+  return `<aside class="side">
+    <div class="brand"><span class="mark"></span>music assistant</div>
+    <div class="search">${I('search')}Search<kbd>⌘K</kbd></div>
+    ${n('home', 'home', 'Home')}
+    <div class="grp">Library</div>
+    ${n('artists', 'user', 'Artists', '1,284')}
+    ${n('albums', 'disc', 'Albums', '3,902')}
+    ${n('tracks', 'music', 'Tracks', '41k')}
+    ${n('playlists', 'list', 'Playlists', '112')}
+    ${n('genres', 'tag', 'Genres')}
+    <div class="grp">Listen</div>
+    ${n('radio', 'radio', 'Radio')}
+    ${n('podcasts', 'mic', 'Podcasts')}
+    ${n('books', 'book', 'Audiobooks')}
+    ${n('browse', 'folder', 'Browse')}
+    <div class="spacer"></div>
+    ${n('settings', 'gear', 'Settings')}
+    <div class="me"><div class="avatar">WV</div><div class="who">Will<small>Admin</small></div>${I('chevD')}</div>
+  </aside>`;
+}
+function transport({ glass = false, zoneOpen = false } = {}) {
+  return `<footer class="tb ${glass ? 'glass' : ''}">
+    <div class="np">${art(NOW, 0)}<div style="min-width:0"><div class="t">${NOW.track}</div><div class="s">${NOW.a} · ${NOW.t}</div></div>
+      <span style="margin-left:6px;color:var(--accent)">${I('heartf')}</span></div>
+    <div class="ctl">
+      <div class="btns">${I('shuffle', 'on')}${I('prev')}<div class="playbtn">${I('pause')}</div>${I('next')}${I('repeat')}</div>
+      <div class="prog"><span>1:42</span><div class="bar"><i style="width:38%"></i></div><span>4:31</span></div>
+    </div>
+    <div class="rt">
+      <span class="hq lossless" title="Signal path"><span class="dot"></span>24/96</span>
+      ${I('queue')}
+      <div class="vol">${I('vol')}<div class="bar"><i style="width:62%"></i></div></div>
+      <div class="zone ${zoneOpen ? 'open' : ''}">${I('speaker')}Living Room <span style="color:var(--text-3);font-weight:400">+1</span>${I('chevD', 'chev')}</div>
+    </div>
+  </footer>`;
+}
+const topnav = (right = '') => `<div class="topnav"><div class="circ">${I('chevL')}</div><div class="circ" style="opacity:.5">${I('chevR')}</div><div class="right">${right}</div></div>`;
+const card = (al, i, hov = false, sub) =>
+  `<div class="card ${hov ? 'hov' : ''}"><div style="position:relative">${art(al, i)}${hov ? `<div class="play-ov">${I('play')}</div>` : ''}</div><div class="t">${al.t}</div><div class="s">${sub ?? al.a}</div></div>`;
+
+/* ---------------- screens ---------------- */
+function home() {
+  return `${side('home')}
+  <main class="main">
+    ${topnav()}
+    <div class="hero home-hero"><div class="bg" style="background:${g(A[8].c)}, ${g(A[2].c)}"></div>
+      <div class="eyebrow">Friday · 7:42 pm</div>
+      <h1 class="serif">Good evening, Will</h1>
+      <div class="stats">
+        <a><b>1,284</b><span>Artists</span></a><a><b>3,902</b><span>Albums</span></a>
+        <a><b>41,220</b><span>Tracks</span></a><a><b>112</b><span>Playlists</span></a><a><b>38</b><span>Radio stations</span></a>
+      </div>
+    </div>
+    <div class="sec"><div class="sec-h"><h3>Pick up where you left off</h3><a>See all</a></div>
+      <div class="row">${[8, 0, 4, 9, 2, 6].map((k, i) => card(A[k], i, i === 1)).join('')}</div></div>
+    <div class="sec"><div class="sec-h"><h3>Recently added</h3><a>See all</a></div>
+      <div class="row">${[1, 3, 5, 7, 10, 11].map((k, i) => card(A[k], i + 2)).join('')}</div></div>
+  </main>
+  ${transport()}`;
+}
+function artist() {
+  const al = A[0];
+  return `${side('artists')}
+  <main class="main">
+    ${topnav(`<div class="circ">${I('search')}</div>`)}
+    <div class="hero artist-hero"><div class="bg" style="background:${g(A[8].c)}"></div>
+      <div class="portrait" style="--g:${g(['#f6bd60', '#84a59d', '#2a2a3a'])}"></div>
+      <div>
+        <div class="eyebrow">Artist</div>
+        <h1 class="serif">The Marigold Static</h1>
+        <div class="meta">Dream pop · Indie rock <span>·</span> Bristol, UK <span>·</span> 2011 – present</div>
+        <p class="bio">Built around Hannah Okafor's reverb-drenched vocals and Tom Reyes's baritone guitar, the band moved from bedroom tape loops to the widescreen, brass-flecked sound of <i>Ember Theory</i>. <a>Read more</a></p>
+        <div class="actions"><span class="btn pri">${I('play')}Play</span><span class="btn">${I('shuffle')}Shuffle</span><span class="btn">${I('radioStart')}Start radio</span><span class="btn icon">${I('heart')}</span><span class="btn icon">${I('more')}</span></div>
+      </div>
+    </div>
+    <div class="tabs"><a class="on">Discography</a><a>Top tracks</a><a>Appears on</a><a>Similar artists</a><a>Biography</a></div>
+    <div class="filters"><span class="pill on">Albums · 6</span><span class="pill">EPs & singles · 9</span><span class="pill">Live · 2</span><span class="pill">Compilations</span>
+      <span class="sort">Newest first ${I('chevD')}</span></div>
+    <div class="sec"><div class="row">${DISCO.map((d, i) => card(d.k !== undefined ? A[d.k] : { ...d, a: '' }, i, i === 0, d.y)).join('')}</div></div>
+  </main>
+  ${transport()}`;
+}
+function album() {
+  const al = A[0];
+  const tracks = [
+    ['Shoreline Static', '3:58'], ['Low Tide Hymnal', '5:12'], ['Glass Bottle Prayer', '4:07'], ['Undertow', '4:31'],
+    ['Copper Light', '3:22'], ['The Long Quiet', '6:45'], ['Saltmarsh', '3:49'], ['Anchors', '4:18'],
+  ];
+  return `${side('albums')}
+  <main class="main">
+    ${topnav(`<div class="circ">${I('search')}</div>`)}
+    <div class="hero album-hero"><div class="bg" style="background:${g(al.c)}"></div>
+      ${art(al, 0)}
+      <div>
+        <div class="eyebrow">Album</div>
+        <h1 class="serif">Low Tide Hymnal</h1>
+        <div class="by"><a>The Marigold Static</a> · 2019</div>
+        <div class="line"><span>10 tracks · 44 min</span><span class="hq lossless"><span class="dot"></span>FLAC 24-bit / 96 kHz</span><span class="pill">Dream pop</span><span class="pill">Shoegaze</span></div>
+        <p class="review">“A record that sounds like it was recorded underwater and mixed at dawn — patient, luminous, and the band's quiet high-water mark.”</p>
+        <div class="actions"><span class="btn pri">${I('play')}Play</span><span class="btn">${I('shuffle')}Shuffle</span><span class="btn">${I('queue')}Add to queue</span><span class="btn icon" style="color:var(--accent)">${I('heartf')}</span><span class="btn icon">${I('more')}</span></div>
+      </div>
+    </div>
+    <div class="album-body">
+      <div>
+        <div class="tl-h"><span>#</span><span>Title</span><span></span><span style="text-align:right">Time</span></div>
+        ${tracks.map(([t, d], i) => `<div class="tl-r ${i === 3 ? 'playing' : ''} ${i === 1 ? 'hover' : ''}">
+          <span class="n">${i === 3 ? '<span class="eq"><i></i><i></i><i></i></span>' : i + 1}</span>
+          <span class="tt">${t}<small>Okafor · Reyes</small></span>
+          <span class="x">${i === 1 ? I('heart') + I('more') : ''}</span>
+          <span class="d">${d}</span></div>`).join('')}
+      </div>
+      <div class="aside">
+        <h4>Credits</h4>
+        <dl class="kv"><dt>Producer</dt><dd><a>Ada Linnell</a></dd><dt>Engineer</dt><dd><a>Marco Petit</a></dd><dt>Mastering</dt><dd><a>Sun Room Studio</a></dd><dt>Label</dt><dd><a>Halfmoon Records</a></dd><dt>Released</dt><dd>14 June 2019</dd></dl>
+        <h4>Available from</h4>
+        <div class="prov on"><span class="pi" style="background:#4a4a55">${I('folder')}</span>Local library<small>24/96</small>${I('check')}</div>
+        <div class="prov"><span class="pi" style="background:#2c6bed">Q</span>Qobuz<small>24/96</small></div>
+        <div class="prov"><span class="pi" style="background:#111">T</span>Tidal<small>16/44.1</small></div>
+      </div>
+    </div>
+  </main>
+  ${transport()}`;
+}
+function nowPlaying() {
+  const ups = [[A[8], 'Paper Moths', '3:44'], [A[8], 'Kindling', '5:02'], [A[8], 'Ash & Honey', '4:16']];
+  return `<main class="np-main" style="--g:${g(NOW.c)}"><div class="bg"></div>
+    <div class="np-top"><div class="circ">${I('chevD')}</div>
+      <div class="tabsm"><a class="on">Now playing</a><a>Lyrics</a><a>Queue</a><a>About</a></div>
+      <div class="circ">${I('more')}</div></div>
+    <div class="np-wrap">
+      ${art(NOW, 0)}
+      <div>
+        <div class="eyebrow">Playing in Living Room + Kitchen</div>
+        <h1 class="serif">${NOW.track}</h1>
+        <div class="artist">${NOW.a}</div>
+        <div class="album">${NOW.t} · ${NOW.y}</div>
+        <div class="chips">
+          <span class="chip"><span class="hq lossless" style="color:inherit"><span class="dot"></span></span>Lossless · FLAC 24/96</span>
+          <span class="chip">${I('wave')}Loudness normalised −2.1 dB</span>
+          <span class="chip">${I('heartf')}In your favourites</span>
+        </div>
+        <div class="np-progress"><div class="bar"><i style="width:38%"></i></div><div class="times"><span>1:42</span><span>−2:49</span></div></div>
+        <div class="upnext"><h4>Up next</h4>
+          ${ups.map(([al, t, d], i) => `<div class="u">${art(al, i + 1)}<div>${t}<div style="color:var(--text-2);font-size:12px">${al.a}</div></div><span>${d}</span></div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </main>
+  ${transport({ glass: true })}`;
+}
+function players() {
+  return `${home()}
+  <div class="scrim"></div>
+  <div class="pop">
+    <div class="pop-h"><h3>Players</h3><a>Manage</a></div>
+    <div class="pl sel">
+      <div class="top"><div class="ic">${I('link')}</div><div class="nm">Living Room + Kitchen<small>Group · Playing Slow Combustion</small></div><div class="st"><span class="eq"><i></i><i></i><i></i></span></div></div>
+      <div class="v">${I('vol')}<div class="bar"><i style="width:58%"></i></div><span>58</span></div>
+      <div class="members">
+        <div>${I('tv')}Living Room · Sonos Arc<span style="margin-left:auto"></span><div class="bar" style="flex:1"><i style="width:64%"></i></div></div>
+        <div>${I('speaker')}Kitchen · HomePod<span style="margin-left:auto"></span><div class="bar" style="flex:1"><i style="width:48%"></i></div></div>
+      </div>
+    </div>
+    <div class="pl"><div class="top"><div class="ic">${I('laptop')}</div><div class="nm">Office<small>Sendspin · This device · Idle</small></div><div class="st"><div class="toggle"></div></div></div></div>
+    <div class="pl"><div class="top"><div class="ic">${I('speaker')}</div><div class="nm">Bedroom<small>Chromecast · Paused — Northbound</small></div><div class="st"><div class="toggle on"></div></div></div>
+      <div class="v">${I('vol')}<div class="bar"><i style="width:30%"></i></div><span>30</span></div></div>
+    <div class="pl"><div class="top"><div class="ic">${I('speaker')}</div><div class="nm">Patio<small>AirPlay · Off</small></div><div class="st"><div class="toggle"></div></div></div></div>
+    <div class="pop-f"><span class="btn">${I('link')}Group players</span><span class="btn">${I('sliders')}DSP & signal path</span></div>
+  </div>`.replace(transport(), transport({ zoneOpen: true }));
+}
+function mHome() {
+  return `<div class="status"><span>7:42</span><span>●●● ▮</span></div>
+  <div class="m-pad">
+    <div class="eyebrow" style="margin-top:12px">Friday evening</div>
+    <h1 class="serif">Good evening, Will</h1>
+    <div class="mstats"><div><b>1,284</b><span>Artists</span></div><div><b>3,902</b><span>Albums</span></div><div><b>41,220</b><span>Tracks</span></div><div><b>112</b><span>Playlists</span></div></div>
+    <div class="sec-h"><h3 style="font:500 21px Newsreader,serif">Pick up where you left off</h3></div>
+    <div class="mgrid">${[0, 4, 9, 2].map((k, i) => card(A[k], i)).join('')}</div>
+  </div>
+  <div class="mini">${art(NOW, 0)}<div><div class="t">${NOW.track}</div><div class="s">${I('speaker')}Living Room + Kitchen</div></div>
+    <div class="acts">${I('pause')}${I('next')}</div><div class="p"></div></div>
+  <nav class="tabbar"><a class="on">${I('home')}Home</a><a>${I('disc')}Library</a><a>${I('search')}Search</a><a>${I('speaker')}Players</a></nav>`;
+}
+function mNow() {
+  return `<div class="mnp" style="position:absolute;inset:0;--g:${g(NOW.c)}"><div class="bg"></div>
+    <div class="status"><span>7:42</span><span>●●● ▮</span></div>
+    <div class="hdr"><div class="circ">${I('chevD')}</div><div class="zn">Playing in<b>${I('speaker')}Living Room + Kitchen</b></div><div class="circ">${I('more')}</div></div>
+    ${art(NOW, 0, 'big')}
+    <div class="ti"><div><h2>${NOW.track}</h2><p>${NOW.a}</p></div>${I('heartf')}</div>
+    <div class="pg"><div class="bar"><i style="width:38%"></i></div><div class="times"><span>1:42</span><span>−2:49</span></div></div>
+    <div class="cx"><span class="sm">${I('shuffle')}</span>${I('prev')}<div class="pb">${I('pause')}</div>${I('next')}<span class="sm">${I('repeat')}</span></div>
+    <div class="ft"><span class="hq lossless"><span class="dot"></span>24/96</span>${I('lyrics')}${I('vol')}${I('queue')}</div>
+  </div>`;
+}
+
+const BOARDS = [
+  { id: 'home', title: 'Home', note: 'Greeting plus library counts in big serif numerals (Roon\'s signature home), colour wash pulled from recent artwork, then art-forward shelves. Hover state shows the accent ring and play button.', fn: home },
+  { id: 'artist', title: 'Artist', note: 'Portrait + oversized name over a blurred wash of the artist\'s latest cover. Bio inline, tabs for discography / top tracks / appears on / similar, and pill filters for release type.', fn: artist },
+  { id: 'album', title: 'Album', note: 'Cover-led header with review quote, signal-quality dot and genre pills. Tracklist with composer sub-line and the playing row in accent; right rail holds credits and Music Assistant\'s provider choice ("Available from").', fn: album },
+  { id: 'np', title: 'Now playing', note: 'Full-window immersive view: art blurred to fill the screen, huge serif title, signal-path & loudness chips, up-next list. In light mode the wash is frosted white instead of smoked black.', fn: nowPlaying },
+  { id: 'players', title: 'Players & groups', note: 'Roon-style zone picker opened from the bottom-right of the transport bar: groups with per-member volume, quick power toggles, and the jump-off to grouping and DSP.', fn: players },
+];
+
+/* ---------------- render ---------------- */
+const TOK = [
+  ['--background', 'Canvas', '#161618', '#ffffff'],
+  ['--sidebar', 'Sidebar', '#111113', '#f3f3f6'],
+  ['--card / --popover', 'Raised surface', '#1d1d20', '#f8f8fa'],
+  ['--secondary / --muted', 'Fills, chips', '#26262a', '#ececf1'],
+  ['--foreground', 'Primary text', '#f3f3f5', '#17171b'],
+  ['--muted-foreground', 'Secondary text', '#a3a3ad', '#5c5c68'],
+  ['(new) --text-3', 'Tertiary text / numbers', '#6c6c76', '#9b9ba6'],
+  ['--primary / --ring / --sidebar-primary', 'Accent', '#8d7ff7', '#6a58e6'],
+  ['--border / --input', 'Hairlines', 'rgba(255,255,255,.07)', 'rgba(20,20,40,.08)'],
+  ['--radius', 'Base radius', '8px', '8px'],
+];
+document.getElementById('tok').innerHTML =
+  '<tr><th>Variable</th><th>Role</th><th>Dark</th><th>Light</th></tr>' +
+  TOK.map(([v, r, d, l]) => `<tr><td><code>${v}</code></td><td>${r}</td>
+    <td>${d.startsWith('#') || d.startsWith('rgba') ? `<span class="sw" style="background:${d}"></span>` : ''}<code>${d}</code></td>
+    <td>${l.startsWith('#') || l.startsWith('rgba') ? `<span class="sw" style="background:${l}"></span>` : ''}<code>${l}</code></td></tr>`).join('');
+
+let mode = 'dark';
+function render() {
+  const themes = mode === 'both' ? ['dark', 'light'] : [mode];
+  document.body.classList.toggle('page-light', mode === 'light');
+  const el = document.getElementById('boards');
+  el.innerHTML =
+    BOARDS.map(b => `<section class="board"><header><h2>Desktop · ${b.title}</h2><p>${b.note}</p></header>
+      <div class="stage">${themes.map(t => `<div class="cell">${themes.length > 1 ? `<div class="cell-label">${t === 'dark' ? 'Dark' : 'Light'}</div>` : ''}<div class="ab t-${t}">${b.fn()}</div></div>`).join('')}</div></section>`).join('') +
+    `<section class="board"><header><h2>Mobile</h2><p>Same tokens on a phone: serif greeting and stat tiles, frosted mini-player that names the active player, and an immersive now-playing sheet.</p></header>
+      <div class="stage mobile">${['dark', 'light'].filter(t => themes.includes(t)).flatMap(t => [
+        `<div class="cell"><div class="cell-label">${t === 'dark' ? 'Dark' : 'Light'} · Home</div><div class="mb t-${t}">${mHome()}</div></div>`,
+        `<div class="cell"><div class="cell-label">${t === 'dark' ? 'Dark' : 'Light'} · Now playing</div><div class="mb t-${t}">${mNow()}</div></div>`]).join('')}</div></section>`;
+  fit();
+}
+function fit() {
+  document.querySelectorAll('.stage:not(.mobile) .cell').forEach(c => {
+    const ab = c.querySelector('.ab');
+    ab.style.zoom = Math.min(1, c.clientWidth / 1280);
+  });
+}
+document.getElementById('mode').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  mode = b.dataset.m;
+  document.querySelectorAll('#mode button').forEach(x => x.classList.toggle('on', x === b));
+  render();
+});
+addEventListener('resize', fit);
+render();
+</script>
+</body>
+</html>

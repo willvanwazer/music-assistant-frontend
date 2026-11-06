@@ -102,7 +102,7 @@
             height="80"
             style="padding-left: 10px"
           />
-          <v-card-title v-else>
+          <v-card-title v-else class="ma-display info-header-title">
             <MarqueeText :sync="marqueeSync">
               <div class="selectable">
                 {{ headerTitle }}
@@ -816,6 +816,13 @@ const collectionNarrators = computed(() => {
 
 .background-image {
   position: absolute;
+}
+
+/* the item's name, set large in the display serif */
+.info-header-title {
+  font-size: clamp(1.75rem, 3.2vw, 3rem);
+  line-height: 1.12;
+  padding-bottom: 6px;
 }
 
 .background-image .v-img__img--cover {

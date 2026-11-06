@@ -101,8 +101,10 @@ export interface ToolbarHeadingItem {
 .toolbar-heading-title {
   color: inherit;
   text-decoration: none;
-  font-size: 1rem;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
   font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 /* the trail can outgrow the toolbar, so it scrolls rather than pushing the

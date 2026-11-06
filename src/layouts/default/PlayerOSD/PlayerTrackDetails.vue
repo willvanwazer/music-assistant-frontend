@@ -69,7 +69,7 @@
         <!-- track title -->
         <div
           v-else-if="store.activePlayer.current_media?.title"
-          class="ma-line-clamp-1"
+          class="ma-line-clamp-1 ma-display player-track-title"
           style="min-width: 0"
           @click.stop="onTitleClick"
         >
@@ -347,6 +347,12 @@ function onTitleClick() {
 
 .player-track-subtitle-text {
   min-width: 0;
+}
+
+/* the serif reads smaller than Inter at the same size, so it gets a step up */
+.player-track-title {
+  font-size: 1.0625rem;
+  line-height: 1.3;
 }
 
 /* the floating player keeps both text lines but drops below the two-line

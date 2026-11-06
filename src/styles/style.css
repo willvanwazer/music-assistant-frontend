@@ -40,83 +40,107 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-subtle-foreground: var(--subtle-foreground);
+  --color-quality-hires: var(--quality-hires);
+  --color-quality-lossless: var(--quality-lossless);
+  --color-quality-good: var(--quality-good);
+  --color-quality-low: var(--quality-low);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
 }
 
+/* "Liner Notes" palette (see docs/design/roon-redesign.html). The chrome is
+   neutral grey with a single violet accent, following Roon's own theme values;
+   colour comes from the artwork, never from the chrome. */
 :root {
   color-scheme: light;
   --radius: 0.625rem;
+  /* Inter for everything functional, a display serif to name things: page
+     titles, item titles, section headings, the playing track. */
+  --font-body:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
+  /* what a player receives, best to worst; the same in both themes so the
+     meaning never shifts */
+  --quality-hires: #9797f6;
+  --quality-lossless: #57c6b9;
+  --quality-good: #e6bb72;
+  --quality-low: #e0785a;
   /* Light theme - matching Vuetify light */
-  --background: #f5f5f5;
-  --foreground: #000000;
-  --card: #ffffff;
-  --card-foreground: #000000;
+  --background: #ffffff;
+  --foreground: #1c1c1e;
+  --card: #f6f6f8;
+  --card-foreground: #1c1c1e;
   --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #03a9f4;
+  --popover-foreground: #1c1c1e;
+  --primary: #6462ea;
   --primary-foreground: #ffffff;
-  --secondary: #e7e7e7;
-  --secondary-foreground: #000000;
-  --muted: #e7e7e7;
-  --muted-foreground: #666666;
-  --accent: #e7e7e7;
-  --accent-foreground: #000000;
+  --secondary: #ededf0;
+  --secondary-foreground: #1c1c1e;
+  --muted: #ededf0;
+  --muted-foreground: #636368;
+  --subtle-foreground: #98989e;
+  --accent: #ededf0;
+  --accent-foreground: #1c1c1e;
   --destructive: #d23939;
-  --border: #d4d4d4;
-  --input: #d4d4d4;
-  --ring: #03a9f4;
-  --chart-1: #03a9f4;
-  --chart-2: #4caf50;
-  --chart-3: #ff9800;
-  --chart-4: #9c27b0;
-  --chart-5: #f44336;
+  --border: #e4e4e7;
+  --input: #d4d4d8;
+  --ring: #6462ea;
+  --chart-1: #6462ea;
+  --chart-2: #57c6b9;
+  --chart-3: #e6bb72;
+  --chart-4: #9797f6;
+  --chart-5: #e0785a;
   /* Sidebar tokens hardcoded (not indirected through --v-theme-*) because the
      Vuetify theme vars are only defined on .v-application; declared at :root
      they evaluate to the first-listed theme (light) and inherit downward,
      defeating .dark. Keep these in lockstep with vuetify.ts panel colors. */
-  --sidebar: #ffffff;
-  --sidebar-foreground: #000000;
-  --sidebar-primary: #03a9f4;
+  --sidebar: #f6f6f8;
+  --sidebar-foreground: #1c1c1e;
+  --sidebar-primary: #6462ea;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(0, 0, 0, 0.08);
-  --sidebar-accent-foreground: #000000;
-  --sidebar-border: rgba(0, 0, 0, 0.12);
-  --sidebar-ring: #03a9f4;
+  --sidebar-accent: rgba(10, 10, 20, 0.065);
+  --sidebar-accent-foreground: #1c1c1e;
+  --sidebar-border: rgba(10, 10, 20, 0.08);
+  --sidebar-ring: #6462ea;
 }
 
 .dark {
   color-scheme: dark;
   /* Dark theme - matching Vuetify dark */
   --background: #181818;
-  --foreground: #ffffff;
-  --card: #232323;
-  --card-foreground: #ffffff;
-  --popover: #232323;
-  --popover-foreground: #ffffff;
-  --primary: #03a9f4;
+  --foreground: #f5f5f5;
+  --card: #242424;
+  --card-foreground: #f5f5f5;
+  --popover: #262628;
+  --popover-foreground: #f5f5f5;
+  --primary: #7c7fe6;
   --primary-foreground: #ffffff;
-  --secondary: #2d2d2d;
-  --secondary-foreground: #ffffff;
-  --muted: #2d2d2d;
-  --muted-foreground: #a0a0a0;
-  --accent: #2d2d2d;
-  --accent-foreground: #ffffff;
+  --secondary: #2c2c2e;
+  --secondary-foreground: #f5f5f5;
+  --muted: #2c2c2e;
+  --muted-foreground: #a8a8a8;
+  --subtle-foreground: #727276;
+  --accent: #2c2c2e;
+  --accent-foreground: #f5f5f5;
   --destructive: #ef4444;
-  --border: #3d3d3d;
-  --input: #3d3d3d;
-  --ring: #03a9f4;
-  --chart-1: #03a9f4;
-  --chart-2: #4caf50;
-  --chart-3: #ff9800;
-  --chart-4: #9c27b0;
-  --chart-5: #f44336;
-  --sidebar: #232323;
-  --sidebar-foreground: #ffffff;
-  --sidebar-primary: #03a9f4;
+  --border: #2e2e30;
+  --input: #3c3c3f;
+  --ring: #7c7fe6;
+  --chart-1: #7c7fe6;
+  --chart-2: #57c6b9;
+  --chart-3: #e6bb72;
+  --chart-4: #9797f6;
+  --chart-5: #e0785a;
+  --sidebar: #242424;
+  --sidebar-foreground: #f5f5f5;
+  --sidebar-primary: #7c7fe6;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: rgba(255, 255, 255, 0.12);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: rgba(255, 255, 255, 0.2);
-  --sidebar-ring: #03a9f4;
+  --sidebar-accent: rgba(255, 255, 255, 0.085);
+  --sidebar-accent-foreground: #f5f5f5;
+  --sidebar-border: rgba(255, 255, 255, 0.075);
+  --sidebar-ring: #7c7fe6;
 }
 
 .player-control-button {

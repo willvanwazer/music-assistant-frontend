@@ -13,18 +13,19 @@ export enum QualityTier {
   HIRES = 4,
 }
 
+// The tokens live in styles/style.css and are the same in both themes.
 export function qualityTierToColor(tier: QualityTier) {
   switch (tier) {
     case QualityTier.LOW:
-      return "orange";
+      return "var(--quality-low)";
     case QualityTier.GOOD:
-      return "lightgreen";
+      return "var(--quality-good)";
     case QualityTier.LOSSLESS:
-      return "green";
+      return "var(--quality-lossless)";
     case QualityTier.HIRES:
-      return "cyan";
+      return "var(--quality-hires)";
     default:
-      return "gray";
+      return "var(--subtle-foreground)";
   }
 }
 
