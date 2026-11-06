@@ -6,6 +6,7 @@
     <div
       v-else-if="qrCodeUrl"
       class="qr-display"
+      :class="{ 'qr-display--light-modules': lightModules }"
       :style="{
         '--qr-size': qrSize + 'px',
         '--qr-color': props.qrDark,
@@ -77,6 +78,7 @@ import api from "@/plugins/api";
 import { EventType } from "@/plugins/api/interfaces";
 import { $t } from "@/plugins/i18n";
 import { AlertCircle, Check } from "@lucide/vue";
+import Color from "color";
 import QRCode from "qrcode";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 
@@ -90,6 +92,16 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{ available: [value: boolean] }>();
+
+// Light modules sit on dark glass, dark modules on light glass, so the code
+// keeps its contrast whichever wash the dashboard puts behind it.
+const lightModules = computed(() => {
+  try {
+    return Color(props.qrDark).isLight();
+  } catch {
+    return true;
+  }
+});
 
 const { config: partyConfig } = usePartyConfig();
 
@@ -259,13 +271,29 @@ async function generateQRCode() {
   height: 100%;
 }
 
+/* A frosted glass panel, light or dark against the code's own colour. Alpha is
+   precomputed: older Cast and Android TV runtimes lack color-mix(). */
 .qr-display {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  padding: 1rem;
-  padding-bottom: 0.5rem;
+  gap: 0.65rem;
+  padding: clamp(1rem, 2.2vh, 2rem);
+  padding-bottom: clamp(0.75rem, 1.6vh, 1.5rem);
+  border-radius: clamp(16px, 2vh, 28px);
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 0 0 1px rgba(10, 10, 20, 0.06),
+    0 2.4vh 6vh -2vh rgba(20, 20, 50, 0.28);
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+}
+
+.qr-display--light-modules {
+  background: rgba(16, 16, 18, 0.38);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 2.4vh 6vh -2vh rgba(0, 0, 0, 0.6);
 }
 
 .qr-link {
@@ -273,17 +301,18 @@ async function generateQRCode() {
   display: block;
   padding: 0;
   border: 0;
+  border-radius: 6px;
   background: transparent;
   color: inherit;
   cursor: pointer;
   transition:
-    transform 0.2s ease,
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.2s ease;
 }
 
 .qr-link:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+  transform: scale(1.03);
+  opacity: 0.92;
 }
 
 .qr-link:focus-visible {
@@ -293,23 +322,31 @@ async function generateQRCode() {
 
 .qr-text {
   margin: 0;
+  font-size: clamp(0.95rem, 1.6vh, 1.5rem);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--qr-color);
+  opacity: 0.85;
 }
 
 .qr-actions {
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .qr-actions :deep([data-slot="button"]) {
-  border-color: var(--qr-color);
-  background: rgba(127, 127, 127, 0.12);
+  border-color: transparent;
+  background: rgba(127, 127, 127, 0.16);
   color: var(--qr-color);
+  font-weight: 600;
 }
 
 .qr-actions :deep([data-slot="button"]:hover) {
-  background: rgba(127, 127, 127, 0.28);
+  background: rgba(127, 127, 127, 0.3);
   color: var(--qr-color);
 }
 
+/* the confirmation floats over the code, so it is a dark scrim in both
+   themes */
 .copy-bubble {
   position: absolute;
   top: 50%;
@@ -318,23 +355,28 @@ async function generateQRCode() {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  background: black;
+  height: 2.5rem;
+  padding: 0 1.1rem;
+  background: rgba(16, 16, 18, 0.86);
   color: white;
   font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 999px;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 16px 40px -10px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .copy-bubble--error {
-  background: #991b1b;
+  background: var(--destructive);
 }
 
 .copy-toast-enter-active {
-  transition: all 0.2s ease-out;
+  transition: all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .copy-toast-leave-active {
@@ -353,23 +395,35 @@ async function generateQRCode() {
 
 .qr-display .qr-code {
   display: block;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
 }
 
 .qr-error {
   text-align: center;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .qr-error p {
   margin-top: 0.5rem;
-  color: rgba(255, 100, 100, 0.8);
+  font-weight: 500;
+  color: var(--destructive);
 }
 
 .qr-hint {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   margin-top: 0.25rem !important;
-  opacity: 0.7;
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-link,
+  .copy-toast-enter-active,
+  .copy-toast-leave-active {
+    transition: none;
+  }
+
+  .qr-link:hover {
+    transform: none;
+  }
 }
 </style>

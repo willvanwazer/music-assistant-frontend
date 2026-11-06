@@ -1,14 +1,16 @@
 <template>
-  <Card data-test="aa-failures">
+  <Card data-test="aa-failures" class="gap-4">
     <CardHeader>
-      <CardTitle>{{ $t("settings.audio_analysis_failures.title") }}</CardTitle>
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
+        $t("settings.audio_analysis_failures.title")
+      }}</CardTitle>
       <CardDescription>
         {{ $t("settings.audio_analysis_failures.description") }}
       </CardDescription>
       <CardAction v-if="total > 0">
         <AlertDialog>
           <AlertDialogTrigger as-child>
-            <Button variant="outline" size="sm" :disabled="clearingAll">
+            <Button variant="secondary" size="sm" :disabled="clearingAll">
               {{ $t("settings.audio_analysis_failures.clear_all") }}
             </Button>
           </AlertDialogTrigger>
@@ -61,9 +63,9 @@
         {{ $t("settings.audio_analysis_failures.none") }}
       </p>
 
-      <div v-else class="overflow-hidden rounded-lg border">
+      <div v-else class="overflow-hidden rounded-[14px] border">
         <Table>
-          <TableHeader class="bg-muted">
+          <TableHeader class="bg-secondary/60">
             <TableRow>
               <TableHead>
                 {{ $t("settings.audio_analysis_failures.col_item") }}

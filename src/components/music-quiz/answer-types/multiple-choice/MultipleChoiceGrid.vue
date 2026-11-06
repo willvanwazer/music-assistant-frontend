@@ -3,7 +3,7 @@
     <Button
       v-for="(suggestion, index) in suggestions"
       :key="suggestion.suggestion_id"
-      class="h-auto min-h-16 justify-start gap-3 whitespace-normal py-3 text-left text-base font-semibold"
+      class="h-auto min-h-16 justify-start gap-3 rounded-[14px] whitespace-normal py-3 text-left text-base font-semibold"
       :disabled="disabled"
       :variant="
         selectedSuggestionId === suggestion.suggestion_id
@@ -13,7 +13,7 @@
       @click="emit('select', suggestion.suggestion_id)"
     >
       <span
-        class="bg-background/20 flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-bold"
+        class="bg-current/15 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold"
         aria-hidden="true"
       >
         {{ optionLetter(index) }}

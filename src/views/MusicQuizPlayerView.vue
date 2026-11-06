@@ -3,7 +3,9 @@
     <Card v-if="gameRemoved">
       <CardHeader class="justify-items-center text-center" role="status">
         <CircleStop class="text-muted-foreground size-10" aria-hidden="true" />
-        <CardTitle>{{ $t("providers.music_quiz.game_ended") }}</CardTitle>
+        <CardTitle class="ma-display text-2xl font-medium">
+          {{ $t("providers.music_quiz.game_ended") }}
+        </CardTitle>
         <CardDescription>
           {{ $t("providers.music_quiz.game_ended_detail") }}
         </CardDescription>
@@ -48,7 +50,7 @@
             />
           </span>
           <div>
-            <h2 class="text-xl font-bold">
+            <h2 class="ma-display pb-1 text-2xl leading-tight">
               {{ $t(resolvedDefinition.game.labelKey) }}
             </h2>
             <p class="text-muted-foreground">
@@ -138,7 +140,9 @@
     <Card v-else>
       <CardHeader class="justify-items-center text-center" role="status">
         <Clock3 class="text-muted-foreground size-10" aria-hidden="true" />
-        <CardTitle>{{ $t("guest.no_quiz_title") }}</CardTitle>
+        <CardTitle class="ma-display text-2xl font-medium">
+          {{ $t("guest.no_quiz_title") }}
+        </CardTitle>
         <CardDescription>{{ $t("guest.no_quiz_description") }}</CardDescription>
       </CardHeader>
       <CardContent v-if="canReturnToHostPanel" class="flex justify-center">

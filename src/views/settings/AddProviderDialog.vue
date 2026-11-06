@@ -52,11 +52,10 @@
               <Badge
                 v-if="shouldShowStageBadge(provider.stage)"
                 :variant="getStageVariant(provider.stage)"
-                class="text-uppercase"
               >
                 {{ getStageLabel(provider.stage) }}
               </Badge>
-              <ChevronRight class="h-4 w-4" />
+              <ChevronRight class="text-subtle-foreground h-4 w-4" />
             </div>
           </div>
         </div>
@@ -331,24 +330,31 @@ watch(
 .provider-list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 
 .provider-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  transition:
-    background-color 0.2s ease,
-    transform 0.2s ease;
+  gap: 14px;
+  min-height: 60px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background-color 0.15s ease;
   cursor: pointer;
 }
 
+/* hairlines between rows, which drop out around the hovered one */
+.provider-item + .provider-item {
+  box-shadow: inset 0 1px 0 var(--border);
+}
+
+.provider-item:hover,
+.provider-item:hover + .provider-item {
+  box-shadow: none;
+}
+
 .provider-item:hover {
-  background-color: rgba(var(--v-theme-primary), 0.04);
-  transform: translateY(-1px);
+  background-color: color-mix(in oklab, var(--foreground) 5%, transparent);
 }
 
 .provider-icon {
@@ -361,23 +367,24 @@ watch(
 }
 
 .provider-name {
-  font-weight: 500;
-  font-size: 16px;
-  line-height: 1.2;
-  margin-bottom: 4px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  margin-bottom: 2px;
+  color: var(--foreground);
 }
 
 .provider-description {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  line-height: 1.3;
+  font-size: 0.78125rem;
+  color: var(--muted-foreground);
+  line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-height: 2.6em;
+  max-height: 2.9em;
 }
 
 .provider-actions {
@@ -398,22 +405,24 @@ watch(
 }
 
 .empty-icon {
-  width: 48px;
-  height: 48px;
-  color: rgba(var(--v-theme-on-surface), 0.3);
+  width: 40px;
+  height: 40px;
+  color: var(--subtle-foreground);
   margin-bottom: 16px;
 }
 
 .empty-title {
-  font-size: 18px;
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-bottom: 6px;
 }
 
 .empty-message {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  line-height: 1.4;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  line-height: 1.45;
 }
 </style>

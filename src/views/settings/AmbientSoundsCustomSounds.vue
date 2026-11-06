@@ -4,11 +4,14 @@
   overlay dialog itself is a pure sound picker.
 -->
 <template>
-  <Card class="mb-4">
+  <Card class="mb-4 gap-4">
     <CardHeader>
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="min-w-0">
-          <CardTitle>{{ $t("audio_overlay_custom_sounds") }}</CardTitle>
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("audio_overlay_custom_sounds") }}</CardTitle
+          >
           <CardDescription class="mt-1">
             {{ $t("audio_overlay_add_custom_explanation") }}
           </CardDescription>
@@ -32,21 +35,22 @@
       >
         {{ $t("audio_overlay_no_custom_sounds") }}
       </div>
-      <div v-else class="flex flex-col divide-y">
+      <div v-else class="flex flex-col divide-y divide-border">
         <div
           v-for="sound in customSounds"
           :key="sound.item_id"
-          class="flex items-center justify-between gap-3 py-2"
+          class="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0"
         >
           <div class="min-w-0">
             <div class="truncate text-sm font-medium">{{ sound.name }}</div>
-            <div class="truncate text-xs text-muted-foreground">
+            <div class="truncate text-[12.5px] text-muted-foreground">
               {{ sound.item_id }}
             </div>
           </div>
           <Button
             variant="ghost"
             size="icon-sm"
+            class="text-muted-foreground hover:text-destructive"
             :aria-label="$t('remove')"
             @click="onRemoveSound(sound)"
           >

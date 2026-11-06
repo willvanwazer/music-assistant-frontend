@@ -1,6 +1,8 @@
 <template>
   <EditorialMediaCard
     fluid
+    class="lib-card-compact"
+    :class="{ 'lib-card-compact--round': item.media_type === MediaType.ARTIST }"
     :item="item"
     :is-available="isAvailable"
     :is-selected="isSelected"
@@ -17,7 +19,11 @@
 
 <script setup lang="ts">
 import EditorialMediaCard from "@/components/discover/EditorialMediaCard.vue";
-import { ItemMapping, type MediaItemType } from "@/plugins/api/interfaces";
+import {
+  ItemMapping,
+  MediaType,
+  type MediaItemType,
+} from "@/plugins/api/interfaces";
 
 export interface Props {
   item: MediaItemType | ItemMapping;
@@ -50,3 +56,33 @@ const emit = defineEmits<{
   (e: "select", item: MediaItemType | ItemMapping, selected: boolean): void;
 }>();
 </script>
+
+<style scoped>
+/* the grid card, a size down: no padding of its own and smaller type */
+.lib-card-compact.ed-card {
+  --ed-card-pad: 0px;
+}
+
+.lib-card-compact--round.ed-card :deep(.ed-card__art) {
+  border-radius: 50%;
+}
+
+.lib-card-compact.ed-card :deep(.ed-card__meta) {
+  margin-top: 8px;
+}
+
+.lib-card-compact.ed-card :deep(.ed-card__title) {
+  font-size: 12.5px;
+  line-height: 16px;
+}
+
+.lib-card-compact.ed-card :deep(.ed-card__sub) {
+  font-size: 11.5px;
+  line-height: 15px;
+}
+
+.lib-card-compact.ed-card :deep(.ed-card__play) {
+  width: 34px;
+  height: 34px;
+}
+</style>

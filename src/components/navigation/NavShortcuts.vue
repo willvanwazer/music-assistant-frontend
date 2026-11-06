@@ -100,6 +100,9 @@ const getItemUrl = (item: ShortcutItem) => {
 const getFallbackIcon = (item: ShortcutItem): LucideIcon =>
   MEDIA_TYPE_FALLBACK_ICON[item.media_type] ?? Music;
 
+// artists are people, so their pictures are round, as everywhere else
+const isArtist = (item: ShortcutItem) => item.media_type === MediaType.ARTIST;
+
 const getDisplayName = (item: ShortcutItem): string =>
   item.media_type === MediaType.GENRE && item.name
     ? item.name.charAt(0).toUpperCase() + item.name.slice(1)
@@ -189,11 +192,14 @@ const draggedItem = computed(() =>
       />
       <SidebarGroupContent class="flex flex-col gap-0.5">
         <div ref="listEl" class="relative">
-          <SidebarMenu>
+          <SidebarMenu class="gap-0.5">
             <!-- Skeletons while the API calls are in flight -->
             <template v-if="isLoading">
               <SidebarMenuItem v-for="i in pinnedCount" :key="`skeleton-${i}`">
-                <SidebarMenuSkeleton :show-icon="true" />
+                <SidebarMenuSkeleton
+                  :show-icon="true"
+                  class="ml-2 h-10 gap-[7px] px-[5px]"
+                />
               </SidebarMenuItem>
             </template>
             <!-- Pinned shortcuts. The row gutter would skew the centred icon
@@ -237,11 +243,9 @@ const draggedItem = computed(() =>
                 :is-active="!editMode && isActive(url)"
                 :tooltip="getDisplayName(item)"
                 :class="[
+                  'nav-row no-underline',
                   isCollapsed ? 'shortcut-button-collapsed' : 'shortcut-button',
                   editMode ? 'shortcut-button-editing' : '',
-                  isActive(url) && !editMode
-                    ? 'no-underline font-bold'
-                    : 'no-underline font-medium',
                 ]"
                 @click="!editMode && handleClick()"
                 @contextmenu.prevent="openContextMenu($event, item)"
@@ -252,15 +256,18 @@ const draggedItem = computed(() =>
                   :class="[
                     'shortcut-thumb',
                     isCollapsed ? 'shortcut-thumb--collapsed' : '',
+                    { 'shortcut-thumb--round': isArtist(item) },
                   ]"
                   :alt="getDisplayName(item)"
                 />
                 <component
                   :is="getFallbackIcon(item)"
                   v-else
+                  :stroke-width="1.75"
                   :class="[
-                    'shortcut-thumb',
+                    'shortcut-thumb shortcut-thumb--icon',
                     isCollapsed ? 'shortcut-thumb--collapsed' : '',
+                    { 'shortcut-thumb--round': isArtist(item) },
                   ]"
                 />
                 <span v-if="!isCollapsed" class="shortcut-label">
@@ -288,7 +295,7 @@ const draggedItem = computed(() =>
           <!-- Floating ghost that follows the pointer while dragging -->
           <div
             v-if="isDragging && draggedItem"
-            class="shortcut-ghost bg-sidebar-accent text-sidebar-accent-foreground"
+            class="shortcut-ghost bg-popover text-popover-foreground"
             :style="{ top: `${ghostY}px`, height: `${dragRowHeight}px` }"
           >
             <GripVertical class="size-4 opacity-60 shrink-0" />
@@ -296,12 +303,15 @@ const draggedItem = computed(() =>
               v-if="thumbMap[draggedItem.uri]"
               :src="thumbMap[draggedItem.uri]"
               class="shortcut-thumb"
+              :class="{ 'shortcut-thumb--round': isArtist(draggedItem) }"
               :alt="getDisplayName(draggedItem)"
             />
             <component
               :is="getFallbackIcon(draggedItem)"
               v-else
-              class="shortcut-thumb"
+              :stroke-width="1.75"
+              class="shortcut-thumb shortcut-thumb--icon"
+              :class="{ 'shortcut-thumb--round': isArtist(draggedItem) }"
             />
             <span class="shortcut-label">
               <span class="shortcut-name">{{
@@ -323,20 +333,23 @@ const draggedItem = computed(() =>
   align-items: start !important;
 }
 
-:deep(a) {
-  text-decoration: none !important;
-  color: inherit !important;
-}
-
+/* only the browser's own link colours are overruled here, so the row colours
+   the sidebar sets on these links still apply, visited or not */
+:deep(a),
 :deep(a:visited) {
-  color: inherit !important;
+  text-decoration: none;
+  color: inherit;
 }
 
-/* Override AppSidebar global padding for image-based items */
+/* The row keeps the nav links' look (AppSidebar's .nav-row) and rhythm, a
+   little taller for its second line. The thumbnail centres on the nav icons'
+   axis and the name starts where their labels do; the right padding leaves
+   room for the more button. */
 :deep([data-sidebar="menu-button"].shortcut-button) {
   /* explicit height (not auto) so transition-[height] can animate */
-  height: 3rem !important;
-  padding: 0.3rem 2.25rem 0.3rem 0.5rem !important;
+  height: 2.5rem !important;
+  padding: 0 2rem 0 0.3125rem !important;
+  gap: 0.4375rem !important;
   align-items: center !important;
 }
 
@@ -352,41 +365,45 @@ const draggedItem = computed(() =>
   align-items: center !important;
 }
 
+/* cover art is shown whole and square with only a slight rounding, and the
+   rail keeps the very same 28px tile, so nothing jumps as it collapses */
 .shortcut-thumb {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 4px;
   object-fit: cover;
   flex-shrink: 0;
-  margin-right: 0.5rem;
-  transition:
-    width 400ms ease-linear,
-    height 400ms ease-linear,
-    margin-right 400ms ease-linear;
 }
 
 .shortcut-thumb--collapsed {
-  width: 1.75rem;
-  height: 1.75rem;
-  margin-right: 0;
+  margin: 0;
 }
 
-/* The fallback icon renders as a direct-child <svg>, which AppSidebar's global
-   `[data-sidebar="menu-button"] > svg { width: 1.6rem !important }` rule (meant
-   for nav icons) shrinks — making icon-only shortcuts indent their label
-   differently from image ones. Match the image thumb size. `!important` plus
-   the extra .shortcut-thumb class (higher specificity) is required to beat that
-   global rule across its height breakpoints. */
-:deep([data-sidebar="menu-button"] > svg.shortcut-thumb) {
-  width: 2rem !important;
-  height: 2rem !important;
-  margin-left: 0.25rem !important;
-  margin-right: 0.75rem !important;
+.shortcut-thumb--round {
+  border-radius: 50%;
 }
-:deep([data-sidebar="menu-button"] > svg.shortcut-thumb--collapsed) {
+
+/* with no picture to show, the item's type icon sits on a quiet tile of the
+   same size, so the names still line up */
+.shortcut-thumb--icon {
+  padding: 0.3125rem;
+  background-color: var(--sidebar-accent);
+}
+
+/* The fallback icon renders as a direct-child <svg>, which the menu button's
+   own `[&>svg]:size-4` utility (meant for nav icons) shrinks. `!important` plus
+   the extra class is what out-ranks that utility. */
+:deep([data-sidebar="menu-button"] > svg.shortcut-thumb) {
   width: 1.75rem !important;
   height: 1.75rem !important;
-  margin-right: 0 !important;
+  margin: 0 !important;
+}
+
+/* the loading placeholders take the shape of the tile they stand in for */
+:deep([data-sidebar="menu-skeleton-icon"]) {
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  border-radius: 4px !important;
 }
 
 .shortcut-label {
@@ -397,24 +414,22 @@ const draggedItem = computed(() =>
 }
 
 .shortcut-name {
-  /* match sidebar menu item label: Tailwind `text-sm font-medium` */
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* the type is metadata, so it recedes behind the name */
 .shortcut-type {
-  font-size: 0.8125rem;
+  font-size: 0.71875rem;
   font-weight: 400;
-  line-height: 1.3;
-  opacity: var(
-    --v-list-item-subtitle-opacity,
-    var(--v-medium-emphasis-opacity)
-  );
-  /* Match list subtitles (e.g., artist/album in item list) */
-  color: rgb(var(--v-theme-on-panel), 0.6);
+  line-height: 1.25;
+  color: var(--subtle-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* mdi-dots-vertical v-btn — ensure it appears above the RouterLink */
@@ -469,11 +484,14 @@ const draggedItem = computed(() =>
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  opacity: 0.95;
+  gap: 0.4375rem;
+  padding: 0 0.5rem;
+  border-radius: 9px;
+  /* lifted off the rows it is dragged across */
+  box-shadow:
+    0 0 0 1px var(--sidebar-border),
+    0 10px 24px -10px rgba(0, 0, 0, 0.45);
+  opacity: 0.97;
   pointer-events: none;
   cursor: grabbing;
 }

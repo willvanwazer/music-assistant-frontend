@@ -1,7 +1,9 @@
 <template>
-  <Card>
+  <Card class="gap-5">
     <CardHeader>
-      <CardTitle>{{ $t("auth.active_sessions") }}</CardTitle>
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
+        $t("auth.active_sessions")
+      }}</CardTitle>
       <CardDescription>
         {{ $t("auth.manage_active_sessions") }}
       </CardDescription>
@@ -9,26 +11,28 @@
     <CardContent>
       <div v-if="tokens.length === 0" class="empty-state">
         <div
-          class="flex size-16 items-center justify-center rounded-full bg-muted mb-3"
+          class="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary"
         >
-          <MonitorOff :size="32" class="text-muted-foreground" />
+          <MonitorOff :size="22" class="text-muted-foreground" />
         </div>
         <p class="text-muted-foreground">{{ $t("no_content") }}</p>
       </div>
-      <div v-else class="space-y-2">
+      <div v-else class="divide-y divide-border">
         <div
           v-for="token in tokens"
           :key="token.token_id"
-          class="flex items-center gap-4 rounded-lg border p-4 hover:bg-accent/50 transition-colors"
+          class="flex items-center gap-3.5 py-3 first:pt-0 last:pb-0"
         >
           <div
-            class="flex size-10 items-center justify-center rounded-full bg-muted"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary"
           >
-            <Monitor :size="20" class="text-muted-foreground" />
+            <Monitor :size="18" class="text-muted-foreground" />
           </div>
           <div class="flex-1 min-w-0">
-            <div class="font-medium truncate">{{ token.name }}</div>
-            <div class="text-sm text-muted-foreground flex flex-wrap gap-2">
+            <div class="truncate text-sm font-semibold">{{ token.name }}</div>
+            <div
+              class="flex flex-wrap gap-2 text-[12.5px] text-muted-foreground"
+            >
               <span
                 >{{ $t("created") }}: {{ formatDate(token.created_at) }}</span
               >
@@ -84,6 +88,8 @@ const formatDate = (dateStr: string) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48px 24px;
+  padding: 32px 24px;
+  border: 1px dashed var(--border);
+  border-radius: 14px;
 }
 </style>

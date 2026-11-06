@@ -11,7 +11,7 @@
 
       <div
         v-if="state.phase === 'lobby' && state.playback"
-        class="bg-muted/40 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm"
+        class="bg-card border-border flex items-center gap-2 rounded-xl border px-3.5 py-2.5 text-sm"
         data-testid="music-quiz-playback-summary"
       >
         <Volume2
@@ -25,7 +25,7 @@
 
       <div
         v-if="showActions"
-        class="bg-muted/40 flex min-h-14 flex-wrap items-center justify-end gap-2 rounded-lg border p-2"
+        class="bg-card border-border flex min-h-14 flex-wrap items-center justify-end gap-2 rounded-[14px] border p-2.5"
         data-testid="quiz-host-actions"
       >
         <Button

@@ -1,5 +1,5 @@
 <template>
-  <section class="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-6">
+  <section class="mx-auto w-full max-w-7xl space-y-10 p-4 md:p-8">
     <CustomizeShow
       v-if="customizeShowId"
       v-show="!customizeHostOpen"
@@ -17,16 +17,16 @@
     />
     <template v-if="!customizeShowId && !customizeHostOpen">
       <header
-        class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"
+        class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between"
       >
         <div>
           <h1
-            class="inline-flex items-center text-2xl font-semibold tracking-tight"
+            class="ma-display inline-flex items-center pb-1 text-4xl leading-none sm:text-5xl"
           >
-            <Sparkles class="mr-2 h-5 w-5" />
+            <Sparkles class="text-primary mr-3 size-7 shrink-0" />
             {{ $t("providers.ai_radio.title") }}
           </h1>
-          <p class="text-sm text-muted-foreground">
+          <p class="mt-2 text-[0.9375rem] text-muted-foreground">
             {{ $t("providers.ai_radio.header.subtitle") }}
           </p>
         </div>
@@ -44,9 +44,9 @@
         </Button>
       </header>
 
-      <div class="space-y-3">
+      <div class="space-y-4">
         <div class="flex items-center justify-between gap-3">
-          <h2 class="text-lg font-semibold tracking-tight">
+          <h2 class="ma-display text-[26px] leading-tight">
             {{ $t("providers.ai_radio.hosts.title") }}
           </h2>
           <DropdownMenu>
@@ -110,9 +110,9 @@
         </Button>
       </Alert>
 
-      <div class="space-y-3">
+      <div class="space-y-4">
         <div class="flex items-center justify-between gap-3">
-          <h2 class="text-lg font-semibold tracking-tight">
+          <h2 class="ma-display text-[26px] leading-tight">
             {{ $t("providers.ai_radio.gallery.title") }}
           </h2>
           <Button @click="openCreateDialog()">
@@ -123,14 +123,18 @@
 
         <div
           v-if="showEmptyState"
-          class="flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center"
+          class="flex flex-col items-center gap-4 rounded-[14px] border border-dashed border-border py-16 text-center"
         >
-          <Sparkles class="h-10 w-10 text-muted-foreground" />
+          <span
+            class="grid size-14 place-items-center rounded-full bg-secondary text-muted-foreground"
+          >
+            <Sparkles class="size-7" />
+          </span>
           <div>
-            <h2 class="text-lg font-semibold">
+            <h2 class="ma-display text-2xl leading-tight">
               {{ $t("providers.ai_radio.gallery.empty_title") }}
             </h2>
-            <p class="mt-1 max-w-md text-sm text-muted-foreground">
+            <p class="mt-1.5 max-w-md text-sm text-muted-foreground">
               {{ $t("providers.ai_radio.gallery.empty_description") }}
             </p>
           </div>

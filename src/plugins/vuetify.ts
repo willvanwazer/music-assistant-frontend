@@ -58,6 +58,11 @@ export default createVuetify(
             panel: "#f6f6f8",
             default: "#ffffff",
             primary: "#6462ea",
+            // Vuetify's own .bg-secondary utility loads after Tailwind's and
+            // wins, so its secondary must be the neutral --secondary fill, not
+            // Vuetify's default teal, or every secondary button turns teal.
+            secondary: "#ededf0",
+            "on-secondary": "#1c1c1e",
           },
         },
         dark: {
@@ -70,6 +75,8 @@ export default createVuetify(
             panel: "#242424",
             default: "#000000",
             primary: "#7c7fe6",
+            secondary: "#2c2c2e",
+            "on-secondary": "#f5f5f5",
           },
         },
       },

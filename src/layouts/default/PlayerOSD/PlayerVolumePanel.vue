@@ -1,9 +1,11 @@
 <template>
   <div class="flex min-h-0 flex-col">
+    <!-- what the panel adjusts as a small label, and the room it adjusts
+         named in the display face, as rooms are everywhere else -->
     <div data-panel-drag-region class="border-b px-4 pt-1 pb-3">
       <div class="min-w-0 ml-1">
-        <p class="text-base font-semibold">{{ $t("volume") }}</p>
-        <p class="text-muted-foreground truncate text-xs">
+        <p class="player-panel-eyebrow">{{ $t("volume") }}</p>
+        <p class="player-panel-room ma-display truncate">
           {{ playerDisplayName }}
         </p>
       </div>
@@ -32,6 +34,7 @@
             :player="volumePlayer"
             :allow-wheel="allowWheel"
             :expand-on-touch="expandOnTouch"
+            :show-stepper="showStepper"
             width="100%"
           />
         </div>
@@ -51,6 +54,7 @@
           :prefer-group-volume="true"
           :enable-popout="false"
           :expand-on-touch="expandOnTouch"
+          :show-stepper="showStepper"
           width="100%"
         />
       </div>
@@ -90,6 +94,11 @@ const playerDisplayName = computed(() => getPlayerName(props.player, 36));
 // trouble with the resting rail
 const expandOnTouch = computed(() => store.mobileLayout);
 
+// A pointer gets step buttons beside each slider for changes too fine to drag.
+// Touch already swaps them in while a finger is on the rail, so two pairs would
+// sit side by side there.
+const showStepper = computed(() => !expandOnTouch.value);
+
 const volumePlayers = computed(() => {
   if (!grouped.value) return [];
   const playerIds = new Set(props.player.group_members);
@@ -110,3 +119,20 @@ const volumePlayers = computed(() => {
     );
 });
 </script>
+
+<style scoped>
+.player-panel-eyebrow {
+  color: var(--subtle-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.player-panel-room {
+  margin-top: 2px;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+</style>

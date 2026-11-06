@@ -1,7 +1,7 @@
 <template>
-  <Card>
+  <Card class="gap-4">
     <CardHeader>
-      <CardTitle>{{
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
         $t("settings.audio_analysis_concurrency.title")
       }}</CardTitle>
       <CardDescription>
@@ -9,7 +9,7 @@
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <Button as-child variant="outline">
+      <Button as-child variant="secondary">
         <RouterLink to="/settings/editcore/streams" class="no-underline">
           {{ $t("settings.audio_analysis_concurrency.open_settings") }}
         </RouterLink>

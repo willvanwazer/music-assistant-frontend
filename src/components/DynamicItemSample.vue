@@ -1,11 +1,11 @@
 <template>
   <div>
-    <div class="d-flex align-center ga-3 px-4 pt-4">
-      <div class="dynamic-badge d-flex align-center justify-center rounded-lg">
-        <v-icon icon="mdi-shuffle-variant" size="22" color="primary" />
+    <div class="flex items-center gap-3.5 px-2.5 pt-3">
+      <div class="dynamic-badge flex items-center justify-center">
+        <v-icon icon="mdi-shuffle-variant" size="20" color="primary" />
       </div>
-      <div>
-        <div class="text-h6">
+      <div class="min-w-0">
+        <div class="dynamic-heading ma-display">
           {{
             $t(
               isPlaylist
@@ -14,17 +14,17 @@
             )
           }}
         </div>
-        <div class="text-body-2 text-medium-emphasis">
+        <div class="text-muted-foreground mt-0.5 text-[13px]">
           {{ $t("smart_playlist.dynamic_sample_note") }}
         </div>
       </div>
     </div>
 
-    <div class="px-4 pt-4">
+    <div class="px-2.5 pt-4">
       <Separator />
     </div>
 
-    <div class="px-2 pt-5 pb-2">
+    <div class="px-2.5 pt-3 pb-2">
       <template v-if="loading">
         <ListViewSkeleton v-for="n in 8" :key="'skeleton-list-' + n" />
       </template>
@@ -153,65 +153,24 @@ watch(
 </script>
 
 <style scoped>
+/* a round soft-accent badge marks the sample as generated */
 .dynamic-badge {
   width: 40px;
   height: 40px;
   flex-shrink: 0;
-  background: rgba(var(--v-theme-primary), 0.12);
+  border-radius: 999px;
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
 }
 
-.col-2 {
-  width: 50%;
-  max-width: 50%;
-  flex-basis: 50%;
-  padding: 8px;
+/* a section heading, like the listings' */
+.dynamic-heading {
+  font-size: 26px;
+  line-height: 1.2;
 }
-.col-3 {
-  width: 33.3%;
-  max-width: 33.3%;
-  flex-basis: 33.3%;
-  padding: 8px;
-}
-.col-4 {
-  width: 25%;
-  max-width: 25%;
-  flex-basis: 25%;
-  padding: 8px;
-}
-.col-5 {
-  width: 20%;
-  max-width: 20%;
-  flex-basis: 20%;
-  padding: 8px;
-}
-.col-6 {
-  width: 16.6%;
-  max-width: 16.6%;
-  flex-basis: 16.6%;
-  padding: 8px;
-}
-.col-7 {
-  width: 14.2%;
-  max-width: 14.2%;
-  flex-basis: 14.2%;
-  padding: 8px;
-}
-.col-8 {
-  width: 12.5%;
-  max-width: 12.5%;
-  flex-basis: 12.5%;
-  padding: 8px;
-}
-.col-9 {
-  width: 11.1%;
-  max-width: 11.1%;
-  flex-basis: 11.1%;
-  padding: 8px;
-}
-.col-10 {
-  width: 10%;
-  max-width: 10%;
-  flex-basis: 10%;
-  padding: 8px;
+
+@media (max-width: 539px) {
+  .dynamic-heading {
+    font-size: 22px;
+  }
 }
 </style>

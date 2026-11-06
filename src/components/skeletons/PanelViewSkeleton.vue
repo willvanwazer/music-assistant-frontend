@@ -5,9 +5,6 @@
       <Skeleton class="skeleton-title" />
       <Skeleton class="skeleton-artist" />
     </div>
-    <div class="skeleton-actions">
-      <Skeleton class="skeleton-icon" />
-    </div>
   </div>
 </template>
 
@@ -16,45 +13,44 @@ import { Skeleton } from "@/components/ui/skeleton";
 </script>
 
 <style scoped>
+/* the grid card's shape: a square cover with two lines of text beneath */
 .panelview-item-skeleton {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 8px;
+  min-width: 0;
 }
 
 .skeleton-image {
   aspect-ratio: 1;
   width: 100%;
-  border-radius: 8px;
+  border-radius: 4px;
+}
+
+/* a listing of people pictures them in circles */
+.skeleton--round .skeleton-image {
+  border-radius: 50%;
 }
 
 .skeleton-info {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 0 4px;
+  margin-top: 12px;
+}
+
+.skeleton--round .skeleton-info {
+  align-items: center;
 }
 
 .skeleton-title {
-  height: 16px;
-  width: 85%;
+  height: 12px;
+  width: 80%;
+  border-radius: 4px;
 }
 
 .skeleton-artist {
-  height: 14px;
-  width: 60%;
-}
-
-.skeleton-actions {
-  display: flex;
-  gap: 8px;
-  padding: 0 4px;
-}
-
-.skeleton-icon {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
+  height: 10px;
+  width: 55%;
+  border-radius: 4px;
 }
 </style>

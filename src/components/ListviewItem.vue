@@ -7,6 +7,9 @@
       unavailable: !isAvailable,
       'listitem-selecting': showCheckboxes,
       'album-track-row': albumTrackView,
+      'listview-row': true,
+      'listview-row--playing': isPlaying,
+      'listview-row--round': item.media_type == MediaType.ARTIST,
     }"
     @click.stop="onClick"
     @menu.stop="onMenu"
@@ -35,8 +38,16 @@
       <div v-else class="listitem-prepend">
         <!-- ===== TOUCH (phone/tablet): number / art stay on the left; play moves to the right (see #append) ===== -->
         <template v-if="isTouch">
+          <!-- album view: the playing track shows the equaliser in its place -->
           <div
-            v-if="
+            v-if="albumTrackView && isPlaying"
+            class="track-number track-number--playing"
+          >
+            <NowPlayingBadge :show-badge="false" />
+            <span class="sr-only">{{ $t("now_playing") }}</span>
+          </div>
+          <div
+            v-else-if="
               albumTrackView &&
               showTrackNumber &&
               'track_number' in item &&
@@ -56,14 +67,14 @@
               "
             >
               <MediaCollectionThumb
-                size="50"
+                size="44"
                 :item="item as MediaCollection<MediaItemType>"
                 :thumb-offset="5"
               />
             </div>
             <div v-else>
               <MediaItemThumb
-                size="50"
+                size="44"
                 :item="isAvailable ? item : undefined"
                 alt=""
               />
@@ -77,15 +88,20 @@
              a row re-render under a stationary mouse), sending the click to
              the row instead -->
         <template v-else>
-          <!-- album view: track number that swaps to the blue play on hover -->
+          <!-- album view: track number that swaps to the play on hover; the
+               playing track shows the equaliser in its place -->
           <div
             v-if="albumTrackView"
             class="track-number-play"
             :class="{ 'is-playable': item.is_playable }"
             @click="onPlayAreaClick"
           >
+            <div v-if="isPlaying" class="track-number track-number--playing">
+              <NowPlayingBadge :show-badge="false" />
+              <span class="sr-only">{{ $t("now_playing") }}</span>
+            </div>
             <div
-              v-if="
+              v-else-if="
                 showTrackNumber && 'track_number' in item && item.track_number
               "
               class="track-number"
@@ -109,14 +125,14 @@
                 "
               >
                 <MediaCollectionThumb
-                  size="50"
+                  size="44"
                   :item="item as MediaCollection<MediaItemType>"
                   :thumb-offset="5"
                 />
               </div>
               <div v-else>
                 <MediaItemThumb
-                  size="50"
+                  size="44"
                   :item="isAvailable ? item : undefined"
                   alt=""
                 />
@@ -219,32 +235,26 @@
 
     <!-- actions -->
     <template #append>
-      <!-- Now Playing Badge -->
+      <!-- Now Playing Badge (the album view shows it in the number's place) -->
       <NowPlayingBadge
-        v-if="isPlaying"
+        v-if="isPlaying && !albumTrackView"
         :show-badge="getBreakpointValue('bp7')"
       />
-      <!-- hi res icon -->
-      <v-img
+      <!-- hi res: a micro tag, its details on hover -->
+      <span
         v-if="HiResDetails && getBreakpointValue('bp3')"
-        :src="iconHiRes"
-        width="30"
-        alt=""
-        :class="$vuetify.theme.current.dark ? 'hiresicondark' : 'hiresicon'"
+        class="listitem-hires"
       >
+        {{ $t("streamdetails.audio_processing.quality.hi_res") }}
         <v-tooltip activator="parent" location="bottom">
           {{ HiResDetails }}
         </v-tooltip>
-      </v-img>
+      </span>
 
-      <!-- track duration -->
+      <!-- track duration (laid out last, right-aligned); phones keep it too,
+           as a track list without lengths reads as unfinished -->
       <span
-        v-if="
-          showDuration &&
-          'duration' in item &&
-          item.duration &&
-          !$vuetify.display.mobile
-        "
+        v-if="showDuration && 'duration' in item && item.duration"
         class="track-duration"
       >
         {{ formatDuration(item.duration) }}
@@ -254,7 +264,7 @@
       <provider-icon
         v-if="getBreakpointValue('bp2') && showProvider"
         :domain="getListItemProviderIconDomain(item)"
-        :size="24"
+        :size="20"
         class="mx-[10px]"
       />
 
@@ -263,11 +273,15 @@
       <v-icon
         v-if="'fully_played' in item && item.fully_played"
         :title="$t('item_fully_played')"
+        size="small"
+        class="listitem-status-icon"
         >mdi-check</v-icon
       >
       <v-icon
         v-else-if="'resume_position_ms' in item && item.resume_position_ms"
         :title="$t('item_in_progress')"
+        size="small"
+        class="listitem-status-icon"
         >mdi-clock-fast</v-icon
       >
 
@@ -334,7 +348,6 @@ import { computed } from "vue";
 import { VTooltip } from "vuetify/components";
 import MediaItemThumb from "./MediaItemThumb.vue";
 import ProviderIcon from "./ProviderIcon.vue";
-import { iconHiRes } from "./QualityDetailsBtn.vue";
 
 import { Checkbox } from "@/components/ui/checkbox";
 import ListviewItemTitle from "./ListviewItemTitle.vue";
@@ -473,6 +486,21 @@ const onPlayClick = function (evt: PointerEvent) {
 </script>
 
 <style scoped>
+/* ----------------------------------------------------------------- row */
+
+/* ~54px rows with a soft corner; the hover is vuetify's faint overlay */
+.list-item-main.listview-row {
+  min-height: 54px;
+  padding: 5px 4px 5px 10px !important;
+  margin-right: 0 !important;
+  border-radius: 9px !important;
+}
+
+/* the playing row: a soft wash of the accent (its title turns accent too) */
+.list-item-main.listview-row--playing {
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
 .list-item-main.listitem-selecting {
   padding: 7px 0 !important;
 }
@@ -485,23 +513,38 @@ const onPlayClick = function (evt: PointerEvent) {
   opacity: 0.3;
 }
 
+.listview-row :deep(.v-list-item-subtitle) {
+  margin-top: 2px;
+  font-size: 12.5px;
+  line-height: 1.35;
+  color: var(--subtle-foreground);
+  opacity: 1;
+}
+
 .listitem-prepend {
   display: flex;
   align-items: center;
 }
 
+/* ------------------------------------------------------ number and art */
+
+/* the number column: right-aligned, tabular, quiet */
 .track-number {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-width: 22px;
+  justify-content: flex-end;
+  min-width: 24px;
   /* spacing after the number so the title isn't cramped on mobile;
      desktop resets this to 0 via .track-number-play > .track-number */
   margin-right: 16px;
-  font-size: 0.875rem;
-  opacity: 0.7;
+  font-size: 13px;
+  color: var(--subtle-foreground);
   font-variant-numeric: tabular-nums;
   transition: opacity 0.18s ease;
+}
+
+.track-number--playing :deep(.now-playing-icon) {
+  margin: 0;
 }
 
 /* album view: track number and play button share one slot */
@@ -520,11 +563,23 @@ const onPlayClick = function (evt: PointerEvent) {
   position: relative;
 }
 
-.listitem-media-thumb :deep(.v-img) {
+.listview-row .listitem-media-thumb {
+  width: 44px;
+  height: 44px;
+  margin-right: 12px;
+}
+
+/* covers keep a small radius; people are round */
+.listview-row .listitem-media-thumb :deep(.v-img) {
+  border-radius: 3px !important;
   transition: filter 0.15s ease;
 }
 
-/* discover-style blue play button: desktop hover only */
+.listview-row--round .listitem-media-thumb :deep(.v-img) {
+  border-radius: 50% !important;
+}
+
+/* accent play button: desktop hover only */
 .listitem-play-blue {
   display: none;
 }
@@ -534,7 +589,7 @@ const onPlayClick = function (evt: PointerEvent) {
   margin-right: -10px;
 }
 
-/* mobile: small blue play disc on the right, sized to match the old icon */
+/* mobile: small accent play disc on the right, sized to match the old icon */
 .listitem-play-blue-mobile {
   display: inline-flex;
   align-items: center;
@@ -542,8 +597,8 @@ const onPlayClick = function (evt: PointerEvent) {
   width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: rgb(var(--v-theme-primary));
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 @media (hover: hover) {
@@ -552,11 +607,11 @@ const onPlayClick = function (evt: PointerEvent) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 999px;
-    background: rgb(var(--v-theme-primary));
-    color: #fff;
+    background: var(--primary);
+    color: var(--primary-foreground);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.18s ease;
@@ -567,13 +622,14 @@ const onPlayClick = function (evt: PointerEvent) {
     cursor: pointer;
   }
 
-  /* album view: overlay the number and the blue play in one centered cell.
-     The extra right margin (more breathing room for the title) is desktop-only
-     and exclusive to this view, where the prepend is just the narrow slot. */
+  /* album view: overlay the number and the play in one cell. The extra right
+     margin (more breathing room for the title) is desktop-only and exclusive
+     to this view, where the prepend is just the narrow slot. */
   .track-number-play {
     display: grid;
-    place-items: center;
-    margin-right: 12px;
+    place-items: center end;
+    min-width: 28px;
+    margin-right: 14px;
   }
 
   .track-number-play > .track-number,
@@ -585,11 +641,19 @@ const onPlayClick = function (evt: PointerEvent) {
     margin-right: 0;
   }
 
+  /* in the number column the play is a plain glyph, like the number it
+     replaces */
+  .track-number-play > .listitem-play-blue {
+    justify-self: center;
+    background: transparent;
+    color: var(--foreground);
+  }
+
   .list-item-main:hover .track-number-play.is-playable > .track-number {
     opacity: 0;
   }
 
-  /* other rows: blue play overlays the dimmed album art on row hover */
+  /* other rows: the play overlays the dimmed album art on row hover */
   .listitem-media-thumb .listitem-play-blue {
     position: absolute;
     inset: 0;
@@ -598,7 +662,7 @@ const onPlayClick = function (evt: PointerEvent) {
   }
 
   .list-item-main:hover .listitem-media-thumb.is-playable :deep(.v-img) {
-    filter: blur(4px) brightness(0.35);
+    filter: brightness(0.45);
   }
 
   .list-item-main:hover .listitem-play-blue {
@@ -610,18 +674,110 @@ const onPlayClick = function (evt: PointerEvent) {
   margin-bottom: 1px;
 }
 
-.favorite-button-wrapper {
-  margin-inline: 10px;
+/* ------------------------------------------------------------- append */
+
+.listview-row :deep(.v-list-item__append) {
+  gap: 2px;
+  color: var(--subtle-foreground);
 }
 
+.favorite-button-wrapper {
+  margin-inline: 8px;
+}
+
+.listview-row :deep(.v-list-item__append > .button--icon) {
+  color: var(--muted-foreground);
+}
+
+/* the duration closes the row, after the hover actions, so it lines up */
 .track-duration {
-  font-size: 0.875rem;
-  opacity: 0.7;
-  /* 16px + the now-playing bars' 6px margin = 22px, matching the gap on the
-     duration's right (12px here + the provider icon's 10px) so it sits evenly */
-  margin-left: 16px;
-  margin-right: 12px;
+  order: 10;
+  min-width: 40px;
+  margin-left: 4px;
+  margin-right: 10px;
+  text-align: right;
+  font-size: 13px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* the artwork is the only colour in a list: a source badge on every row would
+   repeat its brand colour all the way down, so it rests in grey and takes its
+   colour back on the row being pointed at */
+.listview-row :deep(.v-list-item__append .provider-icon-wrapper) {
+  filter: grayscale(1);
+  opacity: 0.6;
+  transition:
+    filter 150ms ease,
+    opacity 150ms ease;
+}
+
+.listview-row:hover :deep(.v-list-item__append .provider-icon-wrapper) {
+  filter: none;
+  opacity: 1;
+}
+
+/* a touch screen shows the row menu all the time, so the duration sits before
+   it rather than after it */
+@media (hover: none) {
+  .track-duration {
+    order: 0;
+    margin-right: 0;
+  }
+}
+
+.listitem-status-icon {
+  margin-inline: 4px;
+  color: var(--subtle-foreground);
+}
+
+/* hi-res as a micro tag in the quality colour */
+.listitem-hires {
+  flex: none;
+  margin-inline: 8px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--quality-hires);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--quality-hires) 45%, transparent);
+}
+
+/* with a pointer, the menu and an unset heart wait for the row's hover or
+   focus; a touch screen keeps them in view */
+@media (hover: hover) {
+  .listview-row :deep(.v-list-item__append > .button--icon),
+  .listview-row
+    .favorite-button-wrapper
+    :deep(.favorite-icon:not(.favorite-icon--on)) {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  .list-item-main.listview-row:hover
+    :deep(.v-list-item__append > .button--icon),
+  .list-item-main.listview-row:focus-within
+    :deep(.v-list-item__append > .button--icon) {
+    opacity: 1;
+  }
+
+  .list-item-main.listview-row:hover
+    .favorite-button-wrapper
+    :deep(.favorite-icon:not(.favorite-icon--on)),
+  .list-item-main.listview-row:focus-within
+    .favorite-button-wrapper
+    :deep(.favorite-icon:not(.favorite-icon--on)) {
+    opacity: 0.7;
+  }
+
+  .listview-row .favorite-button-wrapper :deep(.favorite-icon:hover) {
+    opacity: 1;
+  }
 }
 
 .dimmed {
@@ -630,18 +786,5 @@ const onPlayClick = function (evt: PointerEvent) {
 
 .hidden {
   opacity: 0;
-}
-
-.hiresicon {
-  margin-top: 5px;
-  margin-right: 15px;
-  margin-left: 15px;
-  filter: invert(100%);
-}
-
-.hiresicondark {
-  margin-top: 5px;
-  margin-right: 15px;
-  margin-left: 15px;
 }
 </style>

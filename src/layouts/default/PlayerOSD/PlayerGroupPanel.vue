@@ -5,11 +5,13 @@
     class="flex items-center justify-between gap-3 border-b px-4 pt-1 pb-3"
   >
     <div class="flex min-w-0 items-center gap-3">
+      <!-- what the panel is about as a small label, and the room it groups
+           named in the display face, as rooms are everywhere else -->
       <div class="min-w-0 ml-1">
-        <h2 class="text-base font-semibold">
+        <h2 class="player-panel-eyebrow">
           {{ $t("settings.group_members") }}
         </h2>
-        <p class="text-muted-foreground truncate text-xs">
+        <p class="player-panel-room ma-display truncate">
           {{ getPlayerName(player, 36) }}
         </p>
       </div>
@@ -103,6 +105,21 @@ function setFilter(value: unknown) {
 </script>
 
 <style scoped>
+.player-panel-eyebrow {
+  color: var(--subtle-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  line-height: 1.4;
+  text-transform: uppercase;
+}
+
+.player-panel-room {
+  margin-top: 2px;
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+
 .player-group-list {
   scrollbar-width: thin;
 }

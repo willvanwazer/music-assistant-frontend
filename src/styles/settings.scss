@@ -17,6 +17,21 @@
     Roboto,
     sans-serif,
   ),
+  // Liner Notes shapes for the Vuetify components still in use, so they sit
+  // with the shadcn ones: sentence-case pill buttons, flat 14px cards, rounder
+  // menus and fields, gently rounded list rows
+  $button-text-transform: none,
+  $button-text-letter-spacing: 0,
+  $button-font-weight: 600,
+  $button-border-radius: 9999px,
+  $card-border-radius: 14px,
+  $card-elevation: 0,
+  $menu-content-border-radius: 14px,
+  $field-border-radius: 10px,
+  $tooltip-border-radius: 8px,
+  $snackbar-border-radius: 14px,
+  $list-item-border-radius: 9px,
+  $chip-font-weight: 500,
   // vue listitem title overrides
   $list-item-title-font-size: 0.875rem,
   $list-item-title-line-height: 1.25rem,

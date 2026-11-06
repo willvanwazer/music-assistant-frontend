@@ -93,26 +93,34 @@ export interface ToolbarHeadingItem {
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+  gap: 2px;
   min-width: 0;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
-/* the trail carries the detail, so the heading only has to name the section */
+/* the trail carries the detail, so the heading only has to name the section,
+   in the display serif at the toolbar's title size */
 .toolbar-heading-title {
   color: inherit;
   text-decoration: none;
   font-family: var(--font-heading);
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 500;
   letter-spacing: -0.01em;
+  font-optical-sizing: auto;
 }
 
-/* the trail can outgrow the toolbar, so it scrolls rather than pushing the
-   actions off the end */
+/* the trail is functional, so it stays small Inter under the serif title. It
+   can outgrow the toolbar, so it scrolls rather than pushing the actions off
+   the end */
 .toolbar-heading-trail {
   max-width: 100%;
   overflow-x: auto;
-  font-size: 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.4;
   scrollbar-width: none;
 }
 
@@ -124,35 +132,44 @@ export interface ToolbarHeadingItem {
   padding: 0;
   font-size: inherit;
   white-space: nowrap;
-  opacity: 0.6;
+  color: var(--muted-foreground);
+  opacity: 1;
+  transition: color 150ms ease;
+}
+
+.toolbar-heading-trail :deep(.v-breadcrumbs-item--link:hover) {
+  color: var(--foreground);
 }
 
 /* vuetify dims the last crumb as "disabled"; it is the page you are on, so it
    is the one that stands out and the trail above it recedes */
 .toolbar-heading-trail :deep(.v-breadcrumbs-item--disabled) {
-  opacity: 1;
+  color: var(--foreground);
 }
 
 .toolbar-heading-trail :deep(.v-breadcrumbs-divider) {
   padding: 0 4px;
   font-size: inherit;
-  opacity: 0.6;
+  color: var(--subtle-foreground);
 }
 
 /* stands in for the crumbs a phone has no room for, and reveals them on tap */
 .toolbar-heading-more {
   background: none;
   border: none;
-  color: inherit;
+  color: var(--muted-foreground);
   cursor: pointer;
   font: inherit;
   padding: 0 2px;
-  opacity: 0.6;
 }
 
 @media (max-width: 600px) {
+  .toolbar-heading-title {
+    font-size: 1.25rem;
+  }
+
   .toolbar-heading-trail {
-    font-size: 0.65rem;
+    font-size: 0.65625rem;
   }
 }
 </style>

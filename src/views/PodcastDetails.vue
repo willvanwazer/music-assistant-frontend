@@ -1,33 +1,35 @@
 <template>
   <InfoHeader :item="itemDetails" />
-  <ItemsListing
-    v-if="itemDetails"
-    itemtype="podcastepisodes"
-    :parent-item="itemDetails"
-    :show-provider="false"
-    :show-library="false"
-    :show-favorites-only-filter="false"
-    :show-hide-fully-played-filter="true"
-    :show-track-number="true"
-    :show-refresh-button="true"
-    :load-items="loadPodcastEpisodes"
-    :sort-keys="[
-      'position_desc',
-      'position',
-      'name',
-      'duration',
-      'duration_desc',
-    ]"
-    :update-available="updateAvailable"
-    :title="$t('podcast_episodes')"
-    :allow-key-hooks="true"
-    :path="`podcast.${props.itemId}.${props.provider}`"
-    :restore-state="true"
-    :no-server-side-sorting="true"
-  />
+  <div class="item-details-body">
+    <ItemsListing
+      v-if="itemDetails"
+      itemtype="podcastepisodes"
+      :parent-item="itemDetails"
+      :show-provider="false"
+      :show-library="false"
+      :show-favorites-only-filter="false"
+      :show-hide-fully-played-filter="true"
+      :show-track-number="true"
+      :show-refresh-button="true"
+      :load-items="loadPodcastEpisodes"
+      :sort-keys="[
+        'position_desc',
+        'position',
+        'name',
+        'duration',
+        'duration_desc',
+      ]"
+      :update-available="updateAvailable"
+      :title="$t('podcast_episodes')"
+      :allow-key-hooks="true"
+      :path="`podcast.${props.itemId}.${props.provider}`"
+      :restore-state="true"
+      :no-server-side-sorting="true"
+    />
 
-  <!-- provider mapping details -->
-  <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    <!-- provider mapping details -->
+    <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -7,23 +7,25 @@
 -->
 <template>
   <div class="space-y-6 p-6">
-    <Card>
-      <CardHeader>
-        <div class="flex items-center gap-4">
-          <div
-            class="flex size-12 shrink-0 items-center justify-center rounded-lg bg-primary/10"
-          >
-            <Droplet class="size-6 text-primary" />
-          </div>
-          <div>
-            <CardTitle>{{ $t("visualizer.title") }}</CardTitle>
-            <CardDescription>
-              {{ $t("settings.visualizer_description") }}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
-    </Card>
+    <div class="flex items-center gap-4 pt-1">
+      <div
+        class="flex size-11 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-primary"
+      >
+        <Droplet class="size-[22px]" />
+      </div>
+      <div class="min-w-0">
+        <h1
+          class="font-display text-[1.75rem] leading-[1.15] font-medium tracking-[-0.01em]"
+        >
+          {{ $t("visualizer.title") }}
+        </h1>
+        <p
+          class="mt-1 max-w-[64ch] text-[13.5px] leading-normal text-muted-foreground"
+        >
+          {{ $t("settings.visualizer_description") }}
+        </p>
+      </div>
+    </div>
 
     <Card v-if="!providerAvailable">
       <CardContent class="text-sm">
@@ -31,20 +33,27 @@
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <SlidersHorizontal class="size-4 text-primary" />
-          <CardTitle>{{ $t("visualizer.section_general") }}</CardTitle>
+          <SlidersHorizontal class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("visualizer.section_general") }}</CardTitle
+          >
         </div>
       </CardHeader>
-      <CardContent class="space-y-5">
-        <div class="flex items-center justify-between gap-6">
+      <CardContent class="divide-y divide-border">
+        <div
+          class="flex items-center justify-between gap-6 py-3.5 first:pt-0 last:pb-0"
+        >
           <div class="min-w-0">
-            <div class="font-medium">
+            <div class="text-sm font-medium">
               {{ $t("settings.visualizer_enabled.label") }}
             </div>
-            <div class="text-sm text-muted-foreground">
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("settings.visualizer_enabled.description") }}
             </div>
           </div>
@@ -57,11 +66,15 @@
         </div>
 
         <div
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
           <div class="min-w-0">
-            <div class="font-medium">{{ $t("visualizer.quality") }}</div>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-sm font-medium">
+              {{ $t("visualizer.quality") }}
+            </div>
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("visualizer.quality_description") }}
             </div>
           </div>
@@ -87,13 +100,15 @@
         </div>
 
         <div
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
           <div class="min-w-0">
-            <div class="font-medium">
+            <div class="text-sm font-medium">
               {{ $t("settings.visualizer_opacity.label") }}
             </div>
-            <div class="text-sm text-muted-foreground">
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("settings.visualizer_opacity.description") }}
             </div>
           </div>
@@ -122,13 +137,15 @@
         </div>
 
         <div
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
           <div class="min-w-0">
-            <div class="font-medium">
+            <div class="text-sm font-medium">
               {{ $t("settings.visualizer_blur.label") }}
             </div>
-            <div class="text-sm text-muted-foreground">
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("settings.visualizer_blur.description") }}
             </div>
           </div>
@@ -155,20 +172,27 @@
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <SwatchBook class="size-4 text-primary" />
-          <CardTitle>{{ $t("visualizer.section_presets") }}</CardTitle>
+          <SwatchBook class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("visualizer.section_presets") }}</CardTitle
+          >
         </div>
       </CardHeader>
-      <CardContent class="space-y-5">
+      <CardContent class="divide-y divide-border">
         <div
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
           <div class="min-w-0">
-            <div class="font-medium">{{ $t("visualizer.preset_mode") }}</div>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-sm font-medium">
+              {{ $t("visualizer.preset_mode") }}
+            </div>
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("visualizer.preset_mode_description") }}
             </div>
           </div>
@@ -195,9 +219,9 @@
 
         <div
           v-if="presetModePref === 'fixed'"
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
-          <div class="min-w-0 font-medium">
+          <div class="min-w-0 text-sm font-medium">
             {{ $t("visualizer.fixed_preset") }}
           </div>
           <Select
@@ -217,10 +241,16 @@
           </Select>
         </div>
 
-        <div class="flex items-center justify-between gap-6">
+        <div
+          class="flex items-center justify-between gap-6 py-3.5 first:pt-0 last:pb-0"
+        >
           <div class="min-w-0">
-            <div class="font-medium">{{ $t("visualizer.beat_switch") }}</div>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-sm font-medium">
+              {{ $t("visualizer.beat_switch") }}
+            </div>
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("visualizer.beat_switch_description") }}
             </div>
           </div>
@@ -234,11 +264,15 @@
 
         <div
           v-if="beatSwitchPref"
-          class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+          class="flex flex-col gap-2 py-3.5 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6"
         >
           <div class="min-w-0">
-            <div class="font-medium">{{ $t("visualizer.beat_dwell") }}</div>
-            <div class="text-sm text-muted-foreground">
+            <div class="text-sm font-medium">
+              {{ $t("visualizer.beat_dwell") }}
+            </div>
+            <div
+              class="mt-0.5 text-[12.5px] leading-[1.45] text-subtle-foreground"
+            >
               {{ $t("visualizer.beat_dwell_description") }}
             </div>
           </div>
@@ -263,11 +297,14 @@
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <Star class="size-4 text-primary" />
-          <CardTitle>{{ $t("visualizer.favorites") }}</CardTitle>
+          <Star class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("visualizer.favorites") }}</CardTitle
+          >
         </div>
         <CardDescription v-if="favoritesPref.length === 0">
           {{ $t("visualizer.no_favorites") }}
@@ -278,12 +315,12 @@
           <li
             v-for="name in favoritesPref"
             :key="name"
-            class="flex items-center justify-between gap-3 rounded-md bg-muted px-3 py-1.5 text-sm"
+            class="flex items-center justify-between gap-3 rounded-lg bg-secondary px-3 py-1.5 text-sm"
           >
             <span class="truncate">{{ name }}</span>
             <button
               type="button"
-              class="rounded p-1 hover:bg-background"
+              class="rounded-full p-1 text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
               :aria-label="$t('visualizer.remove_favorite')"
               @click="removeFavorite(name)"
             >
@@ -294,11 +331,14 @@
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <Heart class="size-4 text-primary" />
-          <CardTitle>{{ $t("visualizer.credits") }}</CardTitle>
+          <Heart class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("visualizer.credits") }}</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="space-y-2 text-sm text-muted-foreground">

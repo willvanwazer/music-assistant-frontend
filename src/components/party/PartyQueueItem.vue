@@ -17,9 +17,9 @@
         />
         <span v-else class="queue-number">{{ absoluteIndex + 1 }}</span>
       </div>
-      <Avatar class="queue-avatar size-12 rounded-md">
+      <Avatar class="queue-avatar size-12 rounded-[3px]">
         <AvatarImage :src="imageUrl" :alt="item.name" />
-        <AvatarFallback class="avatar-placeholder rounded-md">
+        <AvatarFallback class="avatar-placeholder rounded-[3px]">
           <Music :size="20" />
         </AvatarFallback>
       </Avatar>
@@ -173,11 +173,11 @@ const badgeLabel = computed(() =>
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(var(--v-theme-surface-variant), 0.05);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
   border-radius: 12px;
-  min-height: 72px;
-  transition: background 0.2s ease;
+  min-height: 64px;
+  transition: background 0.15s ease;
 }
 
 .queue-item--clickable {
@@ -185,17 +185,19 @@ const badgeLabel = computed(() =>
 }
 
 .queue-item--clickable:hover {
-  background: rgba(var(--v-theme-surface-variant), 0.12);
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
 }
 
-.queue-item--expanded {
-  background: rgba(var(--v-theme-primary), 0.1);
+.queue-item--expanded,
+.queue-item--clickable.queue-item--expanded:hover {
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
 .queue-item-info {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.875rem;
   flex: 1;
   min-width: 0;
 }
@@ -207,28 +209,30 @@ const badgeLabel = computed(() =>
   margin-left: auto;
 }
 
+/* the boost colour is the server's, so the button keeps it */
 .queue-item-actions .boost-btn {
   font-weight: 600;
   text-transform: none;
-  letter-spacing: 0.5px;
   background-color: var(--btn-bg) !important;
   color: rgb(var(--v-theme-on-primary)) !important;
 }
 
+/* the playing row: a soft accent fill, its title in the accent */
 .queue-item-current {
-  background: rgba(var(--v-theme-primary), 0.15);
-  border-left: 6px solid rgb(var(--v-theme-primary));
-  padding-left: calc(0.75rem - 3px);
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+}
+
+.queue-item-current .queue-name {
+  color: var(--primary);
 }
 
 .queue-item-played {
-  background: rgba(var(--v-theme-on-surface), 0.08);
   opacity: 0.5;
 }
 
 .queue-position {
   width: 20px;
-  margin-right: -5px;
+  margin-right: -2px;
   text-align: center;
   flex-shrink: 0;
   display: flex;
@@ -241,8 +245,9 @@ const badgeLabel = computed(() =>
 }
 
 .queue-number {
-  font-size: 0.875rem;
-  opacity: 0.6;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--subtle-foreground);
 }
 
 .queue-avatar {
@@ -255,7 +260,8 @@ const badgeLabel = computed(() =>
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--v-theme-primary), 0.1);
+  background: var(--secondary);
+  color: var(--subtle-foreground);
 }
 
 .queue-info {
@@ -267,7 +273,7 @@ const badgeLabel = computed(() =>
 }
 
 .queue-name {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -275,26 +281,28 @@ const badgeLabel = computed(() =>
 }
 
 .queue-artist {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 400;
-  opacity: 0.6;
+  color: var(--muted-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+/* request/boost colours are configured on the server, so they stay */
 .guest-request-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.2rem 0.3rem;
+  height: 1.25rem;
+  padding: 0 0.45rem;
   background: var(--badge-background);
   border: 1px solid var(--badge-border);
   border-radius: 999px;
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.08em;
   color: var(--badge-color);
   flex-shrink: 0;
   margin-left: auto;
@@ -312,7 +320,8 @@ const badgeLabel = computed(() =>
   }
 
   .queue-item-actions {
-    border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
     width: 100%;
     margin-left: 0;
   }

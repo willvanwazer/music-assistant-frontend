@@ -4,7 +4,7 @@
       <v-container class="fill-height login-container" fluid>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="10" md="6" lg="5" xl="4">
-            <v-card class="login-card" elevation="12" rounded="xl">
+            <v-card class="login-card" elevation="0" rounded="xl">
               <!-- Logo -->
               <div class="text-center login-header">
                 <img
@@ -12,9 +12,9 @@
                   alt="Music Assistant"
                   class="login-logo"
                 />
-                <h1 class="login-title font-weight-bold">Music Assistant</h1>
+                <h1 class="login-title">Music Assistant</h1>
                 <p class="login-subtitle text-medium-emphasis">
-                  Your Music, Your Way
+                  Your music, your way
                 </p>
               </div>
 
@@ -254,7 +254,7 @@
                 <v-btn
                   v-if="isRemoteConnection || !isHostedWithAPI"
                   variant="text"
-                  class="mt-4"
+                  class="mt-4 text-none login-quiet-btn"
                   block
                   :disabled="isAuthenticating"
                   @click="goBack"
@@ -272,14 +272,19 @@
                     size="64"
                     class="mb-4"
                   />
-                  <p class="text-h6 mb-2">
+                  <p class="text-h6 ma-display mb-2">
                     {{ $t("login.connecting", "Connecting...") }}
                   </p>
                   <p class="text-body-2 text-medium-emphasis">
                     {{ connectionStatusMessage }}
                   </p>
                 </div>
-                <v-btn variant="text" block @click="cancelConnection">
+                <v-btn
+                  variant="text"
+                  block
+                  class="text-none login-quiet-btn"
+                  @click="cancelConnection"
+                >
                   {{ $t("login.cancel", "Cancel") }}
                 </v-btn>
               </template>
@@ -290,7 +295,7 @@
                   <v-icon color="error" size="64" class="mb-4"
                     >mdi-alert-circle</v-icon
                   >
-                  <p class="text-h6 mb-2">
+                  <p class="text-h6 ma-display mb-2">
                     {{
                       connectionErrorTitle ??
                       $t("login.connection_failed", "Connection Failed")
@@ -309,7 +314,14 @@
                     {{ connectionErrorDetail }}
                   </p>
                 </div>
-                <v-btn color="primary" block rounded="lg" @click="retry">
+                <v-btn
+                  color="primary"
+                  size="x-large"
+                  block
+                  rounded="lg"
+                  class="text-none"
+                  @click="retry"
+                >
                   {{ $t("login.try_again", "Try Again") }}
                 </v-btn>
               </template>
@@ -320,7 +332,9 @@
                   <v-icon color="warning" size="64" class="mb-4"
                     >mdi-account-clock</v-icon
                   >
-                  <p class="text-h6 mb-2">{{ guestSessionEndedTitle }}</p>
+                  <p class="text-h6 ma-display mb-2">
+                    {{ guestSessionEndedTitle }}
+                  </p>
                   <p class="text-body-2 text-medium-emphasis">
                     {{ guestSessionEndedMessage }}
                   </p>
@@ -338,7 +352,7 @@
                 <v-btn
                   variant="text"
                   block
-                  class="mt-2"
+                  class="mt-2 text-none login-quiet-btn"
                   @click="dismissGuestSessionEnded"
                 >
                   {{
@@ -356,7 +370,7 @@
                     size="64"
                     class="mb-4"
                   />
-                  <p class="text-h6 mb-2">
+                  <p class="text-h6 ma-display mb-2">
                     {{ $t("login.reconnecting", "Reconnecting") }}
                   </p>
                   <p class="text-body-2 text-medium-emphasis">
@@ -2155,31 +2169,80 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* CSS Variables matching Music Assistant server styling */
+/* Liner Notes palette, kept in step with styles/style.css. The page follows
+   the system scheme rather than the app theme, because it shows before any
+   user preference is known. */
 .login-background {
-  --fg: #000000;
-  --background: #f5f5f5;
-  --panel: #ffffff;
-  --primary: #03a9f4;
-  --text-secondary: rgba(0, 0, 0, 0.6);
-  --text-tertiary: rgba(0, 0, 0, 0.4);
-  --border: rgba(0, 0, 0, 0.1);
-  --input-bg: rgba(0, 0, 0, 0.03);
-  --input-focus-bg: rgba(3, 169, 244, 0.05);
-  --error-text: #d32f2f;
-  --success: #4caf50;
+  --fg: #1c1c1e;
+  --background: #ffffff;
+  --panel: rgba(255, 255, 255, 0.72);
+  --primary: #6462ea;
+  --text-secondary: #636368;
+  --text-tertiary: #98989e;
+  --border: rgba(10, 10, 20, 0.09);
+  --input-bg: rgba(10, 10, 20, 0.035);
+  --input-focus-bg: rgba(100, 98, 234, 0.06);
+  --error-text: #d23939;
+  --success: #1f9d63;
+  --wash-1: #c7c8ff;
+  --wash-2: #ffd9c2;
+  --wash-3: #c9efe9;
 
+  position: relative;
+  isolation: isolate;
   background: var(--background);
   box-sizing: border-box;
   min-height: 100vh;
   color: var(--fg);
   opacity: 0;
-  animation: fadeIn 0.3s ease-in forwards;
+  animation: fadeIn 0.4s ease-out forwards;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--device-inset-top) var(--device-inset-right)
     var(--device-inset-bottom) var(--device-inset-left);
+}
+
+/* a slow, blurred wash of colour behind the card, the same move the redesign
+   uses behind Now Playing, plus a little film grain so it never looks flat */
+.login-background::before,
+.login-background::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.login-background::before {
+  inset: -20%;
+  background:
+    radial-gradient(38% 42% at 22% 30%, var(--wash-1), transparent 70%),
+    radial-gradient(34% 40% at 78% 24%, var(--wash-2), transparent 70%),
+    radial-gradient(40% 46% at 62% 82%, var(--wash-3), transparent 70%);
+  filter: blur(40px) saturate(1.15);
+  animation: loginDrift 38s ease-in-out infinite alternate;
+}
+
+.login-background::after {
+  opacity: 0.16;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+}
+
+@keyframes loginDrift {
+  from {
+    transform: translate(0, 0) scale(1);
+  }
+  to {
+    transform: translate(3%, -2%) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-background::before {
+    animation: none;
+  }
 }
 
 @keyframes fadeIn {
@@ -2204,77 +2267,130 @@ onMounted(() => {
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .login-background {
-    --fg: #ffffff;
+    --fg: #f5f5f5;
     --background: #181818;
-    --panel: #232323;
-    --text-secondary: rgba(255, 255, 255, 0.7);
-    --text-tertiary: rgba(255, 255, 255, 0.4);
+    --panel: rgba(36, 36, 36, 0.66);
+    --primary: #7c7fe6;
+    --text-secondary: #a8a8a8;
+    --text-tertiary: #727276;
     --border: rgba(255, 255, 255, 0.08);
-    --input-bg: rgba(255, 255, 255, 0.05);
-    --input-focus-bg: rgba(3, 169, 244, 0.08);
-    --error-text: #ff6b6b;
-    --success: #66bb6a;
+    --input-bg: rgba(255, 255, 255, 0.045);
+    --input-focus-bg: rgba(124, 127, 230, 0.1);
+    --error-text: #ff7b7b;
+    --success: #57c6b9;
+    --wash-1: #3b3d8f;
+    --wash-2: #7a3b2c;
+    --wash-3: #1f4d4a;
   }
 }
 
 .login-card {
   background: var(--panel) !important;
   border: 1px solid var(--border);
-  padding: 2rem;
+  border-radius: 24px !important;
+  padding: 2.75rem 2.5rem 2.25rem;
+  backdrop-filter: blur(28px) saturate(1.4);
+  -webkit-backdrop-filter: blur(28px) saturate(1.4);
+  box-shadow:
+    0 40px 90px -30px rgba(0, 0, 0, 0.45),
+    0 1px 0 rgba(255, 255, 255, 0.06) inset !important;
 }
 
 /* Mobile responsive padding */
 @media (max-width: 500px) {
   .login-card {
-    padding: 1.25rem;
+    padding: 1.75rem 1.25rem 1.5rem;
   }
 }
 
 .login-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 500px) {
   .login-header {
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
   }
 }
 
+/* the house mark in a single ink rather than the brand cyan, so it sits
+   quietly with the rest of the palette. The bars are drawn in white over the
+   house, so a mask would fill them in; a greyscale curve keeps them. */
 .login-logo {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 1rem;
+  display: inline-block;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 1.25rem;
+  filter: grayscale(1) brightness(0.645) contrast(3.78);
+}
+
+@media (prefers-color-scheme: dark) {
+  .login-logo {
+    filter: grayscale(1) invert(1) brightness(2.5) contrast(0.93);
+  }
 }
 
 /* Smaller logo on mobile */
 @media (max-width: 500px) {
   .login-logo {
-    width: 60px;
-    height: 60px;
+    width: 44px;
+    height: 44px;
     margin-bottom: 0.75rem;
   }
 }
 
 .login-title {
-  font-size: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 2.5rem;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
 }
 
 @media (max-width: 500px) {
   .login-title {
-    font-size: 1.25rem;
+    font-size: 2rem;
   }
 }
 
 .login-subtitle {
-  font-size: 0.875rem;
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-size: 1.0625rem;
   margin-top: 0.5rem;
 }
 
 @media (max-width: 500px) {
   .login-subtitle {
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     margin-top: 0.25rem;
   }
+}
+
+/* text buttons read as quiet links rather than shouted labels */
+.login-quiet-btn {
+  color: var(--text-secondary) !important;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.login-quiet-btn:hover {
+  color: var(--fg) !important;
+}
+
+:deep(.v-btn.v-btn--size-x-large) {
+  min-height: 52px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+:deep(.v-btn.bg-primary) {
+  box-shadow: 0 10px 24px -12px var(--primary);
+}
+
+:deep(.v-chip) {
+  font-weight: 500;
 }
 
 .oauth-btn {
@@ -2287,15 +2403,24 @@ onMounted(() => {
 }
 
 :deep(.v-field) {
-  border-radius: 10px !important;
+  border-radius: 12px !important;
 }
 
 :deep(.v-field--variant-outlined .v-field__outline__start) {
-  border-radius: 10px 0 0 10px !important;
+  border-radius: 12px 0 0 12px !important;
 }
 
 :deep(.v-field--variant-outlined .v-field__outline__end) {
-  border-radius: 0 10px 10px 0 !important;
+  border-radius: 0 12px 12px 0 !important;
+}
+
+:deep(.v-field--variant-outlined .v-field__outline) {
+  --v-field-border-opacity: 1;
+  color: var(--border);
+}
+
+:deep(.v-field--focused .v-field__outline) {
+  color: var(--primary);
 }
 
 :deep(.v-card) {
@@ -2378,6 +2503,12 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
+@media (prefers-color-scheme: dark) {
+  .ohf-icon {
+    filter: invert(1);
+  }
+}
+
 @media (max-width: 500px) {
   .ohf-icon {
     height: 14px;
@@ -2397,7 +2528,7 @@ onMounted(() => {
 /* QR Scanner styles */
 .qr-scanner-card {
   background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid rgba(10, 10, 20, 0.09) !important;
 }
 
 .qr-scanner-card :deep(.v-card-title) {
@@ -2410,7 +2541,7 @@ onMounted(() => {
 
 @media (prefers-color-scheme: dark) {
   .qr-scanner-card {
-    background: #232323 !important;
+    background: #262628 !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
 

@@ -15,7 +15,7 @@
       <!-- Explain the multi-protocol setup when more than one is available -->
       <div
         v-if="protocolPanels.length > 1"
-        class="text-muted-foreground mb-4 rounded-md bg-muted/50 px-3 py-2 text-sm leading-relaxed"
+        class="protocol-info text-muted-foreground mx-5 my-3.5 rounded-[10px] bg-muted/60 px-3.5 py-2.5 text-[0.8125rem] leading-relaxed"
       >
         {{ $t("settings.protocol_multi_info") }}
       </div>
@@ -37,24 +37,24 @@
           :is="hasMultipleProtocols ? Accordion : 'div'"
           :type="hasMultipleProtocols ? 'single' : undefined"
           :collapsible="hasMultipleProtocols || undefined"
-          class="space-y-2"
+          class="protocol-panels"
         >
           <component
             :is="hasMultipleProtocols ? AccordionItem : 'div'"
             v-for="panel of protocolPanels"
             :key="panel"
             :value="hasMultipleProtocols ? panel : undefined"
-            class="rounded-[6px] border bg-card px-4 shadow-sm"
+            class="protocol-panel px-0"
           >
             <component
               :is="hasMultipleProtocols ? AccordionTrigger : 'div'"
               :class="
                 hasMultipleProtocols
-                  ? 'hover:no-underline'
-                  : 'flex items-start py-4 text-left text-sm font-medium'
+                  ? 'items-center px-5 py-3.5 font-semibold hover:no-underline'
+                  : 'flex items-start px-5 py-3.5 text-left text-sm font-semibold'
               "
             >
-              <span class="flex items-center gap-2">
+              <span class="flex items-center gap-2.5">
                 <ProviderIcon
                   v-if="getProtocolDomain(panel)"
                   :domain="getProtocolDomain(panel)!"
@@ -71,7 +71,7 @@
             </component>
             <component
               :is="hasMultipleProtocols ? AccordionContent : 'div'"
-              :class="['border-t pt-4', { 'pb-4': !hasMultipleProtocols }]"
+              class="protocol-panel-content border-t border-border pt-0 pb-0"
             >
               <div
                 v-if="!isProtocolProviderAvailable(panel)"
@@ -269,51 +269,56 @@ const getProtocolEmptyMessage = function (category: string): string {
 </script>
 
 <style scoped>
-/* Mirrors the config category card in EditConfig.vue */
+/* Mirrors the config category group in EditConfig.vue */
 .category-section {
-  margin-bottom: 14px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  border-radius: 14px;
-  background: rgb(var(--v-theme-surface));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  margin-bottom: 28px;
 }
 
 .category-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
-  background: rgba(var(--v-theme-on-surface), 0.03);
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  gap: 8px;
+  padding: 0 4px 10px;
 }
 
 .category-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
   flex-shrink: 0;
+  color: var(--muted-foreground);
 }
 
 .category-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--foreground);
 }
 
 .category-content {
-  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* the protocols are rows of the same group, below whatever comes first */
+.config-entry + .protocol-panels,
+.protocol-info + .protocol-panels {
+  border-top: 1px solid var(--border);
+}
+
+/* a protocol's own settings sit one step in, on a faint fill */
+.category-content :deep(.protocol-panel-content) {
+  background: color-mix(in oklab, var(--foreground) 2.5%, transparent);
 }
 
 .protocol-empty-message {
-  padding: 2px 0 6px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
-  font-style: italic;
-  font-size: 0.875rem;
+  padding: 12px 20px;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
 }
 </style>

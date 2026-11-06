@@ -7,25 +7,23 @@
     />
     <v-divider />
     <Container v-if="expanded">
-      <v-list>
+      <!-- track-list rows: tabular position, name, duration -->
+      <v-list class="chapter-list">
         <v-list-item
           v-for="chapter in itemDetails?.metadata?.chapters"
           :key="chapter.position"
+          class="chapter-row"
           :disabled="!itemIsAvailable(itemDetails)"
           @click="chapterClicked(chapter)"
         >
           <template #prepend>
-            <div style="width: 50px">
-              <v-chip>
-                {{ chapter.position }}
-              </v-chip>
-            </div>
+            <span class="chapter-position">{{ chapter.position }}</span>
           </template>
           <template #title>
-            <div>{{ chapter.name }}</div>
+            <div class="chapter-name">{{ chapter.name }}</div>
           </template>
           <template #append>
-            <span v-if="chapter.end" class="text-caption"
+            <span v-if="chapter.end" class="chapter-duration"
               >{{ formatDuration(chapter.end - chapter.start) }}
             </span>
           </template>
@@ -75,3 +73,40 @@ const chapterClicked = function (chapter: MediaItemChapter) {
   });
 };
 </script>
+
+<style scoped>
+.chapter-list {
+  padding: 4px 0;
+  background: transparent;
+}
+
+.chapter-row {
+  min-height: 48px;
+  border-radius: 10px;
+  transition: background-color 150ms ease;
+}
+
+.chapter-position {
+  display: inline-block;
+  width: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.chapter-name {
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chapter-duration {
+  padding-left: 12px;
+  font-size: 12.5px;
+  color: var(--subtle-foreground);
+  font-variant-numeric: tabular-nums;
+}
+</style>

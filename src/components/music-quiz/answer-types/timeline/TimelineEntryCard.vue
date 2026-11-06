@@ -5,8 +5,8 @@
     class="bg-card grid items-center border transition-colors motion-reduce:transition-none"
     :class="[
       compact
-        ? 'h-full grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-2 rounded-lg p-2 shadow-none'
-        : 'grid-cols-[3.5rem_minmax(0,1fr)_auto] gap-3 rounded-xl p-3 shadow-sm',
+        ? 'h-full grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-2 rounded-[10px] p-2 shadow-none'
+        : 'grid-cols-[3.5rem_minmax(0,1fr)_auto] gap-3 rounded-xl p-3 shadow-none',
       highlighted
         ? 'border-primary bg-primary/5 ring-primary/20 ring-2'
         : 'border-border',
@@ -16,13 +16,11 @@
       v-if="imageUrl"
       :src="imageUrl"
       :alt="`${entry.title} - ${entry.artist}`"
-      class="bg-muted aspect-square w-full object-cover"
-      :class="compact ? 'rounded-md' : 'rounded-lg'"
+      class="bg-muted aspect-square w-full rounded-[3px] object-contain"
     />
     <div
       v-else
-      class="bg-muted text-muted-foreground grid aspect-square w-full place-items-center"
-      :class="compact ? 'rounded-md' : 'rounded-lg'"
+      class="bg-muted text-muted-foreground grid aspect-square w-full place-items-center rounded-[3px]"
       aria-hidden="true"
     >
       <Music2 :class="compact ? 'size-4' : 'size-6'" />
@@ -63,8 +61,8 @@
         {{ $t("providers.music_quiz.timeline_revealed") }}
       </Badge>
       <strong
-        class="text-primary font-bold tabular-nums"
-        :class="compact ? 'text-base' : 'text-lg'"
+        class="font-display text-primary leading-none font-medium lining-nums tabular-nums"
+        :class="compact ? 'text-lg' : 'text-xl'"
       >
         {{ entry.release_year }}
       </strong>

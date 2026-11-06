@@ -83,15 +83,26 @@ const hasDescriptionOrHelpLink = computed(() => {
 </script>
 
 <style scoped>
+/* One setting per row; rows sit flush inside their group and are divided by
+   hairlines rather than gaps. */
 .config-entry {
   display: flex;
+  /* side controls line up with the field's first line, so a tall field
+     (options list, chips, a QR code) keeps them at its top */
   align-items: flex-start;
   gap: 8px;
-  margin-bottom: 8px;
+  min-height: 52px;
+  padding: 10px 12px 10px 20px;
 }
 
+.config-entry + .config-entry {
+  border-top: 1px solid var(--border);
+}
+
+/* a Home Assistant entity picker belongs to the control above it, so the two
+   read as one row */
 .config-entry:has(+ .config-entry-hass-picker) {
-  margin-bottom: 12px;
+  padding-bottom: 2px;
 }
 
 .config-entry:has(+ .config-entry-hass-picker)
@@ -99,60 +110,95 @@ const hasDescriptionOrHelpLink = computed(() => {
   display: none;
 }
 
-.config-entry-hass-picker {
-  margin-top: -8px;
-  margin-bottom: 16px;
+.config-entry + .config-entry-hass-picker {
+  border-top: 0;
+  padding-top: 0;
+  padding-bottom: 14px;
 }
 
-.config-entry:last-child {
-  margin-bottom: 0;
+/* the hint area under a field only takes room when it has something to say */
+.config-entry :deep(.v-input__details:not(:has(.v-messages__message))) {
+  display: none;
 }
 
-/* Add extra top margin for entries that follow a checkbox (which is shorter) */
-.config-entry:has(.v-checkbox) + .config-entry:has(.v-text-field),
-.config-entry:has(.v-checkbox) + .config-entry:has(.v-select),
-.config-entry:has(.v-checkbox) + .config-entry:has(.v-slider),
-.config-entry:has(.v-checkbox) + .config-entry:has(.v-combobox) {
-  margin-top: 16px;
+/* Labels of the fields that don't float theirs */
+.config-entry :deep(.v-selection-control .v-label),
+.config-entry :deep(.config-slider-label) {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 1;
+}
+
+/* a checkbox reads as a setting: its label on the left, the control on the
+   right where every other row keeps its control */
+.config-entry :deep(.v-checkbox .v-selection-control) {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+
+.config-entry :deep(.v-checkbox .v-selection-control .v-label) {
+  flex: 1;
+  min-width: 0;
+  padding-inline-start: 0;
+  white-space: normal;
+}
+
+/* calmer outlined fields */
+.config-entry :deep(.v-field) {
+  border-radius: 10px;
 }
 
 /* Advanced entry styling */
 .config-entry-advanced {
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 /* Advanced badge */
 .advanced-badge {
-  margin-left: 8px;
-  margin-top: 8px;
   flex-shrink: 0;
-  height: 20px;
+  margin-top: 7px;
+  height: 22px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--muted-foreground) !important;
+  font-size: 0.71875rem;
+  font-weight: 500;
+}
+
+.advanced-badge :deep(.v-chip__underlay),
+.advanced-badge :deep(.v-chip__overlay) {
+  display: none;
 }
 
 /* Help button */
 .help-btn {
   flex-shrink: 0;
-  margin-top: 8px;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
-  height: 36px;
+  color: var(--subtle-foreground);
+  transition: color 0.15s ease;
 }
 
 .help-btn:hover {
-  opacity: 1;
+  color: var(--foreground);
 }
 
-@media (min-width: 601px) {
-  .config-entry:has(.config-slider-wrapper) .help-btn {
-    margin-top: 0;
-    align-self: center;
-  }
+/* an outlined field is taller than the checkbox and slider rows, so the side
+   controls drop to its middle */
+.config-entry:has(.v-text-field, .v-combobox) .advanced-badge {
+  margin-top: 13px;
+}
+
+.config-entry:has(.v-text-field, .v-combobox) .help-btn {
+  margin-top: 6px;
 }
 
 @media (max-width: 600px) {
-  .config-entry:has(.config-slider-wrapper) .help-btn {
-    align-self: flex-start;
-    margin-top: 0;
+  .config-entry {
+    padding: 10px 8px 10px 16px;
   }
 }
 </style>

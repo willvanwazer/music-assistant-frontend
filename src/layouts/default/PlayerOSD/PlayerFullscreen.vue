@@ -13,8 +13,21 @@
       ref="cardRef"
       data-player-panel
       class="fullscreen-player-card"
+      :class="{ dark: darkTreatment }"
       :style="{ background: backgroundColor }"
     >
+      <!-- "ultrablur" backdrop: soft, slowly drifting blobs of the artwork's
+           colours, a veil that keeps text legible over any artwork, and a
+           little film grain. Sits beneath the optional visualizer layer. -->
+      <div class="np-backdrop" :style="ultrablurStyle" aria-hidden="true">
+        <div class="np-ub">
+          <span class="np-ub__blob"></span>
+          <span class="np-ub__blob"></span>
+          <span class="np-ub__blob"></span>
+        </div>
+        <div class="np-veil"></div>
+        <div class="np-grain"></div>
+      </div>
       <VisualizerCanvas
         v-if="store.showFullscreenPlayer && visualizerActive"
         :preset="visualizerPresetPref"
@@ -37,8 +50,9 @@
           <!-- on mobile the drag handle is the close affordance -->
           <Button
             v-if="!store.mobileLayout"
-            variant="ghost"
+            variant="ghost-icon"
             size="icon-sm"
+            class="np-cbtn"
             :aria-label="$t('tooltip.close_fullscreen')"
             @click="store.showFullscreenPlayer = false"
           >
@@ -53,9 +67,9 @@
           />
 
           <Button
-            variant="ghost-outline"
-            size="icon-xs"
-            class="ml-2 size-7"
+            variant="ghost-icon"
+            size="icon-sm"
+            class="np-cbtn ml-2"
             :aria-label="$t('tooltip.more_options')"
             @click.stop="openQueueMenu"
           >
@@ -65,7 +79,10 @@
       </v-toolbar>
 
       <!-- content -->
-      <div class="main">
+      <div
+        class="main"
+        :class="{ 'main--split': getBreakpointValue('bp7') && showRightColumn }"
+      >
         <!-- left column: media thumb + details-->
         <div
           v-if="getBreakpointValue('bp7') || !showRightColumn"
@@ -98,21 +115,31 @@
               />
             </div>
           </div>
+          <!-- The lines keep their source order (album before artist); the
+               stylesheet orders them visually as eyebrow, title, artist,
+               album, chapter, caption. -->
           <div class="main-media-details-track-info">
-            <!-- the external source streaming the media shown below -->
-            <NowPlayingSourceBadge class="main-media-details-source" />
+            <!-- eyebrow: "Now playing", plus the external source streaming the
+                 media shown below when there is one -->
+            <div class="np-eyebrow">
+              <span v-if="showNowPlayingEyebrow" class="np-eyebrow__label">
+                {{ $t("now_playing") }}
+              </span>
+              <NowPlayingSourceBadge plain class="main-media-details-source" />
+            </div>
             <!-- player name as title if its powered off-->
             <v-card-title
               v-if="store.activePlayer?.powered == false"
-              :style="`font-size: ${titleFontSize};font-weight:600;`"
+              class="ma-display np-title"
+              :style="`font-size: ${titleFontSize};`"
             >
               {{ store.activePlayer?.name }}
             </v-card-title>
             <!-- current media title -->
             <v-card-title
               v-else-if="store.activePlayer?.current_media?.title"
-              class="ma-display"
-              :style="`font-size: ${titleFontSize};font-weight:500;cursor:pointer;`"
+              class="ma-display np-title"
+              :style="`font-size: ${titleFontSize};cursor:pointer;`"
               @click="openCurrentTrackDetails"
             >
               <MarqueeText :sync="playerMarqueeSync">
@@ -122,7 +149,8 @@
             <!-- no player selected message -->
             <v-card-title
               v-else
-              :style="`font-size: ${titleFontSize};font-weight:600;cursor:pointer;`"
+              class="ma-display np-title"
+              :style="`font-size: ${titleFontSize};cursor:pointer;`"
               @click="store.showPlayersMenu = true"
             >
               <MarqueeText :sync="playerMarqueeSync">
@@ -135,7 +163,8 @@
             <!-- SUBTITLE: player powered off -->
             <v-card-subtitle
               v-if="store.activePlayer?.powered == false"
-              class="text-h6 text-md-h5 text-lg-h4"
+              class="np-artist"
+              :style="`font-size: ${subTitleFontSize};`"
             >
               {{ $t("off") }}
             </v-card-subtitle>
@@ -144,7 +173,9 @@
                  above keeps a constant size -->
             <v-card-subtitle
               v-else-if="store.activePlayer?.current_media && showAlbumSubtitle"
-              :style="`font-size: ${subTitleFontSize};${
+              class="np-album"
+              :class="{ 'np-album--link': !!albumSubtitle }"
+              :style="`font-size: ${albumFontSize};${
                 albumSubtitle ? 'cursor:pointer;' : ''
               }`"
               @click="onAlbumClick"
@@ -157,7 +188,8 @@
             <!-- subtitle: current chapter, followed by the author line -->
             <v-card-subtitle
               v-if="currentChapter"
-              :style="`font-size: ${subTitleFontSize};`"
+              class="np-chapter"
+              :style="`font-size: ${albumFontSize};`"
             >
               <MarqueeText :sync="playerMarqueeSync">
                 {{ currentChapter.chapter.name }}
@@ -170,168 +202,179 @@
                 store.activePlayer?.powered != false &&
                 store.activePlayer?.current_media
               "
+              class="np-artist"
+              :class="{
+                'np-artist--link': !!store.activePlayer.current_media.artist,
+              }"
               :style="`font-size: ${subTitleFontSize};${
                 store.activePlayer.current_media.artist ? 'cursor:pointer;' : ''
               }`"
               @click="onArtistClick"
             >
               <MarqueeText :sync="playerMarqueeSync">
-                {{ store.activePlayer.current_media.artist || " " }}
+                <span class="np-artist__name">{{
+                  store.activePlayer.current_media.artist || " "
+                }}</span>
               </MarqueeText>
             </v-card-subtitle>
 
             <!-- subtitle: queue ended or empty; an active third party source
                  is named by the badge above instead -->
-            <v-card-subtitle v-if="queueEnded" class="caption">
+            <v-card-subtitle v-if="queueEnded" class="np-caption">
               {{ $t("queue_ended") }}
             </v-card-subtitle>
             <v-card-subtitle
               v-else-if="
                 store.activePlayerQueue && store.activePlayerQueue.items == 0
               "
-              class="caption"
+              class="np-caption"
             >
               {{ $t("queue_empty") }}
             </v-card-subtitle>
           </div>
         </div>
 
-        <!-- right column: queue items or lyrics-->
+        <!-- right column: queue items or lyrics, on a frosted glass panel -->
         <div
           v-if="showRightColumn && store.activePlayerQueue"
-          class="main-queue-items"
+          class="main-queue-items main-queue-items--panel"
         >
-          <!-- Lyrics view -->
-          <div v-if="showLyrics" class="lyrics-wrapper">
-            <LyricsViewer
-              :media-item="store.curQueueItem?.media_item"
-              :position="lyricsElapsedTime"
-              :stream-details="store.curQueueItem?.streamdetails"
-              :text-color="sliderColor"
-              :lyrics="currentLyrics.plain"
-              :lrc-lyrics="currentLyrics.synced"
-              :offset="lyricsOffset"
-            />
-          </div>
-          <!-- Unified queue list: played → now playing → up next (virtualized) -->
-          <div
-            v-else
-            ref="queueScrollRef"
-            class="queue-items-scroll-box"
-            :style="`--queue-title-size: ${queueTitleFontSize}; --queue-subtitle-size: ${queueSubtitleFontSize};`"
-          >
-            <!-- the queue played through: say so, rather than leaving its last
-                 track looking like it is still the current one -->
-            <div v-if="queueEnded" class="queue-ended">
-              {{ $t("queue_ended") }}
+          <div class="np-panel">
+            <!-- Lyrics view -->
+            <div v-if="showLyrics" class="lyrics-wrapper">
+              <LyricsViewer
+                :media-item="store.curQueueItem?.media_item"
+                :position="lyricsElapsedTime"
+                :stream-details="store.curQueueItem?.streamdetails"
+                :text-color="sliderColor"
+                :lyrics="currentLyrics.plain"
+                :lrc-lyrics="currentLyrics.synced"
+                :offset="lyricsOffset"
+              />
             </div>
-            <!-- empty state -->
-            <div v-if="!totalItems" class="queue-empty">
-              {{ $t("queue_empty") }}
-            </div>
-            <!-- virtual spacer sized to the whole queue; only visible rows render -->
+            <!-- Unified queue list: played → now playing → up next (virtualized) -->
             <div
               v-else
-              class="queue-virt"
-              :class="{ 'queue-virt--dragging': isDragging }"
-              :style="{ height: `${totalSize}px` }"
+              ref="queueScrollRef"
+              class="queue-items-scroll-box"
+              :style="`--queue-title-size: ${queueTitleFontSize}; --queue-subtitle-size: ${queueSubtitleFontSize};`"
             >
+              <!-- the queue played through: say so, rather than leaving its
+                   last track looking like it is still the current one -->
+              <div v-if="queueEnded" class="queue-ended">
+                {{ $t("queue_ended") }}
+              </div>
+              <!-- empty state -->
+              <div v-if="!totalItems" class="queue-empty">
+                {{ $t("queue_empty") }}
+              </div>
+              <!-- virtual spacer sized to the whole queue; only visible rows render -->
               <div
-                v-for="row in virtualRows"
-                :key="row.index"
-                :ref="measureRow"
-                :data-index="row.index"
-                class="queue-virt-row"
-                :style="{
-                  transform: `translateY(${row.vItem.start + rowOffset(row.index)}px)`,
-                }"
+                v-else
+                class="queue-virt"
+                :class="{ 'queue-virt--dragging': isDragging }"
+                :style="{ height: `${totalSize}px` }"
               >
-                <!-- section divider (Now playing / Up next) -->
-                <div v-if="row.divider" class="queue-divider">
-                  <span class="queue-divider__label">{{
-                    $t(row.divider)
-                  }}</span>
-                  <span
-                    v-if="row.divider === 'up_next' && upNextCount"
-                    class="queue-divider__count"
+                <div
+                  v-for="row in virtualRows"
+                  :key="row.index"
+                  :ref="measureRow"
+                  :data-index="row.index"
+                  class="queue-virt-row"
+                  :style="{
+                    transform: `translateY(${row.vItem.start + rowOffset(row.index)}px)`,
+                  }"
+                >
+                  <!-- section divider (Now playing / Up next) -->
+                  <div v-if="row.divider" class="queue-divider">
+                    <span class="queue-divider__label">{{
+                      $t(row.divider)
+                    }}</span>
+                    <span
+                      v-if="row.divider === 'up_next' && upNextCount"
+                      class="queue-divider__count"
+                    >
+                      {{ upNextCount }}
+                    </span>
+                  </div>
+                  <!-- queue mode banner (radio mix / autoplay state) under Up next -->
+                  <QueueModeBanner v-if="row.divider === 'up_next'" />
+                  <!-- loaded item -->
+                  <QueueListItem
+                    v-if="row.item"
+                    :item="row.item"
+                    :state="row.state"
+                    :is-playing="playerActive"
+                    :dragging="draggingIndex === row.index"
+                    :marquee-sync="
+                      row.state === 'playing'
+                        ? playerMarqueeSync
+                        : hoveredMarqueeSync
+                    "
+                    :request-badge-color="requestBadgeColor"
+                    :boost-badge-color="boostBadgeColor"
+                    @menu="(e: Event) => openQueueItemMenu(e, row.index)"
+                    @dragstart="
+                      (e: PointerEvent) => startItemDrag(e, row.index)
+                    "
+                  />
+                  <!-- placeholder while the page loads -->
+                  <div v-else class="queue-skeleton">
+                    <div class="queue-skeleton__thumb"></div>
+                    <div class="queue-skeleton__lines">
+                      <div class="queue-skeleton__line"></div>
+                      <div
+                        class="queue-skeleton__line queue-skeleton__line--sub"
+                      ></div>
+                    </div>
+                  </div>
+                  <!-- chapters for the current audiobook item -->
+                  <div
+                    v-if="
+                      row.state === 'playing' &&
+                      row.item?.media_item?.metadata?.chapters?.length
+                    "
+                    class="queue-chapters"
                   >
-                    {{ upNextCount }}
-                  </span>
-                  <span class="queue-divider__line"></span>
-                </div>
-                <!-- queue mode banner (radio mix / autoplay state) under Up next -->
-                <QueueModeBanner v-if="row.divider === 'up_next'" />
-                <!-- loaded item -->
-                <QueueListItem
-                  v-if="row.item"
-                  :item="row.item"
-                  :state="row.state"
-                  :is-playing="playerActive"
-                  :dragging="draggingIndex === row.index"
-                  :marquee-sync="
-                    row.state === 'playing'
-                      ? playerMarqueeSync
-                      : hoveredMarqueeSync
-                  "
-                  :request-badge-color="requestBadgeColor"
-                  :boost-badge-color="boostBadgeColor"
-                  @menu="(e: Event) => openQueueItemMenu(e, row.index)"
-                  @dragstart="(e: PointerEvent) => startItemDrag(e, row.index)"
-                />
-                <!-- placeholder while the page loads -->
-                <div v-else class="queue-skeleton">
-                  <div class="queue-skeleton__thumb"></div>
-                  <div class="queue-skeleton__lines">
-                    <div class="queue-skeleton__line"></div>
-                    <div
-                      class="queue-skeleton__line queue-skeleton__line--sub"
-                    ></div>
+                    <button
+                      v-for="chapter in row.item.media_item.metadata.chapters"
+                      :key="chapter.position"
+                      type="button"
+                      class="queue-chapter"
+                      :class="{
+                        'queue-chapter--active': isActiveChapter(
+                          row.item,
+                          chapter,
+                        ),
+                      }"
+                      :aria-current="
+                        isActiveChapter(row.item, chapter) ? 'true' : undefined
+                      "
+                      @click.stop="chapterClicked(row.item.media_item, chapter)"
+                    >
+                      <span class="queue-chapter__name">{{
+                        chapter.name
+                      }}</span>
+                      <span v-if="chapter.end" class="queue-chapter__time">
+                        {{ formatDuration(chapter.end - chapter.start) }}
+                      </span>
+                    </button>
                   </div>
                 </div>
-                <!-- chapters for the current audiobook item -->
+                <!-- floating ghost of the dragged item; tracks the pointer -->
                 <div
-                  v-if="
-                    row.state === 'playing' &&
-                    row.item?.media_item?.metadata?.chapters?.length
-                  "
-                  class="queue-chapters"
+                  v-if="isDragging && draggedItem"
+                  class="queue-ghost"
+                  :style="{ transform: `translateY(${ghostY}px)` }"
                 >
-                  <button
-                    v-for="chapter in row.item.media_item.metadata.chapters"
-                    :key="chapter.position"
-                    type="button"
-                    class="queue-chapter"
-                    :class="{
-                      'queue-chapter--active': isActiveChapter(
-                        row.item,
-                        chapter,
-                      ),
-                    }"
-                    :aria-current="
-                      isActiveChapter(row.item, chapter) ? 'true' : undefined
-                    "
-                    @click.stop="chapterClicked(row.item.media_item, chapter)"
-                  >
-                    <span class="queue-chapter__name">{{ chapter.name }}</span>
-                    <span v-if="chapter.end" class="queue-chapter__time">
-                      {{ formatDuration(chapter.end - chapter.start) }}
-                    </span>
-                  </button>
+                  <QueueListItem
+                    :item="draggedItem"
+                    state="upcoming"
+                    ghost
+                    :request-badge-color="requestBadgeColor"
+                    :boost-badge-color="boostBadgeColor"
+                  />
                 </div>
-              </div>
-              <!-- floating ghost of the dragged item; tracks the pointer -->
-              <div
-                v-if="isDragging && draggedItem"
-                class="queue-ghost"
-                :style="{ transform: `translateY(${ghostY}px)` }"
-              >
-                <QueueListItem
-                  :item="draggedItem"
-                  state="upcoming"
-                  ghost
-                  :request-badge-color="requestBadgeColor"
-                  :boost-badge-color="boostBadgeColor"
-                />
               </div>
             </div>
           </div>
@@ -461,12 +504,13 @@
           <!-- Without a competing hover:text- here, the outline variant's own
                hover:text-accent-foreground survives the class merge and recolours
                the label against the artwork, so the hover colour is pinned to
-               the --text-color the rest of the panel follows. -->
+               the --text-color the rest of the panel follows. The glass fill
+               comes from np-room-pill. -->
           <Button
             id="fullscreen-player-select-button"
             variant="outline"
             size="xs"
-            class="border-transparent bg-background/40 shadow-none backdrop-blur-md hover:bg-background/60 hover:text-[var(--text-color)] dark:border-transparent dark:bg-background/40 dark:hover:bg-background/60"
+            class="np-room-pill hover:text-[var(--text-color)]"
             :aria-label="playerSelectLabel"
             :aria-expanded="store.showPlayersMenu"
             aria-haspopup="dialog"
@@ -475,7 +519,7 @@
             <PlayerIcon
               :icon="store.activePlayer?.icon"
               :size="20"
-              class="mr-1"
+              class="np-room-pill__icon mr-1"
             />
             {{ store.activePlayer ? getPlayerName(store.activePlayer) : "" }}
           </Button>
@@ -791,6 +835,15 @@ const {
   rowOffset,
 } = useFullscreenQueue(showLyrics);
 
+// The eyebrow above the title only says "Now playing" while something is:
+// not for a powered off player, an empty view or a queue that played through.
+const showNowPlayingEyebrow = computed(
+  () =>
+    store.activePlayer?.powered != false &&
+    !!store.activePlayer?.current_media?.title &&
+    !queueEnded.value,
+);
+
 // Protocols with accurate playback time reporting don't need a latency offset.
 const ACCURATE_TIME_PROTOCOLS = ["airplay"];
 
@@ -895,30 +948,37 @@ const {
   visualizerActive,
 } = useVisualizer(() => store.activePlayer?.player_id);
 
-const titleFontSize = computed(() => {
-  switch (name.value) {
-    case "xs":
-      return "1.3em";
-    case "sm":
-      return "1.6em";
-    case "md":
-      return "1.8em";
-    case "lg":
-      return store.showQueueItems ? "1.7em" : "2.1em";
-    case "xl":
-      return store.showQueueItems ? "1.8em" : "2.3em";
-    case "xxl":
-      return store.showQueueItems ? "1.9em" : "2.5em";
-    default:
-      return "1.0em";
-  }
+// Display-serif title size (rem) per breakpoint: [beside the queue or lyrics
+// panel, details alone]. Desktop lands in the 48-58px editorial range, phones
+// around 28-34px.
+const TITLE_REM: Record<string, [number, number]> = {
+  xs: [1.75, 1.75],
+  sm: [2.125, 2.125],
+  md: [2.5, 2.75],
+  lg: [3, 3.25],
+  xl: [3.25, 3.5],
+  xxl: [3.375, 3.625],
+};
+
+const titleRem = computed(() => {
+  const [withPanel, alone] = TITLE_REM[name.value] ?? TITLE_REM.xs;
+  const rem = showRightColumn.value ? withPanel : alone;
+  // short viewports hand the height to the artwork instead
+  return showAlbumSubtitle.value ? rem : Math.min(rem, 2.25);
 });
 
-const subTitleFontSize = computed(() => {
-  // Anchor album/artist size to the track title using the EditorialMediaCard
-  // tile ratio (subtitle 12px / title 14px).
-  return `${(parseFloat(titleFontSize.value) * (12 / 14)).toFixed(3)}em`;
-});
+const titleFontSize = computed(() => `${titleRem.value}rem`);
+
+// Artist line: 600 weight, 16px on phones up to 22px beside a large title.
+const artistRem = computed(() =>
+  Math.min(1.375, Math.max(1, titleRem.value * 0.4)),
+);
+const subTitleFontSize = computed(() => `${artistRem.value.toFixed(3)}rem`);
+
+// Album (italic serif) and chapter lines sit a step below the artist.
+const albumFontSize = computed(
+  () => `${(artistRem.value * 0.92).toFixed(3)}rem`,
+);
 
 const playerSelectLabel = computed(() => {
   const selectPlayer = $t("tooltip.select_player");
@@ -1280,6 +1340,52 @@ watchEffect(() => {
   );
 });
 
+// Whether the view wears its dark treatment: the dark theme, or a dominant
+// visualizer forcing light text (same condition as above). The card then
+// carries the .dark class, so every theme token inside it (glass, borders,
+// muted text) follows the light-on-dark text instead of the app theme.
+const darkTreatment = computed(
+  () =>
+    vuetify.theme.current.value.dark ||
+    (store.showFullscreenPlayer &&
+      visualizerActive.value &&
+      visualizerOpacityPref.value > 50),
+);
+
+// Tones for the "ultrablur" wash, drawn from the artwork palette: a base and
+// three soft blobs. The dark treatment keeps them deep and saturated; the light
+// one pulls each most of the way to white so the frosted veil stays bright.
+// Without a palette nothing is set and the wash falls back to neutral tokens.
+const ultrablurStyle = computed((): Record<string, string> => {
+  const { darkColor, lightColor } = compProps.colorPalette;
+  if (!darkColor && !lightColor) return {};
+  let deep: ReturnType<typeof Color>;
+  let bright: ReturnType<typeof Color>;
+  try {
+    deep = Color(darkColor || lightColor).saturate(0.2);
+    bright = Color(lightColor || darkColor).rotate(14);
+  } catch {
+    return {};
+  }
+  if (darkTreatment.value) {
+    const base = deep.mix(Color("#0c0c0e"), 0.72);
+    const blob1 = deep.lighten(0.15);
+    return {
+      "--np-base": base.hex(),
+      "--np-t1": blob1.hex(),
+      "--np-t2": bright.darken(0.4).hex(),
+      "--np-t3": blob1.mix(base, 0.5).hex(),
+    };
+  }
+  const white = Color("#ffffff");
+  return {
+    "--np-base": deep.mix(white, 0.72).hex(),
+    "--np-t1": deep.mix(white, 0.45).hex(),
+    "--np-t2": bright.mix(white, 0.4).hex(),
+    "--np-t3": deep.mix(white, 0.6).hex(),
+  };
+});
+
 onBeforeUnmount(() => {
   setStatusBarColorOverride(undefined);
 });
@@ -1299,12 +1405,47 @@ onBeforeUnmount(() => {
   flex-direction: column;
   padding: var(--device-inset-top) var(--device-inset-right) 0
     var(--device-inset-left);
-  /* Containing block for the visualizer layer (z-index 0); everything else
-     is lifted above it so the canvas renders strictly behind the content. */
+  /* Containing block for the backdrop and visualizer layers (z-index 0);
+     everything else is lifted above them so they render strictly behind the
+     content. */
   position: relative;
+  color: var(--text-color);
+
+  /* Tones for everything that sits on the artwork wash. Built from theme
+     tokens, which follow the .dark class the card carries for its dark
+     treatment, so a dominant visualizer gets dark glass under its white text
+     even in the light theme. */
+  --np-gutter: 24px;
+  --np-text-2: color-mix(in srgb, var(--text-color) 68%, transparent);
+  --np-text-3: color-mix(in srgb, var(--text-color) 50%, transparent);
+  --np-hover: color-mix(in srgb, var(--text-color) 6%, transparent);
+  --np-active: color-mix(in srgb, var(--text-color) 10%, transparent);
+  --np-glass: color-mix(in oklab, var(--popover) 62%, transparent);
+  --np-glass-hover: color-mix(in oklab, var(--popover) 82%, transparent);
+  --np-glass-line: color-mix(in oklab, var(--background) 70%, transparent);
+  --np-veil: color-mix(in oklab, var(--background) 40%, transparent);
+  --np-panel-shadow: 0 16px 40px -14px rgba(20, 20, 50, 0.22);
+  --np-art-shadow:
+    0 40px 80px -32px rgba(20, 20, 50, 0.45), 0 0 0 1px rgba(10, 10, 20, 0.06);
+  --np-grain-opacity: 0.12;
 }
 
-.fullscreen-player-card > :not(.visualizer-layer) {
+.fullscreen-player-card.dark {
+  --np-glass-line: color-mix(in oklab, var(--foreground) 10%, transparent);
+  --np-veil: color-mix(in oklab, var(--background) 42%, transparent);
+  --np-panel-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.6);
+  --np-art-shadow:
+    0 50px 100px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --np-grain-opacity: 0.18;
+}
+
+@media (max-width: 600px) {
+  .fullscreen-player-card {
+    --np-gutter: 12px;
+  }
+}
+
+.fullscreen-player-card > :not(.visualizer-layer):not(.np-backdrop) {
   position: relative;
   z-index: 1;
 }
@@ -1312,6 +1453,147 @@ onBeforeUnmount(() => {
 .fullscreen-player-card :deep(.panel-drag-handle > div) {
   background: color-mix(in srgb, var(--text-color) 40%, transparent);
 }
+
+/* ---- "ultrablur" backdrop ------------------------------------------------ */
+
+.np-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.np-ub {
+  position: absolute;
+  inset: -20%;
+  background-color: var(--np-base, var(--background));
+  transition: background-color 0.9s ease;
+}
+
+/* A radial mask feathers each blob like a heavy blur, without re-blurring a
+   moving layer on every frame. */
+.np-ub__blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.9;
+  -webkit-mask-image: radial-gradient(
+    closest-side,
+    #000 15%,
+    rgba(0, 0, 0, 0.55) 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    closest-side,
+    #000 15%,
+    rgba(0, 0, 0, 0.55) 55%,
+    transparent 100%
+  );
+  transition: background-color 0.9s ease;
+}
+
+.np-ub__blob:nth-child(1) {
+  width: 90%;
+  height: 100%;
+  left: -15%;
+  top: -10%;
+  background-color: var(--np-t1, var(--secondary));
+}
+
+.np-ub__blob:nth-child(2) {
+  width: 80%;
+  height: 90%;
+  right: -15%;
+  top: -20%;
+  background-color: var(--np-t2, var(--card));
+}
+
+.np-ub__blob:nth-child(3) {
+  width: 85%;
+  height: 80%;
+  left: 15%;
+  bottom: -25%;
+  background-color: var(--np-t3, var(--muted));
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .np-ub__blob {
+    will-change: transform;
+    animation: np-drift 28s ease-in-out infinite;
+  }
+
+  .np-ub__blob:nth-child(2) {
+    animation-duration: 34s;
+    animation-direction: reverse;
+  }
+
+  .np-ub__blob:nth-child(3) {
+    animation-duration: 40s;
+  }
+}
+
+@keyframes np-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(4%, -3%) scale(1.08) rotate(8deg);
+  }
+  66% {
+    transform: translate(-3%, 4%) scale(0.96) rotate(-6deg);
+  }
+}
+
+/* smoky (dark) or frosted (light) layer that keeps text readable over any
+   artwork */
+.np-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--np-veil);
+}
+
+.np-grain {
+  position: absolute;
+  inset: 0;
+  opacity: var(--np-grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+}
+
+/* ---- header ------------------------------------------------------------- */
+
+.v-toolbar :deep(.v-toolbar-title) {
+  text-align: center;
+}
+
+.v-toolbar :deep(.v-toolbar__prepend) {
+  margin-inline-start: var(--np-gutter);
+}
+
+/* the trailing buttons line up with the panel's right edge below */
+.v-toolbar :deep(.v-toolbar__append) {
+  margin-inline-end: var(--np-gutter);
+}
+
+/* round glass buttons (close, more) */
+.np-cbtn {
+  width: 34px !important;
+  height: 34px !important;
+  border: 1px solid var(--np-glass-line) !important;
+  background-color: var(--np-glass) !important;
+  color: var(--text-color) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  transition: background-color 150ms ease;
+}
+
+.np-cbtn:hover {
+  background-color: var(--np-glass-hover) !important;
+}
+
+/* ---- layout ------------------------------------------------------------- */
 
 .main {
   display: flex;
@@ -1328,6 +1610,13 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
+/* beside the panel, the details take all the room the panel leaves */
+.main--split .main-media-details {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+
 .main-queue-items {
   flex: 50%;
   height: 100%;
@@ -1339,15 +1628,66 @@ onBeforeUnmount(() => {
   min-height: 0;
 }
 
+.main-queue-items--panel {
+  padding: 4px var(--np-gutter) 0;
+}
+
+.main--split .main-queue-items--panel {
+  flex: 0 0 clamp(360px, 32vw, 500px);
+  padding-left: 8px;
+}
+
+/* ---- queue / lyrics panel ----------------------------------------------- */
+
+.np-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  /* Keep the panel clear of the progress bar / controls below. */
+  margin-bottom: 24px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--np-glass);
+  -webkit-backdrop-filter: blur(40px) saturate(1.5);
+  backdrop-filter: blur(40px) saturate(1.5);
+  box-shadow:
+    inset 0 0 0 1px var(--np-glass-line),
+    var(--np-panel-shadow);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .np-panel {
+    animation: np-panel-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+}
+
+@keyframes np-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+@media (max-width: 600px) {
+  .np-panel {
+    border-radius: 18px;
+    margin-bottom: 16px;
+  }
+}
+
 .queue-items-scroll-box {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding-bottom: 12px;
-  /* Keep the list clear of the progress bar / controls below. */
-  margin-bottom: 24px;
+  /* No top padding: the virtualizer and the drag ghost measure rows from the
+     scroll box's own top edge. */
+  padding: 0 8px 12px;
   scroll-behavior: auto;
   overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--text-color) 22%, transparent)
+    transparent;
 }
 
 /* Virtual list: a spacer sized to the whole queue, with only the visible rows
@@ -1380,20 +1720,21 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* Placeholder shown while a page of items is still loading. */
+/* Placeholder shown while a page of items is still loading; sized like a
+   real row. */
 .queue-skeleton {
   display: flex;
   align-items: center;
   gap: 12px;
   height: 60px;
-  padding: 6px 8px;
+  padding: 8px 10px;
 }
 
 .queue-skeleton__thumb {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 3px;
   background: color-mix(
     in srgb,
     var(--text-color, currentColor) 10%,
@@ -1424,47 +1765,37 @@ onBeforeUnmount(() => {
   height: 10px;
 }
 
-/* Section divider between played / now playing / up next. */
+/* Section labels (Now playing / Up next) as eyebrows, the up-next count on
+   the right. */
 .queue-divider {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 10px;
-  padding: 14px 8px 6px;
+  padding: 16px 10px 8px;
 }
 
 .queue-divider__label {
   flex: 0 0 auto;
-  font-size: 0.7rem;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--text-color, currentColor);
-  opacity: 0.65;
+  color: var(--np-text-3);
 }
 
 .queue-divider__count {
-  flex: 0 0 auto;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--text-color, currentColor);
-  opacity: 0.4;
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--np-text-3);
 }
 
-.queue-divider__line {
-  flex: 1 1 auto;
-  height: 1px;
-  background: color-mix(
-    in srgb,
-    var(--text-color, currentColor) 18%,
-    transparent
-  );
-}
-
-/* Audiobook chapters under the current item. */
+/* Audiobook chapters under the current item, lined up with its title. */
 .queue-chapters {
   display: flex;
   flex-direction: column;
-  margin: 2px 0 6px 60px;
+  margin: 2px 0 8px 56px;
 }
 
 .queue-chapter {
@@ -1473,32 +1804,29 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: 8px;
   text-align: left;
   color: var(--text-color, currentColor);
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.12s ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 .queue-chapter:hover {
-  background: color-mix(
-    in srgb,
-    var(--text-color, currentColor) 8%,
-    transparent
-  );
+  background: var(--np-hover);
 }
 
 .queue-chapter--active {
   color: var(--primary);
-  background: color-mix(in srgb, var(--primary) 14%, transparent);
-  box-shadow: inset 3px 0 0 var(--primary);
+  background: var(--np-active);
   font-weight: 600;
 }
 
 .queue-chapter--active:hover {
-  background: color-mix(in srgb, var(--primary) 20%, transparent);
+  background: var(--np-active);
 }
 
 .queue-chapter__name {
@@ -1511,8 +1839,9 @@ onBeforeUnmount(() => {
 
 .queue-chapter__time {
   flex: 0 0 auto;
-  font-size: 0.72rem;
-  opacity: 0.6;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--np-text-3);
 }
 
 .queue-empty {
@@ -1522,25 +1851,28 @@ onBeforeUnmount(() => {
   height: 100%;
   padding: 24px;
   text-align: center;
-  opacity: 0.6;
+  font-size: 13.5px;
+  color: var(--np-text-2);
 }
 
 .queue-ended {
-  padding: 8px 4px 12px;
+  padding: 14px 10px 6px;
   text-align: center;
-  font-size: 0.85rem;
-  opacity: 0.6;
+  font-size: 13px;
+  color: var(--np-text-2);
 }
 
+/* ---- artwork and track details ------------------------------------------ */
+
+/* The cover takes all the height the details leave, as large as the column
+   allows, centred. */
 .main-media-details-image {
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
-  max-height: 60%;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 8px 24px 0;
   container-type: size;
 }
 .main-media-details-image .v-img {
@@ -1550,8 +1882,8 @@ onBeforeUnmount(() => {
   width: min(100cqi, 100cqh);
   height: min(100cqi, 100cqh);
   flex: 0 0 auto;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  border-radius: 6px;
+  box-shadow: var(--np-art-shadow);
   overflow: hidden;
 }
 
@@ -1568,20 +1900,126 @@ onBeforeUnmount(() => {
   justify-content: flex-start;
   align-items: center;
   text-align: center;
-  --track-info-padding-top: min(5%, 5vh);
-  padding: var(--track-info-padding-top) 0 10px;
+  padding: min(4%, 3.5vh) 0 8px;
   overflow: hidden;
-}
-
-/* the badge already fills part of the gap below the artwork and hugs the
-   title, so the block trades half its top padding for it */
-.main-media-details-track-info:has(.main-media-details-source) {
-  --track-info-padding-top: min(2.5%, 2.5vh);
 }
 
 .main-media-details-track-info > * {
   max-width: 100%;
 }
+
+/* Visual order of the details: eyebrow, title, artist, album, chapter and any
+   caption (their source order differs, see the template). */
+.np-eyebrow {
+  order: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--np-text-2);
+}
+
+.np-eyebrow:empty {
+  display: none;
+}
+
+/* the source badge reads as part of the eyebrow, after a separator */
+.np-eyebrow .main-media-details-source {
+  max-width: 100%;
+  gap: 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.1em;
+}
+
+.np-eyebrow__label + .main-media-details-source::before {
+  content: "·";
+  margin-right: 2px;
+}
+
+.np-title {
+  order: 1;
+  padding: 0 16px;
+  line-height: 1.15;
+  letter-spacing: -0.012em;
+  color: var(--text-color);
+}
+
+/* tighter than the marquee's default box, so the artist sits close below */
+.np-title :deep(.container) {
+  min-height: 1.25em;
+}
+
+.np-artist {
+  order: 2;
+  margin-top: 0.6rem;
+  padding: 0 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  opacity: 1;
+  color: var(--text-color);
+}
+
+.np-artist--link .np-artist__name {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  text-decoration-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  transition: color 150ms ease;
+}
+
+.np-artist--link:hover .np-artist__name {
+  color: var(--primary);
+}
+
+.np-album {
+  order: 3;
+  margin-top: 0.25rem;
+  padding: 0 16px;
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0;
+  opacity: 1;
+  color: var(--np-text-2);
+  transition: color 150ms ease;
+}
+
+.np-album--link:hover {
+  color: var(--text-color);
+}
+
+.np-chapter {
+  order: 4;
+  margin-top: 0.25rem;
+  padding: 0 16px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0;
+  opacity: 1;
+  color: var(--np-text-2);
+}
+
+.np-caption {
+  order: 5;
+  margin-top: 0.5rem;
+  padding: 0 16px;
+  font-size: 13px;
+  letter-spacing: 0;
+  opacity: 1;
+  color: var(--np-text-3);
+}
+
+/* ---- transport ---------------------------------------------------------- */
 
 .player-bottom {
   flex-shrink: 0;
@@ -1684,18 +2122,6 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 
-.v-toolbar :deep(.v-toolbar-title) {
-  text-align: center;
-}
-
-/* Line the trailing menu button up with the per-row menu buttons in the queue
-   list below: those sit 18px from the column's right edge (10px column + 8px
-   row padding) with a 32px button, so this 28px button needs a 20px end margin
-   for the two to share a vertical centre. */
-.v-toolbar :deep(.v-toolbar__append) {
-  margin-inline-end: 20px;
-}
-
 div,
 button {
   color: var(--text-color);
@@ -1703,6 +2129,13 @@ button {
 
 .play-btn-wrapper :deep(.play-btn-icon) {
   background-color: var(--text-color) !important;
+}
+
+/* Icon.vue rests its buttons at 0.62 until hover; the solid disc is the main
+   action and would read as greyed out, the more so on touch with no hover */
+.play-btn-wrapper
+  :deep(.icon-container--button:not(.icon-container--disabled)) {
+  opacity: 1;
 }
 
 .player-bottom :deep([data-slot="slider-range"]) {
@@ -1721,8 +2154,32 @@ button {
   ) !important;
 }
 
+/* The room the controls act on, named on a glass pill. */
+.np-room-pill {
+  height: 32px !important;
+  padding: 0 14px 0 11px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-color: var(--np-glass-line) !important;
+  background-color: var(--np-glass) !important;
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  transition: background-color 150ms ease;
+}
+
+.np-room-pill:hover {
+  background-color: var(--np-glass-hover) !important;
+}
+
+.np-room-pill :deep(.np-room-pill__icon) {
+  color: var(--primary);
+}
+
+/* ---- lyrics ------------------------------------------------------------- */
+
 .lyrics-wrapper {
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   overflow: hidden;
   display: flex;
@@ -1735,34 +2192,72 @@ button {
   height: auto;
 }
 
-.lyrics-wrapper :deep(.lyrics-line),
+/* Editorial lyrics: left-aligned serif lines; the current one at full
+   strength and very slightly larger, sung lines at half, lines to come
+   fainter still. */
+.lyrics-wrapper :deep(.synced-content),
+.lyrics-wrapper :deep(.lyrics-content),
+.lyrics-wrapper :deep(.lyrics-intro) {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.lyrics-wrapper :deep(.synced-content),
+.lyrics-wrapper :deep(.lyrics-content) {
+  text-align: left;
+}
+
+.lyrics-wrapper :deep(.lyrics-line) {
+  margin: 0 0 10px;
+  padding: 4px 0;
+  font-size: clamp(1.375rem, 1rem + 0.8vw, 1.625rem);
+  line-height: 1.32;
+  transform-origin: left center;
+}
+
 .lyrics-wrapper :deep(.break-note) {
-  font-size: clamp(1.3rem, 4.5vw, 1.9rem);
+  font-size: clamp(1.375rem, 1rem + 0.8vw, 1.625rem);
 }
 
-/* Tablet */
-@media (min-width: 600px) {
-  .lyrics-wrapper :deep(.lyrics-line),
-  .lyrics-wrapper :deep(.break-note) {
-    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-  }
+.lyrics-wrapper :deep(.lyrics-line),
+.lyrics-wrapper :deep(.lyrics-line.lyrics-line--far),
+.lyrics-wrapper :deep(.lyrics-line.lyrics-line--hidden) {
+  opacity: 0.32;
 }
 
-/* Desktop */
-@media (min-width: 1280px) {
-  .lyrics-wrapper :deep(.lyrics-line),
-  .lyrics-wrapper :deep(.break-note) {
-    font-size: clamp(1.4rem, 2vw, 2.2rem);
-  }
+.lyrics-wrapper :deep(.lyrics-line.lyrics-line--past) {
+  opacity: 0.5;
+}
+
+.lyrics-wrapper :deep(.lyrics-line.active) {
+  opacity: 1;
+}
+
+.lyrics-wrapper :deep(.song-title) {
+  font-size: clamp(1.75rem, 2.4vw, 2.375rem);
+}
+
+.lyrics-wrapper :deep(.artist-name) {
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
+
+.lyrics-wrapper :deep(.lyrics-coming-soon) {
+  font-size: 0.95rem;
 }
 
 .icon-thumb-large {
   width: 100%;
   aspect-ratio: 1;
   max-width: 400px;
+  /* fit the box the artwork would have had, so on a short window it does not
+     spill over the details below (the plain sizing above is the fallback) */
+  width: min(100cqi, 100cqh, 400px);
+  height: min(100cqi, 100cqh, 400px);
+  flex: 0 0 auto;
   margin: 0 auto;
-  border-radius: 10px;
-  background-color: rgba(var(--v-theme-on-surface), 0.08);
+  border-radius: 6px;
+  background-color: color-mix(in srgb, var(--text-color) 8%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1786,13 +2281,12 @@ button {
 
 @media (max-width: 540px) {
   .main-media-details-image {
-    max-height: 75%;
     padding-left: 16px;
     padding-right: 16px;
   }
 
   .main-media-details-track-info {
-    padding: 8px 0;
+    padding: 12px 0 8px;
   }
 }
 </style>

@@ -5,13 +5,17 @@
       <!-- Settable options -->
       <div v-if="playerOptionsSettable.length > 0">
         <v-card
-          class="mx-auto my-8"
-          elevation="2"
+          class="options-group mx-auto my-6"
+          variant="flat"
           min-width="100%"
           :title="$t('player_options.settable', [playerName])"
         >
-          <div style="padding: 0px 20px 20px 20px">
-            <div v-for="option in playerOptionsSettable" :key="option.key">
+          <div class="options-rows">
+            <div
+              v-for="option in playerOptionsSettable"
+              :key="option.key"
+              class="option-row"
+            >
               <PlayerOptionField
                 :player-option="option"
                 :player-id="props.playerId"
@@ -24,13 +28,17 @@
       <!-- Read-only options -->
       <div v-if="playerOptionsReadOnly.length > 0">
         <v-card
-          class="mx-auto my-8"
-          elevation="2"
+          class="options-group mx-auto my-6"
+          variant="flat"
           min-width="100%"
           :title="$t('player_options.read_only', [playerName])"
         >
-          <div style="padding: 0px 20px 20px 20px">
-            <div v-for="option in playerOptionsReadOnly" :key="option.key">
+          <div class="options-rows">
+            <div
+              v-for="option in playerOptionsReadOnly"
+              :key="option.key"
+              class="option-row"
+            >
               <PlayerOptionField
                 :player-option="option"
                 :player-id="props.playerId"
@@ -131,3 +139,60 @@ const unsub = api.subscribe(
 );
 onBeforeUnmount(unsub);
 </script>
+
+<style scoped>
+/* a flat group: serif heading, options divided by hairlines */
+.options-group {
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.options-group :deep(.v-card-item) {
+  padding: 16px 20px 6px;
+}
+
+.options-group :deep(.v-card-title) {
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: normal;
+}
+
+.option-row {
+  padding: 12px 20px;
+}
+
+.option-row + .option-row {
+  border-top: 1px solid var(--border);
+}
+
+.option-row :deep(.v-input__details:not(:has(.v-messages__message))) {
+  display: none;
+}
+
+.option-row :deep(.v-field) {
+  border-radius: 10px;
+}
+
+/* a switch reads as a setting: label left, control right */
+.option-row :deep(.v-switch .v-selection-control) {
+  flex-direction: row-reverse;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.option-row :deep(.v-selection-control .v-label) {
+  flex: 1;
+  min-width: 0;
+  padding-inline-start: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 1;
+  white-space: normal;
+}
+</style>

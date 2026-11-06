@@ -77,7 +77,7 @@
         <div class="onboarding-sections">
           <div class="onboarding-section">
             <div class="section-icon music">
-              <v-icon icon="mdi-music" size="24" />
+              <v-icon icon="mdi-music" size="22" />
             </div>
             <div class="section-content">
               <h3>{{ t("settings.onboarding_music_title") }}</h3>
@@ -100,7 +100,7 @@
 
           <div class="onboarding-section">
             <div class="section-icon player">
-              <v-icon icon="mdi-speaker" size="24" />
+              <v-icon icon="mdi-speaker" size="22" />
             </div>
             <div class="section-content">
               <h3>{{ t("settings.onboarding_player_title") }}</h3>
@@ -133,28 +133,23 @@
           <Card
             v-for="section in [...musicSections, ...playerSections]"
             :key="section.name"
-            class="setting-card"
+            class="setting-card setting-card--featured gap-0 p-5 shadow-none max-md:p-4"
             @click="router.push(section.route)"
           >
-            <CardHeader>
-              <div class="setting-header-top">
-                <div
-                  class="setting-icon"
-                  :style="getIconBackgroundStyle(section.color)"
-                >
-                  <Icon :icon="section.icon" size="20" color="white" />
-                </div>
-                <div class="setting-chevron">
-                  <Icon icon="mdi-chevron-right" size="20" />
-                </div>
+            <div class="setting-header-top">
+              <div class="setting-icon">
+                <Icon :icon="section.icon" size="22" />
               </div>
-              <CardTitle class="setting-title">
-                {{ t(section.label) }}
-              </CardTitle>
-              <CardDescription class="setting-description">
-                {{ t(section.description) }}
-              </CardDescription>
-            </CardHeader>
+              <div class="setting-chevron">
+                <Icon icon="mdi-chevron-right" size="18" />
+              </div>
+            </div>
+            <h3 class="setting-title">
+              {{ t(section.label) }}
+            </h3>
+            <p class="setting-description">
+              {{ t(section.description) }}
+            </p>
           </Card>
         </div>
 
@@ -162,47 +157,47 @@
           <Card
             v-for="section in regularSections"
             :key="section.name"
-            class="setting-card"
+            class="setting-card gap-0 p-5 shadow-none max-md:p-4"
             @click="router.push(section.route)"
           >
-            <CardHeader>
-              <div class="setting-header-top">
-                <div
-                  class="setting-icon"
-                  :style="getIconBackgroundStyle(section.color)"
-                >
-                  <Icon :icon="section.icon" size="20" color="white" />
-                </div>
-                <div class="setting-chevron">
-                  <Icon icon="mdi-chevron-right" size="20" />
-                </div>
+            <div class="setting-header-top">
+              <div class="setting-icon">
+                <Icon :icon="section.icon" size="20" />
               </div>
-              <CardTitle class="setting-title">
-                {{ t(section.label) }}
-              </CardTitle>
-              <CardDescription class="setting-description">
-                {{ t(section.description) }}
-              </CardDescription>
-            </CardHeader>
+              <div class="setting-chevron">
+                <Icon icon="mdi-chevron-right" size="18" />
+              </div>
+            </div>
+            <h3 class="setting-title">
+              {{ t(section.label) }}
+            </h3>
+            <p class="setting-description">
+              {{ t(section.description) }}
+            </p>
           </Card>
         </div>
       </div>
 
       <div v-else class="settings-list-view">
-        <v-list class="settings-list">
+        <v-list
+          v-for="group in [
+            providersSection,
+            playersSection,
+            otherSettingsSections,
+          ].filter((sections) => sections.length)"
+          :key="group[0].name"
+          class="settings-list"
+        >
           <ListItem
-            v-for="section in providersSection"
+            v-for="section in group"
             :key="section.name"
             link
             class="settings-list-item"
             @click="router.push(section.route)"
           >
             <template #prepend>
-              <div
-                class="setting-list-icon"
-                :style="getIconBackgroundStyle(section.color)"
-              >
-                <Icon :icon="section.icon" size="20" color="white" />
+              <div class="setting-list-icon">
+                <Icon :icon="section.icon" size="20" />
               </div>
             </template>
             <template #title>
@@ -212,59 +207,7 @@
               {{ t(section.description) }}
             </template>
             <template #append>
-              <Icon icon="mdi-chevron-right" size="20" />
-            </template>
-          </ListItem>
-
-          <ListItem
-            v-for="section in playersSection"
-            :key="section.name"
-            link
-            class="settings-list-item"
-            @click="router.push(section.route)"
-          >
-            <template #prepend>
-              <div
-                class="setting-list-icon"
-                :style="getIconBackgroundStyle(section.color)"
-              >
-                <Icon :icon="section.icon" size="20" color="white" />
-              </div>
-            </template>
-            <template #title>
-              {{ t(section.label) }}
-            </template>
-            <template #subtitle>
-              {{ t(section.description) }}
-            </template>
-            <template #append>
-              <Icon icon="mdi-chevron-right" size="20" />
-            </template>
-          </ListItem>
-
-          <ListItem
-            v-for="section in otherSettingsSections"
-            :key="section.name"
-            link
-            class="settings-list-item"
-            @click="router.push(section.route)"
-          >
-            <template #prepend>
-              <div
-                class="setting-list-icon"
-                :style="getIconBackgroundStyle(section.color)"
-              >
-                <Icon :icon="section.icon" size="20" color="white" />
-              </div>
-            </template>
-            <template #title>
-              {{ t(section.label) }}
-            </template>
-            <template #subtitle>
-              {{ t(section.description) }}
-            </template>
-            <template #append>
-              <Icon icon="mdi-chevron-right" size="20" />
+              <Icon icon="mdi-chevron-right" size="18" />
             </template>
           </ListItem>
         </v-list>
@@ -285,12 +228,7 @@ import Toolbar from "@/components/Toolbar.vue";
 import ToolbarHeading, {
   type ToolbarHeadingItem,
 } from "@/components/ToolbarHeading.vue";
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useUserPreferences } from "@/composables/userPreferences";
 import { api } from "@/plugins/api";
 import { requireServerVersion } from "@/plugins/api/helpers";
@@ -620,20 +558,6 @@ const otherSettingsSections = computed(() => {
   );
 });
 
-const getIconBackgroundStyle = (color: string) => {
-  const colorMap: Record<string, string> = {
-    indigo: "rgb(99, 102, 241)",
-    blue: "rgb(59, 130, 246)",
-    green: "rgb(34, 197, 94)",
-    purple: "rgb(168, 85, 247)",
-    "deep-purple": "rgb(124, 58, 237)",
-    orange: "rgb(249, 115, 22)",
-    teal: "rgb(20, 184, 166)",
-    "grey-darken-1": "rgb(158, 158, 158)",
-  };
-  return { backgroundColor: colorMap[color] || colorMap.indigo };
-};
-
 // computed properties
 const isOverview = computed(() => {
   return router.currentRoute.value.name === "settings";
@@ -881,16 +805,18 @@ const breadcrumbItems = computed(() => {
   margin: 0 auto;
 }
 
+/* ---------- card view: a flat, editorial grid ---------- */
+
 .settings-card-view {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
 .settings-featured {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 @media (max-width: 768px) {
@@ -902,7 +828,7 @@ const breadcrumbItems = computed(() => {
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 @media (min-width: 960px) {
@@ -920,123 +846,147 @@ const breadcrumbItems = computed(() => {
 .setting-card {
   cursor: pointer;
   position: relative;
-  transition:
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding: 6px 0 0 0;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
+/* the card's border utility sets its colour !important */
 .setting-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 24px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.1);
-  border-color: rgba(var(--v-theme-primary), 0.3);
+  border-color: color-mix(
+    in oklab,
+    var(--foreground) 16%,
+    transparent
+  ) !important;
+  background-color: color-mix(
+    in oklab,
+    var(--foreground) 2%,
+    var(--card)
+  ) !important;
 }
 
 .setting-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .setting-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  flex-shrink: 0;
-}
-
-.setting-card:hover .setting-icon {
-  transform: scale(1.1) rotate(5deg);
-}
-
-.setting-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-  line-height: 1.3;
-}
-
-.setting-description {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin: 0;
-}
-
-.setting-chevron {
-  opacity: 0.4;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-on-surface), 0.05);
-  flex-shrink: 0;
-}
-
-.setting-card:hover .setting-chevron {
-  opacity: 1;
-  transform: translateX(4px);
-  background: rgba(var(--v-theme-primary), 0.1);
-  color: rgb(var(--v-theme-primary));
-}
-
-.settings-list-view {
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.settings-list {
-  padding: 0;
-  background: transparent;
-}
-
-.settings-list-item {
-  cursor: pointer;
-  padding: 20px 24px;
-  min-height: 80px;
-  border-bottom: none;
-  background: transparent;
-}
-
-.settings-list-item:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.05);
-}
-
-.list-item-main {
-  border-radius: 10px !important;
-}
-
-.setting-list-icon {
   width: 40px;
   height: 40px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+/* the two places most setups start from carry the one accent */
+.setting-card--featured .setting-icon {
+  width: 44px;
+  height: 44px;
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  color: var(--primary);
+}
+
+.setting-title {
+  margin: 0 0 4px;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+.setting-card--featured .setting-title {
+  font-size: 1.5rem;
+}
+
+.setting-description {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+.setting-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  color: var(--subtle-foreground);
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.setting-card:hover .setting-chevron {
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+/* ---------- list view: grouped rows with hairlines ---------- */
+
+.settings-list-view {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-list {
+  padding: 0;
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.settings-list-item.list-item-main {
+  cursor: pointer;
+  min-height: 60px;
+  padding: 10px 16px !important;
+  margin-right: 0 !important;
+  border-radius: 0 !important;
+  background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.settings-list-item + .settings-list-item {
+  border-top: 1px solid var(--border);
+}
+
+.settings-list-item:hover {
+  background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.settings-list-item :deep(.v-list-item__overlay) {
+  display: none;
+}
+
+.setting-list-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .settings-list-item :deep(.v-list-item__prepend) {
-  padding-inline-end: 6px;
+  padding-inline-end: 14px;
 }
 
 .settings-list-item :deep(.v-list-item__prepend .v-icon) {
@@ -1048,25 +998,27 @@ const breadcrumbItems = computed(() => {
 }
 
 .settings-list-item :deep(.v-list-item-title) {
-  font-size: 1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--foreground);
 }
 
 .settings-list-item :deep(.v-list-item-subtitle) {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-top: 4px;
+  font-size: 0.78125rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+  opacity: 1;
+  margin-top: 2px;
 }
 
 .settings-list-item :deep(.v-list-item__append) {
-  opacity: 0.4;
-  transition: opacity 0.2s ease;
+  color: var(--subtle-foreground);
+  transition: color 0.15s ease;
 }
 
 .settings-list-item:hover :deep(.v-list-item__append) {
-  opacity: 1;
+  color: var(--foreground);
 }
 
 @media (max-width: 768px) {
@@ -1080,137 +1032,90 @@ const breadcrumbItems = computed(() => {
   }
 
   .setting-header-top {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
-  .setting-icon {
-    width: 40px;
-    height: 40px;
+  .setting-title,
+  .setting-card--featured .setting-title {
+    font-size: 1.1875rem;
   }
 
-  .setting-chevron {
-    width: 26px;
-    height: 26px;
-  }
-
-  .setting-title {
-    font-size: 0.938rem;
-  }
-
-  .settings-list-item {
-    padding: 16px;
-    min-height: 72px;
-  }
-
-  .settings-list-item :deep(.v-list-item-title) {
-    font-size: 1rem;
-  }
-
-  .settings-list-item :deep(.v-list-item-subtitle) {
-    font-size: 0.813rem;
+  .settings-list-item.list-item-main {
+    padding: 10px 12px !important;
   }
 }
 
-@media (max-width: 480px) {
-  .settings-overview {
-    padding: 16px 12px;
-  }
-
-  .setting-icon-featured {
-    width: 56px;
-    height: 56px;
-  }
-
-  .setting-card-featured .setting-title {
-    font-size: 1.25rem;
-  }
-
-  .settings-list-item {
-    padding: 16px;
-    min-height: 72px;
-  }
-
-  .settings-list-item :deep(.v-list-item-title) {
-    font-size: 1rem;
-  }
-
-  .settings-list-item :deep(.v-list-item-subtitle) {
-    font-size: 0.813rem;
-  }
-}
+/* ---------- onboarding ---------- */
 
 .onboarding-card {
-  background: linear-gradient(
-    135deg,
-    rgba(var(--v-theme-primary), 0.08) 0%,
-    rgba(var(--v-theme-primary), 0.02) 100%
-  );
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 25px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px 18px;
+  margin-bottom: 24px;
 }
 
 .onboarding-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
 .onboarding-close {
-  opacity: 0.6;
+  color: var(--muted-foreground);
 }
 
 .onboarding-title {
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 8px 0;
-  color: rgb(var(--v-theme-on-surface));
+  margin: 0 0 6px 0;
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--foreground);
 }
 
 .onboarding-subtitle {
-  font-size: 15px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin: 0 0 24px 0;
+  margin: 0;
+  max-width: 64ch;
+  font-size: 0.875rem;
   line-height: 1.5;
+  color: var(--muted-foreground);
 }
 
 .onboarding-sections {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .onboarding-section {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(var(--v-theme-surface), 0.6);
-  border-radius: 12px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  gap: 14px;
+  padding: 14px 16px;
+}
+
+.onboarding-section + .onboarding-section {
+  border-top: 1px solid var(--border);
 }
 
 .section-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-}
-
-.section-icon.music {
-  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
-  color: white;
-}
-
-.section-icon.player {
-  background: linear-gradient(135deg, #5c6bc0 0%, #7986cb 100%);
-  color: white;
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  color: var(--primary);
 }
 
 .section-content {
@@ -1219,40 +1124,42 @@ const breadcrumbItems = computed(() => {
 }
 
 .section-content h3 {
-  font-size: 16px;
+  margin: 0 0 2px 0;
+  font-size: 0.875rem;
   font-weight: 600;
-  margin: 0 0 4px 0;
-  color: rgb(var(--v-theme-on-surface));
+  color: var(--foreground);
 }
 
 .section-content p {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
   margin: 0;
-  line-height: 1.4;
+  font-size: 0.78125rem;
+  line-height: 1.45;
+  color: var(--muted-foreground);
 }
 
 .section-btn {
   flex-shrink: 0;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .onboarding-footer {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  margin: 0;
   display: flex;
   align-items: center;
+  margin: 0;
+  font-size: 0.78125rem;
+  color: var(--subtle-foreground);
 }
 
 @media (max-width: 768px) {
   .onboarding-card {
-    padding: 20px;
+    padding: 18px 16px 14px;
   }
 
   .onboarding-section {
-    flex-direction: column;
-    text-align: center;
-    gap: 12px;
+    flex-wrap: wrap;
   }
 
   .section-btn {
@@ -1260,7 +1167,7 @@ const breadcrumbItems = computed(() => {
   }
 
   .onboarding-title {
-    font-size: 20px;
+    font-size: 1.5rem;
   }
 }
 </style>

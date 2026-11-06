@@ -34,7 +34,7 @@
       />
       <h2
         ref="stepHeading"
-        class="truncate text-lg font-semibold"
+        class="ma-display truncate pb-0.5 text-2xl leading-tight"
         tabindex="-1"
         data-testid="music-quiz-setup-heading"
       >
@@ -48,11 +48,11 @@
           v-for="type in availableGameTypes"
           :key="type.id"
           type="button"
-          class="hover:border-primary focus-visible:ring-ring bg-card flex items-center gap-3 rounded-xl border p-4 text-left transition-colors focus-visible:ring-2 focus-visible:outline-none"
+          class="hover:border-primary focus-visible:ring-ring bg-card border-border flex items-center gap-3 rounded-[14px] border p-4 text-left transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none"
           @click="selectType(type)"
         >
           <span
-            class="bg-primary/10 text-primary grid size-12 shrink-0 place-items-center rounded-md"
+            class="bg-primary/10 text-primary grid size-12 shrink-0 place-items-center rounded-xl"
           >
             <component :is="type.icon" class="size-6" />
           </span>
@@ -95,7 +95,7 @@
           <template #before-sources>
             <Field
               orientation="horizontal"
-              class="items-center justify-between gap-4 rounded-lg border p-4"
+              class="border-border items-center justify-between gap-4 rounded-xl border p-4"
             >
               <div class="flex flex-col gap-1">
                 <FieldLabel for="quiz-include-similar-music">

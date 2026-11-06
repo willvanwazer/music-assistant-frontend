@@ -5,22 +5,24 @@
       :class="{ 'lg:min-h-72': present }"
     >
       <p
-        class="max-w-4xl text-xl leading-snug font-bold text-balance sm:text-2xl"
-        :class="{ 'lg:text-4xl': present }"
+        class="ma-display max-w-4xl text-2xl leading-snug text-balance sm:text-3xl"
+        :class="{ 'lg:text-5xl lg:leading-tight': present }"
         data-testid="trivia-question"
       >
         {{ round.question }}
       </p>
       <div
         v-if="round.answer_label"
-        class="border-primary/30 bg-primary/10 flex max-w-3xl flex-col gap-1 rounded-xl border px-5 py-3"
+        class="border-primary/30 bg-primary/10 flex max-w-3xl flex-col gap-1.5 rounded-[14px] border px-5 py-3"
       >
-        <span class="text-muted-foreground text-sm font-medium">
+        <span
+          class="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase"
+        >
           {{ $t("providers.music_quiz.answer_was") }}
         </span>
         <strong
-          class="text-primary text-xl leading-tight sm:text-2xl"
-          :class="{ 'lg:text-3xl': present }"
+          class="font-display text-primary text-2xl leading-tight font-medium sm:text-3xl"
+          :class="{ 'lg:text-4xl': present }"
           data-testid="trivia-answer"
         >
           {{ round.answer_label }}

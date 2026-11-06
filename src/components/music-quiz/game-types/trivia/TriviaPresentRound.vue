@@ -3,7 +3,7 @@
     <TriviaQuestion class="flex-1" :round="currentRound" present />
     <div
       v-if="countdownText"
-      class="bg-muted/40 text-muted-foreground flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold tabular-nums"
+      class="bg-secondary text-muted-foreground mx-auto flex w-fit items-center justify-center gap-2 rounded-full px-3.5 py-2 text-sm font-semibold tabular-nums"
       role="timer"
       :aria-label="countdownText"
       data-testid="trivia-auto-advance"

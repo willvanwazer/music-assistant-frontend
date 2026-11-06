@@ -34,9 +34,9 @@
       />
     </svg>
     <span
-      class="absolute font-extrabold tabular-nums"
+      class="ma-display absolute leading-none lining-nums tabular-nums"
       :class="isUrgent ? 'text-destructive' : 'text-foreground'"
-      :style="{ fontSize: `${Math.round(size * 0.26)}px` }"
+      :style="{ fontSize: `${Math.round(size * 0.3)}px` }"
     >
       {{ label }}
     </span>
@@ -47,7 +47,7 @@
 import { computed } from "vue";
 
 const RADIUS = 45;
-const STROKE_WIDTH = 8;
+const STROKE_WIDTH = 6;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const URGENT_THRESHOLD = 0.25;
 

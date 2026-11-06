@@ -5,13 +5,13 @@
         v-slot="{ modelValue: tags }"
         v-model="selectedValues"
         delimiter=""
-        class="flex gap-2 items-center flex-wrap rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px] min-h-[2.5rem] w-full"
+        class="flex gap-2 items-center flex-wrap rounded-[10px] border border-input bg-background px-3 py-2 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px] min-h-[2.5rem] w-full"
       >
         <TagsInputItem
           v-for="item in tags"
           :key="String(item)"
           :value="item"
-          class="flex items-center justify-center gap-1.5 text-sm bg-primary text-primary-foreground rounded px-2 py-0.5"
+          class="flex items-center justify-center gap-1.5 rounded-full bg-secondary px-2.5 py-0.5 text-[12.5px] font-medium text-secondary-foreground"
         >
           <span>{{ getLabelForValue(String(item)) }}</span>
           <TagsInputItemDelete>

@@ -592,6 +592,18 @@ export function scrollElement(el: HTMLElement, to: number, duration: number) {
   animateScroll();
 }
 
+/**
+ * How many tiles a horizontal shelf shows at once, the fraction being the next
+ * tile peeking in. An unfolded phone or a small tablet (up to bp4) gets fewer,
+ * larger tiles than the panel grid would give it, so covers do not shrink
+ * sharply as the screen grows past a phone's width.
+ */
+export const shelfTilesPerView = function () {
+  if (getBreakpointValue({ breakpoint: "bp1", condition: "lt" })) return 2.2;
+  if (getBreakpointValue({ breakpoint: "bp4", condition: "lt" })) return 2.7;
+  return panelViewItemResponsive(0) + 0.5;
+};
+
 export const panelViewItemResponsive = function (displaySize: number) {
   if (
     getBreakpointValue({

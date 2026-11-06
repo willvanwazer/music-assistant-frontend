@@ -29,9 +29,12 @@ const onPick = (option: ConfigValueOption) => {
 
 <template>
   <div class="flex w-full flex-col gap-2 py-1">
-    <span v-if="label" :id="labelId" class="text-muted-foreground text-sm">{{
-      label
-    }}</span>
+    <span
+      v-if="label"
+      :id="labelId"
+      class="text-foreground text-sm font-medium"
+      >{{ label }}</span
+    >
     <div
       role="group"
       :aria-labelledby="label ? labelId : undefined"
@@ -44,7 +47,7 @@ const onPick = (option: ConfigValueOption) => {
         variant="outline"
         :disabled="disabled || option.disabled"
         data-testid="option-button"
-        class="h-auto flex-col items-start gap-1 p-3 text-left whitespace-normal"
+        class="h-auto flex-col items-start gap-1 rounded-[12px] px-3.5 py-3 text-left whitespace-normal"
         @click="onPick(option)"
       >
         <span class="text-sm font-medium">{{ optionTitle(option) }}</span>

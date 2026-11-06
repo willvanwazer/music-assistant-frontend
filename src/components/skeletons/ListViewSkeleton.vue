@@ -14,18 +14,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 </script>
 
 <style scoped>
+/* the list row's shape: a 44px cover, two lines, the duration at the end */
 .listview-item-skeleton {
   display: flex;
   align-items: center;
-  height: 70px;
-  padding: 8px 16px;
-  gap: 16px;
+  height: 54px;
+  padding: 5px 10px;
+  gap: 12px;
 }
 
 .skeleton-thumbnail {
-  width: 50px;
-  height: 50px;
-  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
@@ -33,25 +34,29 @@ import { Skeleton } from "@/components/ui/skeleton";
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   min-width: 0;
 }
 
 .skeleton-title {
-  height: 16px;
+  height: 12px;
   width: 60%;
   max-width: 300px;
+  border-radius: 4px;
 }
 
 .skeleton-subtitle {
-  height: 14px;
+  height: 10px;
   width: 40%;
   max-width: 200px;
+  border-radius: 4px;
 }
 
 .skeleton-duration {
-  width: 45px;
-  height: 14px;
+  width: 34px;
+  height: 10px;
+  margin-right: 10px;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 </style>

@@ -9,9 +9,17 @@
     @click="onItemClick"
   >
     <div class="result-info">
-      <Avatar class="result-avatar size-14 rounded-md">
+      <Avatar
+        class="result-avatar size-14"
+        :class="item.media_type === 'artist' ? 'rounded-full' : 'rounded-[4px]'"
+      >
         <AvatarImage :src="imageUrl" :alt="item.name" />
-        <AvatarFallback class="avatar-placeholder rounded-md">
+        <AvatarFallback
+          class="avatar-placeholder"
+          :class="
+            item.media_type === 'artist' ? 'rounded-full' : 'rounded-[4px]'
+          "
+        >
           <Music :size="24" />
         </AvatarFallback>
       </Avatar>
@@ -161,11 +169,11 @@ const artistName = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(var(--v-theme-surface-variant), 0.07);
+  padding: 0.5rem 0.625rem;
+  background: transparent;
   border-radius: 12px;
   min-height: 72px;
-  transition: background 0.2s ease;
+  transition: background 0.15s ease;
 }
 
 .result-item--clickable {
@@ -173,17 +181,20 @@ const artistName = computed(() => {
 }
 
 .result-item--clickable:hover:not(.result-item--expanded) {
-  background: rgba(var(--v-theme-surface-variant), 0.14);
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
 }
 
+/* an opened result becomes a tile holding its actions */
 .result-item--expanded {
-  background: rgba(var(--v-theme-primary), 0.1);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  padding: 0.75rem;
 }
 
 .result-info {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.875rem;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -193,13 +204,18 @@ const artistName = computed(() => {
   flex-shrink: 0;
 }
 
+.result-item--expanded .result-avatar {
+  box-shadow: 0 10px 22px -12px rgba(0, 0, 0, 0.55);
+}
+
 .avatar-placeholder {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--v-theme-primary), 0.1);
+  background: var(--secondary);
+  color: var(--subtle-foreground);
 }
 
 .result-text {
@@ -211,7 +227,7 @@ const artistName = computed(() => {
 }
 
 .result-name {
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -219,9 +235,9 @@ const artistName = computed(() => {
 }
 
 .result-artist {
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 400;
-  opacity: 0.6;
+  color: var(--muted-foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -229,13 +245,13 @@ const artistName = computed(() => {
 
 .result-type {
   text-transform: capitalize;
-  opacity: 0.7;
+  color: var(--muted-foreground);
 }
 
 .result-actions {
   display: flex;
   justify-content: center;
-  gap: 2rem;
+  gap: 0.5rem;
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -243,10 +259,10 @@ const artistName = computed(() => {
 .action-btn {
   font-weight: 600;
   text-transform: none;
-  letter-spacing: 0.5px;
   color: var(--primary-foreground);
 }
 
+/* boost and request colours are configured on the server, so they stay */
 .action-btn.boost-btn,
 .action-btn.add-btn {
   background-color: var(--btn-bg) !important;
@@ -261,9 +277,8 @@ const artistName = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: rgb(var(--v-theme-primary));
-  opacity: 0.8;
+  color: var(--primary);
 }
 </style>

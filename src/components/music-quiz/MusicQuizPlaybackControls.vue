@@ -1,6 +1,6 @@
 <template>
   <section
-    class="bg-card flex flex-col gap-4 rounded-xl border p-4 shadow-sm"
+    class="bg-card border-border flex flex-col gap-4 rounded-[14px] border p-4"
     data-testid="music-quiz-playback-controls"
     :aria-busy="loading"
   >

@@ -15,10 +15,18 @@
       class="background-image"
       :style="{ backgroundImage: `url(${albumArtUrl})` }"
     ></div>
+    <!-- Veil over the blurred art: a glow in the artwork's own colour and a
+         darkening toward the edges, so the glass panels stay legible -->
+    <div
+      v-if="!visualizerActive && useAlbumArtBackground && albumArtUrl"
+      class="background-veil"
+      :style="artGlowStyle"
+      aria-hidden="true"
+    ></div>
     <!-- Access Error -->
     <div v-if="accessError" class="party-content access-error-content">
       <div class="access-error">
-        <Speaker :size="80" class="text-destructive" />
+        <Speaker :size="72" class="text-destructive" />
         <h2 class="access-error-title">
           {{ $t("providers.party.no_player_access") }}
         </h2>
@@ -42,16 +50,13 @@
     >
       <!-- Topbar -->
       <div
-        class="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2"
+        class="party-topbar absolute top-0 left-0 right-0 z-10 flex items-center justify-between"
         style="background: transparent"
       >
-        <!-- Left: party name -->
+        <!-- Left: party name, named in the display serif -->
         <span
-          class="font-semibold select-none truncate min-w-0 mr-3"
-          :style="{
-            color: chromeTextColor,
-            fontSize: 'clamp(0.85rem, 1.5vw, 1.5rem)',
-          }"
+          class="party-name ma-display select-none truncate min-w-0 mr-3"
+          :style="{ color: chromeTextColor }"
         >
           {{ partyName }}
         </span>
@@ -63,19 +68,19 @@
             <Badge
               v-if="qrAvailable"
               variant="warning"
-              class="cursor-pointer"
+              class="party-chip h-8 cursor-pointer gap-1.5 px-3.5 text-[0.8rem] font-semibold [&>svg]:size-3.5"
               @click="showGuestAccessDialog = true"
             >
-              <WifiIcon :size="11" />
+              <WifiIcon :size="13" />
               {{ $t("providers.party.guest_access_enabled") }}
             </Badge>
             <Badge
               v-else
               variant="info"
-              class="cursor-pointer"
+              class="party-chip h-8 cursor-pointer gap-1.5 px-3.5 text-[0.8rem] font-semibold [&>svg]:size-3.5"
               @click="showGuestAccessDialog = true"
             >
-              <WifiOff :size="11" />
+              <WifiOff :size="13" />
               {{ $t("providers.party.guest_access_disabled") }}
             </Badge>
           </template>
@@ -90,7 +95,7 @@
             @click="toggleVisualizer"
           >
             <Droplet
-              :size="13"
+              :size="15"
               :fill="visualizerEnabledPref ? 'currentColor' : 'none'"
             />
           </Button>
@@ -103,7 +108,7 @@
             :aria-label="$t('tooltip.exit_fullscreen')"
             @click="goFullscreen(false)"
           >
-            <Minimize2 :size="13" />
+            <Minimize2 :size="15" />
           </Button>
 
           <!-- Non-fullscreen: actions -->
@@ -115,16 +120,16 @@
               :aria-label="$t('tooltip.party_settings')"
               @click="goToSettings"
             >
-              <Settings :size="13" />
+              <Settings :size="15" />
             </Button>
-            <ShowDashboardButton dashboard="party" />
+            <ShowDashboardButton dashboard="party" :icon-size="15" />
             <Button
               variant="ghost-icon"
               size="icon-sm"
               :aria-label="$t('tooltip.enter_fullscreen')"
               @click="goFullscreen(true)"
             >
-              <Maximize2 :size="13" />
+              <Maximize2 :size="15" />
             </Button>
           </template>
         </div>
@@ -587,6 +592,22 @@ const colorPalette = computed<ImageColorPalette>(() =>
   paletteFromServer(store.activePlayer?.current_media?.palette),
 );
 
+// The artwork's own accent, glowing through the veil over the blurred art.
+// Older Cast and Android TV runtimes need precomputed alpha colors.
+const artGlowStyle = computed(() => {
+  const tint = colorPalette.value.lightColor || colorPalette.value.darkColor;
+  if (!tint) return {};
+  try {
+    const color = Color(tint);
+    return {
+      "--art-glow": color.alpha(0.32).string(),
+      "--art-glow-soft": color.alpha(0.16).string(),
+    };
+  } catch {
+    return {};
+  }
+});
+
 // Single list of visible items for the unified TransitionGroup
 const visibleItems = computed(() => {
   if (!store.activePlayerQueue) return [];
@@ -969,18 +990,94 @@ watch(
   }
 }
 
+/* The ultrablur: the cover itself, blurred past recognition into a wash of its
+   colours. Overscanned so the blur has material to sample at every edge. */
 .background-image {
   position: absolute;
-  top: -5%;
-  left: -5%;
-  width: 110%;
-  height: 110%;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: blur(2vw) brightness(0.5);
+  filter: blur(3.5vw) saturate(1.35) brightness(0.55);
   z-index: 0;
   transition: background-image 0.8s ease-in-out;
+}
+
+/* Text over this sits on artwork, so the scrim is dark in both themes. */
+.background-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      70% 65% at 12% 10%,
+      var(--art-glow, transparent) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 60% at 90% 95%,
+      var(--art-glow-soft, transparent) 0%,
+      transparent 72%
+    ),
+    linear-gradient(
+      to bottom,
+      rgba(10, 10, 12, 0.22) 0%,
+      rgba(10, 10, 12, 0) 28%,
+      rgba(10, 10, 12, 0) 62%,
+      rgba(10, 10, 12, 0.4) 100%
+    );
+}
+
+/* Top bar: the party's name in the display serif, the controls as glass
+   pills and circles. */
+.party-topbar {
+  padding: max(0.5rem, 1.6vh) max(1rem, 2vw) 0;
+}
+
+.party-name {
+  font-size: clamp(1.1rem, 2.2vw, 2.4rem);
+  line-height: 1.2;
+}
+
+.party-chip {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.party-topbar :deep([data-slot="button"]:not(.bg-primary)) {
+  background: rgba(var(--v-theme-on-surface), 0.08) !important;
+  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: background 0.15s ease;
+}
+
+.party-topbar :deep([data-slot="button"]:not(.bg-primary):hover) {
+  background: rgba(var(--v-theme-on-surface), 0.16) !important;
+}
+
+/* over artwork or a dark wash the glass goes dark, with white hairlines */
+.party-content--album-art
+  .party-topbar
+  :deep([data-slot="button"]:not(.bg-primary)),
+.party-content--light-text
+  .party-topbar
+  :deep([data-slot="button"]:not(.bg-primary)) {
+  background: rgba(16, 16, 18, 0.32) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.party-content--album-art
+  .party-topbar
+  :deep([data-slot="button"]:not(.bg-primary):hover),
+.party-content--light-text
+  .party-topbar
+  :deep([data-slot="button"]:not(.bg-primary):hover) {
+  background: rgba(16, 16, 18, 0.5) !important;
 }
 
 .party-content--album-art,
@@ -1088,21 +1185,24 @@ watch(
 }
 
 .empty-icon {
-  opacity: 0.5;
+  opacity: 0.4;
   margin-bottom: 1.5rem;
 }
 
 .empty-title {
-  font-size: 2rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 4.4vh, 3.6rem);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.05;
+  margin-bottom: 0.9rem;
+  color: var(--foreground);
 }
 
 .empty-message {
-  font-size: 1.25rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  max-width: 500px;
+  font-size: clamp(1.1rem, 2vh, 1.6rem);
+  color: var(--muted-foreground);
+  max-width: 32em;
 }
 
 @keyframes fadeIn {
@@ -1223,15 +1323,18 @@ watch(
 }
 
 .access-error-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: rgba(var(--v-theme-on-surface), 0.9);
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 3.6vh, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.1;
+  color: var(--foreground);
 }
 
 .access-error-message {
-  font-size: 1rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  max-width: 400px;
+  font-size: clamp(1rem, 1.8vh, 1.4rem);
+  color: var(--muted-foreground);
+  max-width: 28em;
 }
 
 /* Responsive adjustments */
@@ -1318,7 +1421,7 @@ watch(
   }
 
   .empty-title {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
   }
 
   .empty-message {
@@ -1380,7 +1483,7 @@ watch(
   }
 
   .empty-title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
   }
 
   .empty-message {

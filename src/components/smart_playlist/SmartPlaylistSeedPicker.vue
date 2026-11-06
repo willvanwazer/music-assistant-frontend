@@ -56,7 +56,7 @@
               :aria-label="group.heading"
             >
               <div
-                class="px-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"
+                class="text-subtle-foreground px-1.5 pb-0.5 text-[0.6875rem] font-semibold tracking-[0.14em] uppercase"
                 :class="index === 0 ? 'pt-1' : 'pt-2'"
               >
                 {{ group.heading }}

@@ -39,7 +39,7 @@
       </PopoverAnchor>
 
       <PopoverContent
-        class="media-search-results max-h-[min(18rem,var(--reka-popover-content-available-height))] w-(--reka-popover-trigger-width) overflow-y-auto p-1"
+        class="media-search-results max-h-[min(18rem,var(--reka-popover-content-available-height))] w-(--reka-popover-trigger-width) overflow-y-auto rounded-[14px] p-1.5"
         align="start"
         :side="panelSide"
         :side-offset="PANEL_OFFSET"
@@ -57,7 +57,7 @@
           class="media-search-result"
           @click="onResultClick(item)"
         >
-          <MediaItemThumb :item="item" :size="44" />
+          <MediaItemThumb :item="item" :size="42" :rounded="false" />
           <span class="media-search-result-text">
             <strong class="truncate">{{ item.name }}</strong>
             <small class="truncate">{{ itemSubtitle(item) }}</small>
@@ -311,9 +311,11 @@ onBeforeUnmount(() => {
   padding: 0 4px;
   border-radius: 8px;
   font-size: 0.7rem;
+  font-weight: 600;
   line-height: 16px;
   text-align: center;
-  background: rgba(var(--v-theme-on-surface), 0.12);
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .media-search-results {
@@ -322,18 +324,26 @@ onBeforeUnmount(() => {
 
 .media-search-result {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 42px minmax(0, 1fr);
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 8px;
-  border-radius: 6px;
+  padding: 6px 8px;
+  border-radius: 10px;
   text-align: left;
   cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
-.media-search-result:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.06);
+.media-search-result:hover,
+.media-search-result:focus-visible {
+  background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
+  outline: none;
+}
+
+/* covers stay square and whole */
+.media-search-result :deep(.v-img) {
+  border-radius: 3px;
 }
 
 .media-search-result-text {
@@ -342,8 +352,15 @@ onBeforeUnmount(() => {
   flex-direction: column;
 }
 
+.media-search-result-text strong {
+  color: var(--foreground);
+  font-size: 0.84375rem;
+  font-weight: 600;
+}
+
 .media-search-result-text small {
-  opacity: 0.7;
+  color: var(--subtle-foreground);
+  font-size: 0.75rem;
 }
 
 .truncate {
@@ -354,7 +371,7 @@ onBeforeUnmount(() => {
 
 .media-search-note {
   padding: 12px 8px;
-  font-size: 0.875rem;
-  opacity: 0.7;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
 }
 </style>

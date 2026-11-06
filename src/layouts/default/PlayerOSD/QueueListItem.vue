@@ -32,7 +32,7 @@
   >
     <!-- thumbnail (with now-playing equalizer overlay) -->
     <div class="qitem__thumb">
-      <MediaItemThumb size="48" :item="item" />
+      <MediaItemThumb size="44" :item="item" />
       <div v-if="showEqualizer" class="qitem__eq" aria-hidden="true">
         <MiniEqualizer
           v-if="waveformBins"
@@ -99,7 +99,8 @@
            grip (only up-next rows are reorderable). -->
       <div class="qitem__actions">
         <!-- drag handle to reorder. Active on up-next items; disabled/grayed on
-             every other row (now playing, buffered, played can't be reordered). -->
+             every other row (now playing, buffered, played can't be reordered).
+             Shown at the far right; on desktop it appears on hover/focus. -->
         <button
           type="button"
           class="qitem__grip"
@@ -222,26 +223,43 @@ const isMobile = computed(() => store.mobileLayout);
 </script>
 
 <style scoped>
+/* Rows sit on the fullscreen player's glass panel, so their tones derive from
+   the --text-color the panel follows rather than the app theme. */
 .qitem {
+  --qitem-text-2: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 66%,
+    transparent
+  );
+  --qitem-text-3: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 48%,
+    transparent
+  );
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 8px;
-  border-radius: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
   cursor: pointer;
   color: var(--text-color, currentColor);
   transition:
-    background-color 0.12s ease,
-    opacity 0.12s ease;
+    background-color 150ms ease,
+    opacity 150ms ease;
   user-select: none;
 }
 
 .qitem:hover {
   background: color-mix(
     in srgb,
-    var(--text-color, currentColor) 8%,
+    var(--text-color, currentColor) 6%,
     transparent
   );
+}
+
+.qitem:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
 }
 
 .qitem--played {
@@ -252,21 +270,30 @@ const isMobile = computed(() => store.mobileLayout);
   opacity: 0.72;
 }
 
+/* Now playing: a soft neutral fill; the title carries the accent. */
 .qitem--playing {
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 10%,
+    transparent
+  );
 }
 
 .qitem--playing:hover {
-  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 13%,
+    transparent
+  );
 }
 
 /* Buffered: locked into the stream to play next — faint tint reads as cued. */
 .qitem--buffered {
-  background: color-mix(in srgb, var(--primary) 5%, transparent);
+  background: color-mix(in srgb, var(--primary) 6%, transparent);
 }
 
 .qitem--buffered:hover {
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  background: color-mix(in srgb, var(--primary) 11%, transparent);
 }
 
 .qitem--unavailable {
@@ -276,9 +303,9 @@ const isMobile = computed(() => store.mobileLayout);
 .qitem__thumb {
   position: relative;
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
-  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
@@ -298,14 +325,13 @@ const isMobile = computed(() => store.mobileLayout);
 }
 
 .qitem__title {
-  font-size: var(--queue-title-size, 0.9rem);
-  font-weight: 500;
+  font-size: var(--queue-title-size, 0.84375rem);
+  font-weight: 600;
   line-height: 1.3;
 }
 
 .qitem--playing .qitem__title {
   color: var(--primary);
-  font-weight: 600;
 }
 
 .qitem__subtitle {
@@ -313,8 +339,8 @@ const isMobile = computed(() => store.mobileLayout);
   align-items: center;
   gap: 5px;
   margin-top: 1px;
-  font-size: var(--queue-subtitle-size, 0.78rem);
-  opacity: 0.7;
+  font-size: var(--queue-subtitle-size, 0.75rem);
+  color: var(--qitem-text-2);
 }
 
 .qitem__artist {
@@ -332,8 +358,8 @@ const isMobile = computed(() => store.mobileLayout);
 .qitem__duration {
   flex: 0 0 auto;
   white-space: nowrap;
-  font-size: var(--queue-subtitle-size, 0.78rem);
-  opacity: 0.7;
+  font-size: 12px;
+  color: var(--qitem-text-3);
   font-variant-numeric: tabular-nums;
 }
 
@@ -351,13 +377,36 @@ const isMobile = computed(() => store.mobileLayout);
   display: inline-flex;
   align-items: center;
   margin-right: 8px;
-  color: var(--text-color, currentColor);
+  color: var(--qitem-text-3);
   cursor: help;
-  opacity: 0.5;
 }
 
 .qitem__info:hover {
-  opacity: 0.85;
+  color: var(--text-color, currentColor);
+}
+
+/* Row menu: quiet until the row is pointed at. The ghost variant's own hover
+   fill is an opaque chip, too heavy on the glass panel. */
+.qitem__menu {
+  color: var(--qitem-text-3);
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.qitem:hover .qitem__menu,
+.qitem__menu:focus-visible {
+  color: var(--text-color, currentColor);
+}
+
+/* nested so it outranks the ghost variant's dark:hover fill */
+.qitem .qitem__menu:hover {
+  background: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 12%,
+    transparent
+  ) !important;
+  color: var(--text-color, currentColor) !important;
 }
 
 /* Mobile layout drops the duration; the grip + menu stay visible. */
@@ -365,22 +414,29 @@ const isMobile = computed(() => store.mobileLayout);
   display: none;
 }
 
-/* Drag handle: plain button for full pointer-gesture control, sized like icon-sm. */
+/* Drag handle: plain button for full pointer-gesture control, sized like
+   icon-sm, at the far end of the row. */
 .qitem__grip {
+  order: 2;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
   width: 2rem;
   height: 2rem;
-  border-radius: 6px;
-  color: var(--text-color, currentColor);
+  border-radius: 8px;
+  color: var(--qitem-text-3);
   cursor: grab;
   /* Don't let touch turn the drag into a scroll. */
   touch-action: none;
+  transition:
+    opacity 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
 }
 
 .qitem__grip:not(:disabled):hover {
+  color: var(--text-color, currentColor);
   background: color-mix(
     in srgb,
     var(--text-color, currentColor) 12%,
@@ -394,6 +450,18 @@ const isMobile = computed(() => store.mobileLayout);
   cursor: default;
 }
 
+/* With a pointer, handles appear while the row is pointed at or focused;
+   touch layouts keep them visible. */
+.qitem:not(.qitem--mobile) .qitem__grip {
+  opacity: 0;
+}
+
+.qitem:not(.qitem--mobile):hover .qitem__grip,
+.qitem:not(.qitem--mobile):focus-within .qitem__grip,
+.qitem--dragging .qitem__grip {
+  opacity: 1;
+}
+
 /* Source row hides in place; the ghost stands in while dragging. */
 .qitem--dragging {
   opacity: 0;
@@ -404,11 +472,19 @@ const isMobile = computed(() => store.mobileLayout);
   cursor: grabbing;
 }
 
-/* Floating drag clone: accent-tinted + shadowed so it reads as picked-up. */
+/* Floating drag clone: lifted onto a solid popover surface with a deep
+   shadow so it reads as picked up. */
 .qitem--ghost {
-  background: var(--primary);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow:
+    0 16px 40px -10px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px var(--border);
   cursor: grabbing;
+}
+
+.qitem--ghost .qitem__subtitle {
+  color: var(--muted-foreground);
 }
 
 .qitem--ghost .qitem__actions {

@@ -1,10 +1,11 @@
 <template>
-  <!-- Informational banner that surfaces the queue's "what happens next" mode:
+  <!-- Compact row that surfaces the queue's "what happens next" mode:
        dynamic mode (the queue refills itself from its sources) or the autoplay
        on/off state. Rendered inside the fullscreen queue list (just below the
        "Up next" divider). Mutually exclusive: dynamic mode takes precedence,
        otherwise the autoplay state shows. Collapsible: collapsed shows just the
-       title line (the explanation is hidden); the choice is remembered per user. -->
+       title (the explanation, which otherwise runs on after it, is hidden); the
+       choice is remembered per user. -->
   <div
     v-if="mode"
     class="queue-mode-banner"
@@ -14,7 +15,7 @@
     ]"
   >
     <div class="queue-mode-banner__icon" @click="toggleCollapsed">
-      <InfinityIcon :size="collapsed ? 14 : 20" />
+      <InfinityIcon :size="16" />
     </div>
 
     <div class="queue-mode-banner__body">
@@ -193,42 +194,36 @@ const gotoSource = (source: ItemMapping) => {
 </script>
 
 <style scoped>
+/* One compact row on the queue panel: mode icon, the title with its
+   explanation running on after it, then the switch and the fold toggle. */
 .queue-mode-banner {
+  --banner-text-2: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 66%,
+    transparent
+  );
+  --banner-text-3: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 48%,
+    transparent
+  );
   display: flex;
   align-items: center;
   gap: 10px;
-  /* No horizontal margin so the card spans the full row width, matching the
-     now-playing item above. 8px horizontal padding aligns the icon with the
-     track thumbnails; tight vertical padding keeps the card compact. */
-  margin: 1px 0 6px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  border: 1px solid
-    color-mix(in srgb, var(--text-color, currentColor) 12%, transparent);
+  margin: 2px 0 8px;
+  padding: 8px 8px 8px 12px;
+  border-radius: 12px;
   background: color-mix(
     in srgb,
-    var(--text-color, currentColor) 4%,
+    var(--text-color, currentColor) 5%,
     transparent
   );
+  font-size: 12.5px;
+  line-height: 1.35;
 }
 
-/* Active (radio / autoplay-on): subtle primary wash so it reads as "on". */
-.queue-mode-banner--active {
-  border-color: color-mix(in srgb, var(--primary) 35%, transparent);
-  background: color-mix(in srgb, var(--primary) 9%, transparent);
-}
-
-/* Collapsed: a tight single line — shrink the padding, gap, icon and toggle so
-   the row is as compact as possible while still showing the title. */
 .queue-mode-banner--collapsed {
-  gap: 8px;
-  padding: 2px 8px;
-}
-
-.queue-mode-banner--collapsed .queue-mode-banner__icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
+  padding-block: 6px;
 }
 
 .queue-mode-banner__icon {
@@ -236,21 +231,14 @@ const gotoSource = (source: ItemMapping) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
   cursor: pointer;
-  color: color-mix(in srgb, var(--text-color, currentColor) 65%, transparent);
-  background: color-mix(
-    in srgb,
-    var(--text-color, currentColor) 10%,
-    transparent
-  );
+  color: var(--banner-text-3);
+  transition: color 150ms ease;
 }
 
+/* Active (radio / autoplay-on): the icon takes the accent. */
 .queue-mode-banner--active .queue-mode-banner__icon {
-  color: var(--primary-foreground, #fff);
-  background: var(--primary);
+  color: var(--primary);
 }
 
 .queue-mode-banner__body {
@@ -258,20 +246,24 @@ const gotoSource = (source: ItemMapping) => {
   min-width: 0;
 }
 
+/* title and explanation flow as one sentence */
 .queue-mode-banner__title {
+  display: inline;
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   color: var(--text-color, currentColor);
 }
 
 .queue-mode-banner__desc {
-  margin: 1px 0 0;
-  font-size: 0.78rem;
-  line-height: 1.3;
-  color: var(--text-color, currentColor);
-  opacity: 0.72;
+  display: inline;
+  margin: 0;
+  color: var(--banner-text-2);
+}
+
+.queue-mode-banner__desc::before {
+  content: " · ";
 }
 
 .queue-mode-banner__link {
@@ -325,16 +317,26 @@ const gotoSource = (source: ItemMapping) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
   border: none;
+  border-radius: 999px;
   background: none;
   cursor: pointer;
-  color: color-mix(in srgb, var(--text-color, currentColor) 55%, transparent);
-  transition: color 0.12s ease;
+  color: var(--banner-text-3);
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
 }
 
 .queue-mode-banner__toggle:hover {
   color: var(--text-color, currentColor);
+  background: color-mix(
+    in srgb,
+    var(--text-color, currentColor) 10%,
+    transparent
+  );
 }
 
 .queue-mode-banner__chevron {

@@ -3,11 +3,14 @@
     <GenreManagementHeader />
 
     <!-- Genre Library Administration -->
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <ChartGantt class="size-4 text-primary" />
-          <CardTitle>{{ $t("settings.genre_statistics") }}</CardTitle>
+          <ChartGantt class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("settings.genre_statistics") }}</CardTitle
+          >
         </div>
         <CardDescription>{{
           $t("settings.genre_statistics_description")
@@ -22,19 +25,22 @@
     </Card>
 
     <!-- Restore Options -->
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
         <div class="flex items-center gap-2">
-          <RefreshCw class="size-4 text-primary" />
-          <CardTitle>{{ $t("settings.restore_genres") }}</CardTitle>
+          <RefreshCw class="size-4 text-muted-foreground" />
+          <CardTitle
+            class="font-display text-xl font-medium tracking-[-0.01em]"
+            >{{ $t("settings.restore_genres") }}</CardTitle
+          >
         </div>
       </CardHeader>
       <CardContent class="space-y-4">
         <div class="space-y-2">
-          <p class="text-sm font-semibold">
+          <p class="text-sm font-medium">
             {{ $t("settings.restore_missing_defaults") }}
           </p>
-          <p class="text-sm text-muted-foreground">
+          <p class="text-[12.5px] leading-[1.45] text-subtle-foreground">
             {{ $t("settings.restore_missing_defaults_description") }}
           </p>
           <GenreRestorePanel
@@ -47,10 +53,10 @@
         <Separator />
 
         <div class="space-y-2">
-          <p class="text-sm font-semibold">
+          <p class="text-sm font-medium">
             {{ $t("settings.full_restore_genres") }}
           </p>
-          <p class="text-sm text-muted-foreground">
+          <p class="text-[12.5px] leading-[1.45] text-subtle-foreground">
             {{ $t("settings.full_restore_genres_description") }}
           </p>
           <GenreRestorePanel

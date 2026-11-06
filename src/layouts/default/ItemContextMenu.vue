@@ -19,13 +19,22 @@
       <!-- play menu header -->
       <template v-if="showPlayMenuHeader">
         <DropdownMenuSub>
+          <!-- the room the play actions below go to, named before them -->
           <DropdownMenuSubTrigger class="gap-3 py-2">
-            <PlayerIcon :icon="store.activePlayer?.icon" :size="32" />
-            <div class="flex flex-col">
-              <span>{{ $t("play_on") }}</span>
-              <span class="text-muted-foreground text-xs">{{
-                store.activePlayer?.name || $t("no_player")
-              }}</span>
+            <span
+              class="bg-secondary text-foreground flex size-8 shrink-0 items-center justify-center rounded-[10px]"
+            >
+              <PlayerIcon :icon="store.activePlayer?.icon" :size="18" />
+            </span>
+            <div class="flex min-w-0 flex-col">
+              <span
+                class="text-subtle-foreground text-[0.6875rem] leading-4 font-semibold tracking-[0.13em] uppercase"
+              >
+                {{ $t("play_on") }}
+              </span>
+              <span class="truncate text-[0.84375rem] font-semibold">
+                {{ store.activePlayer?.name || $t("no_player") }}
+              </span>
             </div>
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent
@@ -41,7 +50,10 @@
             >
               <MenuItemIcon :icon="player.icon" />
               <span class="flex-1 truncate min-w-0">{{ player.label }}</span>
-              <Check v-if="player.selected" class="ml-auto size-4" />
+              <Check
+                v-if="player.selected"
+                class="text-primary ml-auto size-4"
+              />
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
@@ -114,7 +126,10 @@
               <span class="flex-1 truncate min-w-0">{{
                 menuItemLabel(subMenuItem)
               }}</span>
-              <Check v-if="subMenuItem.selected" class="ml-auto size-4" />
+              <Check
+                v-if="subMenuItem.selected"
+                class="text-primary ml-auto size-4"
+              />
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
@@ -129,7 +144,7 @@
           <span class="flex-1 truncate min-w-0">{{
             menuItemLabel(menuItem)
           }}</span>
-          <Check v-if="menuItem.selected" class="ml-auto size-4" />
+          <Check v-if="menuItem.selected" class="text-primary ml-auto size-4" />
         </DropdownMenuItem>
       </template>
     </DropdownMenuContent>
@@ -168,15 +183,19 @@ const reference = computed(() => {
   return { getBoundingClientRect: () => rect };
 });
 
+// 16px and muted, as a menu row's own icons are (the destructive colour on a
+// destructive row); the icon font draws inside some padding, so it takes 18px
+// to read the same size as a line icon
 const MenuItemIcon = (props: { icon?: string | Component; size?: number }) => {
   if (!props.icon) return null;
   return typeof props.icon === "string"
     ? h(VIcon, {
         icon: props.icon,
-        size: props.size ?? 20,
-        class: "shrink-0",
+        size: props.size ?? 18,
+        class:
+          "shrink-0 text-muted-foreground [[data-variant=destructive]_&]:text-destructive",
       })
-    : h(props.icon, { class: "size-5 shrink-0 scale-90" });
+    : h(props.icon, { class: "size-4 shrink-0" });
 };
 
 const playerSubItems = computed<ContextMenuItem[]>(() => {

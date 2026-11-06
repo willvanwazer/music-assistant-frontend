@@ -29,7 +29,7 @@
           config.enabled &&
           (config.last_error || config.status === ProviderStatus.AUTH_REQUIRED)
         "
-        class="mb-4 flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 p-4 text-destructive"
+        class="mb-5 flex gap-3 rounded-[14px] border border-destructive/40 bg-destructive/5 p-4 text-destructive"
       >
         <TriangleAlert class="size-5 shrink-0" />
         <div class="min-w-0 flex-1">
@@ -88,18 +88,25 @@
         </div>
       </div>
 
-      <!-- Header card -->
-      <Card class="mb-4 gap-0 py-0">
-        <CardHeader class="relative flex flex-col gap-4 p-6 pr-16 sm:flex-row">
+      <!-- Header: names the provider, then a hairline row of its actions -->
+      <Card
+        class="mb-6 gap-0 rounded-none border-0 bg-transparent py-0 shadow-none"
+      >
+        <CardHeader
+          class="relative flex flex-col gap-4 px-0 pt-1 pr-12 pb-5 sm:flex-row sm:items-start"
+        >
           <ProviderIcon :domain="config.domain" :size="48" class="shrink-0" />
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-2">
-              <h2 class="text-xl leading-tight font-semibold">
+              <h2
+                class="font-display text-[1.75rem] leading-[1.15] font-medium tracking-[-0.01em]"
+              >
                 {{ providerName }}
               </h2>
               <Button
                 variant="ghost"
                 size="icon-sm"
+                class="text-muted-foreground"
                 :title="$t('settings.provider_name')"
                 @click="showRenameDialog = true"
               >
@@ -118,19 +125,21 @@
                 {{ providerStatusLabel }}
               </Badge>
             </div>
-            <CardDescription class="mt-2 max-w-3xl leading-relaxed">
+            <CardDescription
+              class="mt-1.5 max-w-[64ch] text-[0.84375rem] leading-relaxed"
+            >
               {{ providerManifest.description }}
             </CardDescription>
             <div
               v-if="providerManifest.codeowners.length"
-              class="mt-3 text-xs text-muted-foreground [&_a]:text-primary [&_a]:hover:underline"
+              class="mt-3 text-xs text-subtle-foreground [&_a]:text-primary [&_a]:hover:underline"
               v-html="
                 markdownToHtml(getAuthorsMarkdown(providerManifest.codeowners))
               "
             ></div>
             <div
               v-if="providerManifest.credits.length"
-              class="mt-1 text-xs text-muted-foreground [&_a]:text-primary [&_a]:hover:underline"
+              class="mt-1 text-xs text-subtle-foreground [&_a]:text-primary [&_a]:hover:underline"
               v-html="
                 markdownToHtml(getCreditsMarkdown(providerManifest.credits))
               "
@@ -142,7 +151,7 @@
                 data-testid="provider-menu"
                 variant="ghost"
                 size="icon-sm"
-                class="absolute top-4 right-4"
+                class="absolute top-1 right-0 text-muted-foreground"
                 :aria-label="$t('more_options')"
               >
                 <MoreVertical class="size-4" />
@@ -176,7 +185,7 @@
           </DropdownMenu>
         </CardHeader>
         <CardContent
-          class="flex flex-wrap items-center gap-3 border-t bg-muted/20 px-6 py-4"
+          class="flex flex-wrap items-center gap-2.5 border-t border-b border-border px-0 py-3"
         >
           <Button
             v-if="canReconfigure"
@@ -190,7 +199,7 @@
             v-if="documentationUrl"
             as="a"
             data-testid="provider-documentation"
-            variant="outline"
+            variant="secondary"
             :href="documentationUrl"
             target="_blank"
             rel="noopener noreferrer"
@@ -201,7 +210,7 @@
           <Button
             as="a"
             data-testid="provider-known-issues"
-            variant="outline"
+            variant="secondary"
             :href="knownIssuesUrl"
             target="_blank"
             rel="noopener noreferrer"
@@ -237,8 +246,10 @@
 
     <!-- Rename dialog -->
     <v-dialog v-model="showRenameDialog" max-width="400">
-      <v-card>
-        <v-card-title>{{ $t("settings.provider_name") }}</v-card-title>
+      <v-card class="rename-dialog">
+        <v-card-title class="rename-dialog-title">
+          {{ $t("settings.provider_name") }}
+        </v-card-title>
         <v-card-text>
           <v-text-field
             v-model="editName"
@@ -253,12 +264,21 @@
             @keyup.enter="saveRename"
           />
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="rename-dialog-actions">
           <v-spacer />
-          <v-btn variant="text" @click="showRenameDialog = false">
+          <v-btn
+            variant="flat"
+            class="rename-dialog-btn rename-dialog-btn--secondary"
+            @click="showRenameDialog = false"
+          >
             {{ $t("close") }}
           </v-btn>
-          <v-btn color="primary" variant="flat" @click="saveRename">
+          <v-btn
+            color="primary"
+            variant="flat"
+            class="rename-dialog-btn"
+            @click="saveRename"
+          >
             {{ $t("settings.save") }}
           </v-btn>
         </v-card-actions>
@@ -692,10 +712,60 @@ function isCurrentProvider(instanceId: string) {
   padding: 16px;
 }
 
+.edit-provider :deep(.v-alert) {
+  border-radius: 14px;
+}
+
 .disabled-banner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.disabled-banner :deep(.v-btn) {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+/* rename dialog: same surface as the app's other dialogs */
+.rename-dialog {
+  border-radius: 20px !important;
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  padding: 8px 4px 4px;
+}
+
+.rename-dialog-title {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.rename-dialog :deep(.v-field) {
+  border-radius: 10px;
+}
+
+.rename-dialog-actions {
+  gap: 8px;
+  padding: 0 20px 16px !important;
+}
+
+.rename-dialog-btn {
+  height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.rename-dialog-btn--secondary {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
 }
 </style>

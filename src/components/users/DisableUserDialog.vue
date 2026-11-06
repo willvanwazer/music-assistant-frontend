@@ -4,12 +4,12 @@
     max-width="480"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card>
-      <v-card-title class="text-h6 pl-6 pb-0">
+    <v-card class="user-dialog">
+      <v-card-title class="user-dialog-title">
         {{ $t("auth.disable_user") }}
       </v-card-title>
       <v-card-text class="px-6 pb-2">
-        <p class="text-body-1 mb-4">
+        <p class="user-dialog-text">
           {{ $t("auth.confirm_disable_user") }}
         </p>
         <div v-if="user" class="user-name-box">
@@ -18,12 +18,17 @@
       </v-card-text>
       <v-card-actions class="pa-6 pt-4">
         <v-spacer />
-        <v-btn variant="text" @click="emit('update:modelValue', false)">
+        <v-btn
+          variant="flat"
+          class="user-dialog-btn user-dialog-cancel"
+          @click="emit('update:modelValue', false)"
+        >
           {{ $t("cancel") }}
         </v-btn>
         <v-btn
           color="error"
           variant="flat"
+          class="user-dialog-btn"
           :loading="loading"
           @click="handleDisable"
         >
@@ -78,12 +83,49 @@ const handleDisable = async () => {
 </script>
 
 <style scoped>
-.user-name-box {
-  background: rgba(var(--v-theme-error), 0.08);
-  border-left: 3px solid rgb(var(--v-theme-error));
-  padding: 12px 16px;
-  border-radius: 4px;
+.user-dialog {
+  border-radius: 20px !important;
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border);
+}
+
+.user-dialog-title {
+  padding: 24px 24px 0;
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
   font-weight: 500;
-  font-size: 0.938rem;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.user-dialog-text {
+  margin: 8px 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+.user-name-box {
+  background: color-mix(in oklab, var(--destructive) 10%, transparent);
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.user-dialog-btn {
+  height: 36px !important;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.user-dialog-cancel {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
 }
 </style>

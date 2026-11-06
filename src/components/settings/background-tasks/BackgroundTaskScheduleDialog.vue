@@ -225,7 +225,7 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="saving" @click="open = false">
+        <Button variant="secondary" :disabled="saving" @click="open = false">
           {{ t("cancel") }}
         </Button>
         <Button
@@ -436,7 +436,7 @@ const onSave = () => {
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.8);
+  color: var(--foreground);
   cursor: pointer;
 }
 

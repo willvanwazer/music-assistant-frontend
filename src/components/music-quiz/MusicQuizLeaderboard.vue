@@ -8,9 +8,14 @@
     ]"
   >
     <CardHeader :class="compact ? 'px-3' : 'px-4'">
-      <CardTitle :class="compact ? 'text-sm' : 'text-base'">
+      <CardTitle
+        :class="compact ? 'text-sm' : 'ma-display text-xl font-medium'"
+      >
         {{ title ?? $t("providers.music_quiz.leaderboard") }}
-        <span class="text-muted-foreground font-normal">
+        <span
+          class="text-subtle-foreground font-normal tabular-nums"
+          :class="{ 'font-sans text-sm': !compact }"
+        >
           ({{ rows.length }})
         </span>
       </CardTitle>
@@ -37,7 +42,7 @@
         <li
           v-for="row in rows"
           :key="row.name"
-          class="flex items-center rounded-lg"
+          class="flex items-center rounded-[10px]"
           :class="[
             compact ? 'gap-2 px-1.5 py-1 text-sm' : 'gap-3 px-2 py-1.5',
             { 'bg-primary/10': row.name === currentPlayerName },
@@ -45,7 +50,7 @@
           :aria-current="row.name === currentPlayerName ? 'true' : undefined"
         >
           <span
-            class="text-muted-foreground shrink-0 text-center font-bold tabular-nums"
+            class="text-subtle-foreground shrink-0 text-center font-medium tabular-nums"
             :class="compact ? 'w-5' : 'w-6'"
           >
             {{ row.rank }}
@@ -57,13 +62,17 @@
           <span
             class="min-w-0 flex-1 truncate font-medium"
             :class="{
-              'text-primary font-bold': row.name === currentPlayerName,
+              'text-primary font-semibold': row.name === currentPlayerName,
             }"
           >
             {{ row.name }}
           </span>
-          <span class="flex shrink-0 items-center gap-1 tabular-nums">
-            <strong class="leading-none">{{ row.score }}</strong>
+          <span class="flex shrink-0 items-center gap-1.5 tabular-nums">
+            <strong
+              class="font-display leading-none font-medium lining-nums"
+              :class="compact ? 'text-base' : 'text-lg'"
+              >{{ row.score }}</strong
+            >
             <span
               v-if="row.roundScoreLabel"
               class="text-primary quiz-score-pop text-xs leading-none font-semibold"

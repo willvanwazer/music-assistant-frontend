@@ -212,8 +212,8 @@ describe("PlayerTrackDetails compact mode", () => {
   });
 
   it.each([
-    { compact: false, size: 60, iconSize: 32, containerSize: 64 },
-    { compact: true, size: 40, iconSize: 22, containerSize: 40 },
+    { compact: false, size: 60, iconSize: 32, containerSize: 62 },
+    { compact: true, size: 46, iconSize: 22, containerSize: 46 },
   ])(
     "falls back to a $size px icon and keeps both text lines when compact=$compact",
     ({ compact, size, iconSize, containerSize }) => {
@@ -234,7 +234,7 @@ describe("PlayerTrackDetails compact mode", () => {
       expect(iconThumb.attributes("style")).toContain(`height: ${size}px`);
       expect(iconThumb.attributes("style")).toContain(`width: ${size}px`);
       expect(details.findComponent(PlayerIcon).props("size")).toBe(iconSize);
-      // the wider non-phone container still grows to 64px outside compact
+      // the wider non-phone container still grows to 62px outside compact
       // mode, independent of the fallback icon's own content size
       expect(details.get(".player-media-thumb").attributes("style")).toContain(
         `height: ${containerSize}px`,
@@ -243,8 +243,8 @@ describe("PlayerTrackDetails compact mode", () => {
   );
 
   it.each([
-    { compact: false, containerSize: 64 },
-    { compact: true, containerSize: 40 },
+    { compact: false, containerSize: 62 },
+    { compact: true, containerSize: 46 },
   ])(
     "renders cover art sized to its $containerSize px wrapper when compact=$compact",
     ({ compact, containerSize }) => {

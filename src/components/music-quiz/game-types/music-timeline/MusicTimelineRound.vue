@@ -21,7 +21,7 @@
           <AudioLines :class="compact ? 'size-6' : 'size-8'" />
         </span>
         <div>
-          <h2 class="text-xl font-bold">
+          <h2 class="ma-display pb-1 text-2xl leading-tight">
             {{ $t("providers.music_quiz.music_timeline_listen_title") }}
           </h2>
           <p class="text-muted-foreground">
@@ -43,21 +43,13 @@
           v-if="imageUrl"
           :src="imageUrl"
           :alt="`${revealedEntry.title} - ${revealedEntry.artist}`"
-          class="bg-muted mx-auto aspect-square w-full object-cover"
-          :class="
-            compact
-              ? 'max-w-32 rounded-lg'
-              : 'max-w-[min(11rem,22dvh)] rounded-xl'
-          "
+          class="bg-muted mx-auto aspect-square w-full rounded-[4px] object-contain shadow-[0_16px_32px_-14px_rgba(0,0,0,0.6)]"
+          :class="compact ? 'max-w-32' : 'max-w-[min(11rem,22dvh)]'"
         />
         <div
           v-else
-          class="bg-muted text-muted-foreground mx-auto grid aspect-square w-full place-items-center"
-          :class="
-            compact
-              ? 'max-w-32 rounded-lg'
-              : 'max-w-[min(11rem,22dvh)] rounded-xl'
-          "
+          class="bg-muted text-muted-foreground mx-auto grid aspect-square w-full place-items-center rounded-[4px]"
+          :class="compact ? 'max-w-32' : 'max-w-[min(11rem,22dvh)]'"
           aria-hidden="true"
         >
           <Music2 :class="compact ? 'size-8' : 'size-12'" />
@@ -66,12 +58,12 @@
           class="flex min-w-0 flex-col text-center sm:text-left"
           :class="compact ? 'gap-1' : 'gap-2'"
         >
-          <Badge class="w-fit self-center sm:self-start">
+          <Badge class="w-fit self-center tabular-nums sm:self-start">
             {{ revealedEntry.release_year }}
           </Badge>
           <h2
-            class="font-black break-words"
-            :class="compact ? 'text-xl sm:text-2xl' : 'text-2xl sm:text-3xl'"
+            class="ma-display leading-tight break-words"
+            :class="compact ? 'text-2xl sm:text-3xl' : 'text-3xl sm:text-4xl'"
           >
             {{ revealedEntry.title }}
           </h2>
@@ -86,7 +78,7 @@
 
       <div
         v-if="autoAdvanceText"
-        class="bg-muted/40 text-muted-foreground flex items-center justify-center gap-2 rounded-lg border px-3 text-sm font-semibold tabular-nums"
+        class="bg-secondary text-muted-foreground mx-auto flex w-fit items-center justify-center gap-2 rounded-full px-3.5 text-sm font-semibold tabular-nums"
         :class="compact ? 'py-1.5' : 'py-2'"
         role="timer"
         :aria-label="autoAdvanceText"

@@ -2,7 +2,7 @@
   <Badge
     as="span"
     variant="outline"
-    class="border-foreground/25 text-muted-foreground h-5 shrink-0 gap-1 px-1.5 text-[11px] shadow-none"
+    class="border-foreground/25 text-muted-foreground h-[18px] shrink-0 gap-1 px-1.5 text-[10.5px] font-medium shadow-none"
   >
     <Smartphone
       v-if="store.deviceType === 'phone'"

@@ -67,6 +67,14 @@
   --quality-lossless: #57c6b9;
   --quality-good: #e6bb72;
   --quality-low: #e0785a;
+  /* depth for artwork and the accent band behind featured rows */
+  --art-shadow: 0 14px 28px -12px rgba(20, 20, 50, 0.35);
+  --art-shadow-lifted: 0 22px 36px -14px rgba(20, 20, 50, 0.4);
+  --band: color-mix(in oklab, var(--primary) 90%, #000 10%);
+  /* frosted surfaces over artwork (Now Playing, party screens) */
+  --glass: rgba(255, 255, 255, 0.62);
+  --glass-line: rgba(255, 255, 255, 0.7);
+  --glass-hover: rgba(255, 255, 255, 0.78);
   /* Light theme - matching Vuetify light */
   --background: #ffffff;
   --foreground: #1c1c1e;
@@ -141,6 +149,12 @@
   --sidebar-accent-foreground: #f5f5f5;
   --sidebar-border: rgba(255, 255, 255, 0.075);
   --sidebar-ring: #7c7fe6;
+  --art-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.7);
+  --art-shadow-lifted: 0 22px 36px -14px rgba(0, 0, 0, 0.75);
+  --band: color-mix(in oklab, var(--primary) 42%, #2a2a33);
+  --glass: rgba(28, 28, 28, 0.62);
+  --glass-line: rgba(255, 255, 255, 0.1);
+  --glass-hover: rgba(48, 48, 48, 0.7);
 }
 
 .player-control-button {

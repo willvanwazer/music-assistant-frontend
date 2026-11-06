@@ -69,7 +69,7 @@
 
       <DialogFooter>
         <template v-if="!createdToken">
-          <Button variant="outline" @click="handleClose">
+          <Button variant="secondary" @click="handleClose">
             {{ $t("cancel") }}
           </Button>
           <Button

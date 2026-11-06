@@ -6,7 +6,7 @@
       </DialogHeader>
       <p>{{ $t("confirm_remove_alias", [alias || ""]) }}</p>
       <DialogFooter>
-        <Button variant="outline" @click="model = false">
+        <Button variant="secondary" @click="model = false">
           {{ $t("cancel") }}
         </Button>
         <Button variant="destructive" :disabled="loading" @click="removeAlias">

@@ -7,7 +7,7 @@ defineProps<{ text: string }>();
 <template>
   <MarkdownText
     :text="text"
-    class="selectable-label text-muted-foreground bg-muted/50 mt-2 mb-4 rounded-md px-3 py-2 text-sm leading-relaxed"
+    class="selectable-label text-muted-foreground my-1 rounded-[10px] bg-muted/60 px-3.5 py-2.5 text-[0.8125rem] leading-relaxed"
   />
 </template>
 

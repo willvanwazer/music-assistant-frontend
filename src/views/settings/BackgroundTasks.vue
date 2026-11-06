@@ -6,7 +6,7 @@
       <Button
         v-if="isAdmin"
         class="clear-finished-btn"
-        variant="outline"
+        variant="secondary"
         @click="clearFinishedTasks"
       >
         <Trash2 class="size-4" />
@@ -14,7 +14,7 @@
       </Button>
     </div>
 
-    <div class="pl-5 font-weight-medium">
+    <div class="tasks-total pl-5">
       {{
         t("background_tasks.total", filteredTasks.length, {
           named: { count: filteredTasks.length },
@@ -63,7 +63,7 @@
       </v-row>
 
       <div v-else class="empty-state">
-        <v-icon icon="mdi-list-status" size="64" class="empty-icon" />
+        <v-icon icon="mdi-list-status" size="40" class="empty-icon" />
         <div class="empty-title">{{ emptyTitle }}</div>
         <div class="empty-message">
           {{ emptyDescription }}
@@ -576,8 +576,32 @@ const getPriority = (task: BackgroundTask) => {
   align-items: flex-start;
 }
 
+.tasks-total {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
+}
+
+/* one group container, rows divided by hairlines */
 .tasks-list {
-  background: transparent;
+  padding: 0;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.tasks-list :deep(.list-item-main) {
+  margin-right: 0 !important;
+  padding: 10px 8px 10px 16px !important;
+  border-radius: 0 !important;
+  min-height: 60px;
+}
+
+.tasks-list :deep(.list-item-main + .list-item-main) {
+  border-top: 1px solid var(--border);
 }
 
 .empty-state {
@@ -591,21 +615,23 @@ const getPriority = (task: BackgroundTask) => {
 }
 
 .empty-icon {
-  color: rgba(var(--v-theme-on-surface), 0.3);
+  color: var(--subtle-foreground);
   margin-bottom: 16px;
 }
 
 .empty-title {
-  font-size: 18px;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-bottom: 6px;
 }
 
 .empty-message {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  line-height: 1.4;
+  font-size: 13.5px;
+  color: var(--muted-foreground);
+  line-height: 1.45;
 }
 
 @media (max-width: 960px) {

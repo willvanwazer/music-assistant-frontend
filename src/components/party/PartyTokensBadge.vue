@@ -59,10 +59,12 @@ const rightStyle = computed(() => {
 </script>
 
 <style scoped>
+/* a split pill: the count on the server's colour, the label on its tint */
 .tokens-badge {
   display: inline-flex;
   align-items: stretch;
-  border-radius: 10px;
+  height: 2rem;
+  border-radius: 999px;
   overflow: hidden;
   font-size: 0.8rem;
   font-weight: 600;
@@ -72,22 +74,23 @@ const rightStyle = computed(() => {
   display: flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.45rem 0.65rem;
+  padding: 0 0.6rem 0 0.75rem;
 }
 
 .badge-count {
-  font-weight: 700;
-  font-size: 0.85rem;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .badge-right {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.45rem 0.75rem;
+  padding: 0 0.85rem 0 0.65rem;
   border: 1px solid;
   border-left: none;
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 999px 999px 0;
 }
 
 .badge-label {
@@ -100,6 +103,7 @@ const rightStyle = computed(() => {
   align-items: center;
   gap: 0.2rem;
   font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
   padding-left: 0.35rem;
   border-left: 1px solid currentColor;
   opacity: 0.7;
@@ -111,7 +115,7 @@ const rightStyle = computed(() => {
   }
 
   .badge-right {
-    padding: 0.45rem 0.55rem;
+    padding: 0 0.7rem 0 0.55rem;
   }
 }
 </style>

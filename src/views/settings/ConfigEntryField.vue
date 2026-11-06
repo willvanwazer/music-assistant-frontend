@@ -433,8 +433,25 @@ const displayOptions = computed(() => {
   min-width: 0;
 }
 
+/* a divider opens a sub-group: the row's own hairline is the rule, so the
+   label reads as an eyebrow above the entries that follow */
 .config-divider {
-  padding: 8px 0;
+  padding: 10px 0 0;
+}
+
+.config-divider :deep(.v-divider) {
+  display: none;
+}
+
+.divider-label {
+  display: block;
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
+  opacity: 1;
 }
 
 .config-image {
@@ -449,18 +466,16 @@ const displayOptions = computed(() => {
   border-radius: 8px;
 }
 
-.divider-label {
-  display: block;
-  margin-top: 12px;
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-
 .action-btn {
-  margin: 8px 0;
-  margin-bottom: 20px;
-  width: 100%;
-  height: 50px;
+  margin: 2px 0;
+  min-width: 160px;
+  max-width: 100%;
+  height: 40px !important;
+  padding: 0 20px !important;
+  border-radius: 999px !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .config-slider-wrapper {
@@ -471,15 +486,18 @@ const displayOptions = computed(() => {
 
 .config-slider-label {
   font-size: 0.875rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 1;
   margin-bottom: 0;
+  white-space: normal;
 }
 
 .config-slider-block {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .config-slider-input {
@@ -490,11 +508,11 @@ const displayOptions = computed(() => {
   .config-slider-wrapper {
     flex-direction: row;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
   }
 
   .config-slider-label {
-    flex-shrink: 0;
+    flex: 0 1 40%;
     margin-bottom: 0;
   }
 

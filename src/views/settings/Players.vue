@@ -19,7 +19,7 @@
       </div>
     </div>
 
-    <div class="pl-5 font-weight-medium">
+    <div class="players-count pl-5">
       {{
         $t("settings.players_total", getAllFilteredPlayers().length, {
           named: { count: getAllFilteredPlayers().length },
@@ -36,6 +36,7 @@
           :key="item.player_id"
           link
           :show-menu-btn="true"
+          class="player-row"
           :class="{
             'player-disabled': !item.enabled,
             'player-unavailable': !api.players[item.player_id]?.available,
@@ -76,7 +77,7 @@
                   size="x-small"
                   color="warning"
                   variant="flat"
-                  class="ml-2"
+                  class="player-setup-btn ml-2"
                   @click.stop="startPlayerSetup(item.player_id)"
                 >
                   {{ $t("settings.start_setup") }}
@@ -443,6 +444,14 @@ watch(
   }
 }
 
+.players-count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
+}
+
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -454,42 +463,76 @@ watch(
 }
 
 .empty-icon {
-  color: rgba(var(--v-theme-on-surface), 0.3);
+  color: var(--subtle-foreground);
   margin-bottom: 16px;
 }
 
 .empty-title {
-  font-size: 18px;
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-bottom: 6px;
 }
 
 .empty-message {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  line-height: 1.4;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  line-height: 1.45;
 }
 
+/* ---------- list view: rows in one flat group ---------- */
+
 .players-list {
-  background: transparent;
+  padding: 0;
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.player-row.list-item-main {
+  min-height: 64px;
+  padding: 10px 6px 10px 16px !important;
+  margin-right: 0 !important;
+  border-radius: 0 !important;
+  transition: background-color 0.15s ease;
+}
+
+.player-row + .player-row {
+  border-top: 1px solid var(--border);
+}
+
+.player-row:hover {
+  background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.player-row :deep(.v-list-item__overlay) {
+  display: none;
+}
+
+.players-list :deep(.v-list-item__prepend) {
+  padding-inline-end: 14px;
 }
 
 .player-name {
-  font-weight: 500;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  color: var(--foreground);
 }
 
 .player-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
 .provider-name {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.78125rem;
+  color: var(--muted-foreground);
 }
 
 .protocol-chips {
@@ -501,6 +544,10 @@ watch(
 @media (max-width: 960px) {
   .protocol-chips {
     display: none;
+  }
+
+  .player-row.list-item-main {
+    padding-left: 12px !important;
   }
 }
 
@@ -514,10 +561,11 @@ watch(
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-primary), 0.15);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .player-disabled {
@@ -529,7 +577,7 @@ watch(
 }
 
 .player-needs-setup {
-  border-left: 3px solid rgb(var(--v-theme-warning));
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning));
 }
 
 .player-warning-inline {
@@ -540,8 +588,15 @@ watch(
 }
 
 .player-warning-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
+}
+
+.player-setup-btn {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .missing-players-hint {
@@ -550,17 +605,17 @@ watch(
   justify-content: center;
   gap: 6px;
   padding: 16px 20px;
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
 }
 
 .hint-icon {
-  color: rgba(var(--v-theme-on-surface), 0.4);
+  color: var(--subtle-foreground);
   flex-shrink: 0;
 }
 
 .hint-link {
-  color: rgb(var(--v-theme-primary));
+  color: var(--primary);
   text-decoration: none;
 }
 

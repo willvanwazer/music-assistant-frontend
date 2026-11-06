@@ -168,14 +168,20 @@ function shouldAutoEnable() {
 </script>
 
 <style scoped>
+/* a soft-accent tile with a hairline ring, so the control reads as the one
+   actionable thing on a guest screen */
 .listen-in {
   display: flex;
   padding: 0.6rem 0.9rem;
   margin-bottom: 1rem;
   border-radius: 12px;
-  background: rgba(var(--v-theme-primary), 0.08);
-  border: 1px solid rgba(var(--v-theme-primary), 0.2);
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--primary) 22%, transparent);
   flex-shrink: 0;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .listen-in__row {
@@ -185,12 +191,13 @@ function shouldAutoEnable() {
 }
 
 .listen-in--active {
-  background: rgba(var(--v-theme-primary), 0.16);
-  border-color: rgba(var(--v-theme-primary), 0.4);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--primary) 45%, transparent);
 }
 
 .listen-in__icon {
-  color: rgb(var(--v-theme-primary));
+  color: var(--primary);
   flex-shrink: 0;
 }
 
@@ -211,15 +218,16 @@ function shouldAutoEnable() {
 .listen-in__title {
   font-weight: 600;
   font-size: 0.9rem;
+  color: var(--foreground);
 }
 
 .listen-in__attribution {
-  color: rgba(var(--v-theme-on-surface), 0.55);
+  color: var(--subtle-foreground);
   line-height: 1;
 }
 
 .listen-in__desc {
   font-size: 0.78rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: var(--muted-foreground);
 }
 </style>

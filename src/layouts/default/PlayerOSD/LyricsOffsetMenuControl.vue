@@ -75,16 +75,20 @@ onBeforeUnmount(stopRepeating);
 </script>
 
 <style scoped>
+/* Sized like the menu items around it: muted icon, 500 label, and a compact
+   stepper of round hairline buttons around a tabular value. */
 .lyrics-offset-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .lyrics-offset-row__icon {
   flex: 0 0 auto;
+  color: var(--muted-foreground);
 }
 
 .lyrics-offset-row__label {
@@ -95,27 +99,33 @@ onBeforeUnmount(stopRepeating);
 .lyrics-offset-row__stepper {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .lyrics-offset-row__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  border-radius: 6px;
-  color: inherit;
-  transition: background-color 0.12s ease;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 .lyrics-offset-row__btn:hover {
-  background: var(--accent);
+  color: var(--foreground);
+  background: var(--secondary);
 }
 
 .lyrics-offset-row__value {
-  min-width: 3.5ch;
+  min-width: 4.5ch;
   text-align: center;
+  font-size: 12px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 </style>

@@ -1,5 +1,11 @@
 <template>
-  <div class="w-auto" :class="hasWaveform ? 'h-8 md:h-10 lg:h-12' : 'h-6'">
+  <!-- data-waveform lets a surface hosting the timeline size the waveform
+       separately from the flat track it replaces -->
+  <div
+    class="w-auto"
+    :class="hasWaveform ? 'h-8 md:h-10 lg:h-12' : 'h-6'"
+    :data-waveform="hasWaveform || undefined"
+  >
     <div v-if="store.activePlayer">
       <SliderRoot
         v-model="wrappedCurTimeValue"
@@ -41,8 +47,10 @@
           <!-- Tailwind's translate utilities emit the standalone `translate`
                property, which Android TV's Chrome ignores. Everything below
                centres via the track box or an explicit transform instead. -->
+          <!-- without a duration (radio, a TV input) the range would span the
+               whole track and read as finished, so only the faint track shows -->
           <SliderRange
-            v-if="!hasWaveform"
+            v-if="!hasWaveform && timelineDuration > 0"
             data-slot="slider-range"
             class="absolute inset-y-0 rounded-full"
             :style="{ 'background-color': color }"

@@ -1,7 +1,7 @@
 <template>
   <div
-    class="flex min-w-0 items-center gap-2 rounded-lg border px-3 py-2"
-    :class="current ? 'border-primary bg-primary/10' : 'bg-background'"
+    class="flex min-w-0 items-center gap-2.5 rounded-xl border px-3 py-2"
+    :class="current ? 'border-primary bg-primary/10' : 'border-border bg-card'"
   >
     <MusicQuizAvatar :name="name" class="size-8 shrink-0" />
     <span class="min-w-0 flex-1 truncate font-medium">{{ name }}</span>

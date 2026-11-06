@@ -51,7 +51,7 @@
         </Popover>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="open = false">
+        <Button variant="secondary" @click="open = false">
           {{ $t("cancel") }}
         </Button>
         <Button

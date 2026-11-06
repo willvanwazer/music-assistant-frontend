@@ -89,10 +89,12 @@
           class="flex min-h-0 flex-1 flex-col gap-6 lg:overflow-y-auto"
         >
           <div class="flex flex-col items-center gap-1 text-center">
-            <h2 class="text-2xl font-black sm:text-3xl lg:text-4xl">
+            <h2
+              class="ma-display text-3xl leading-[1.05] sm:text-4xl lg:text-5xl"
+            >
               {{ $t("providers.music_quiz.final_leaderboard") }}
             </h2>
-            <p class="text-muted-foreground text-lg">{{ winnerText }}</p>
+            <p class="text-muted-foreground mt-1 text-lg">{{ winnerText }}</p>
           </div>
           <MusicQuizPodium
             v-if="leaderboardRows.length"
@@ -116,9 +118,9 @@
             :caption="$t('providers.music_quiz.invite_players')"
           />
           <div class="flex flex-col gap-4">
-            <h2 class="text-xl font-bold">
+            <h2 class="ma-display text-[26px] leading-tight">
               {{ $t("providers.music_quiz.players") }}
-              <span class="text-muted-foreground">
+              <span class="text-subtle-foreground tabular-nums">
                 ({{ state.players.length }})
               </span>
             </h2>

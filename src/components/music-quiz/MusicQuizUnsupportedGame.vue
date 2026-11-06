@@ -6,7 +6,9 @@
       >
         <TriangleAlert class="size-6" aria-hidden="true" />
       </span>
-      <CardTitle>{{ $t("providers.music_quiz.unsupported_title") }}</CardTitle>
+      <CardTitle class="ma-display text-2xl font-medium">
+        {{ $t("providers.music_quiz.unsupported_title") }}
+      </CardTitle>
       <CardDescription>
         {{ $t("providers.music_quiz.unsupported_description") }}
       </CardDescription>

@@ -1,10 +1,5 @@
 <template>
-  <section
-    class="ed-shelf"
-    :class="{ 'ed-shelf--dimmed': dimmed }"
-    @mouseenter="hovering = canHover"
-    @mouseleave="hovering = false"
-  >
+  <section class="ed-shelf" :class="{ 'ed-shelf--dimmed': dimmed }">
     <div class="ed-shelf__head">
       <slot name="header">
         <div class="ed-shelf__titles">
@@ -15,7 +10,7 @@
           <span v-if="subtitle" class="ed-shelf__subtitle">{{ subtitle }}</span>
         </div>
       </slot>
-      <div v-if="provider || $slots.actions" class="ed-shelf__aside">
+      <div v-if="provider || $slots.actions || showNav" class="ed-shelf__aside">
         <ProviderIcon
           v-if="provider"
           class="ed-shelf__provider"
@@ -25,24 +20,31 @@
         <div v-if="$slots.actions" class="ed-shelf__actions">
           <slot name="actions"></slot>
         </div>
+        <!-- quiet scroll arrows, only while the row overflows -->
+        <div v-if="showNav" class="ed-shelf__navs">
+          <button
+            type="button"
+            class="ed-shelf__nav ed-shelf__nav--left"
+            :disabled="!canLeft"
+            :aria-label="$t('tooltip.scroll_left')"
+            @click="scroll(-1)"
+          >
+            <ChevronLeft :size="16" />
+          </button>
+          <button
+            type="button"
+            class="ed-shelf__nav ed-shelf__nav--right"
+            :disabled="!canRight"
+            :aria-label="$t('tooltip.scroll_right')"
+            @click="scroll(1)"
+          >
+            <ChevronRight :size="16" />
+          </button>
+        </div>
       </div>
     </div>
 
-    <div
-      class="ed-shelf__viewport"
-      :style="{ '--ed-nav-top': navTop + 'px' }"
-      @wheel="onWheel"
-    >
-      <!-- prev -->
-      <button
-        v-show="hovering && canLeft"
-        class="ed-shelf__nav ed-shelf__nav--left"
-        :aria-label="$t('tooltip.scroll_left')"
-        @click="scroll(-1)"
-      >
-        <ChevronLeft :size="20" />
-      </button>
-
+    <div class="ed-shelf__viewport" @wheel="onWheel">
       <div
         ref="track"
         class="ed-shelf__track ma-scroll"
@@ -54,16 +56,6 @@
       >
         <slot></slot>
       </div>
-
-      <!-- next -->
-      <button
-        v-show="hovering && canRight"
-        class="ed-shelf__nav ed-shelf__nav--right"
-        :aria-label="$t('tooltip.scroll_right')"
-        @click="scroll(1)"
-      >
-        <ChevronRight :size="20" />
-      </button>
     </div>
   </section>
 </template>
@@ -86,6 +78,8 @@ interface Props {
   subtitle?: string | null;
   provider?: string;
   gap?: number;
+  // Vertical centre of the old floating arrows; the arrows now sit in the
+  // header, so this is kept only so existing callers stay valid.
   navCenter?: number;
   dimmed?: boolean;
   tilesPerView?: number;
@@ -105,21 +99,15 @@ const PHONE_GAP = 4;
 const PHONE_CARD_PAD = 8;
 const MIN_ART = 120;
 const MAX_ART = 280;
-const ART_TOP_OFFSET = 12;
 
-// Only track hover (for the nav chevrons) on hover-capable devices. On touch
-// devices the emulated mouseenter would mutate the DOM, which makes mobile
-// Safari swallow the first tap as "hover" instead of a click.
+// Only offer the arrows on hover-capable devices; touch users swipe the row.
 const canHover = window.matchMedia?.("(hover: hover)")?.matches ?? true;
 const track = ref<HTMLElement | null>(null);
-const hovering = ref(false);
 const canLeft = ref(false);
 const canRight = ref(false);
 const tileArt = ref<number | null>(null);
 
-const navTop = computed(() =>
-  tileArt.value != null ? ART_TOP_OFFSET + tileArt.value / 2 : props.navCenter,
-);
+const showNav = computed(() => canHover && (canLeft.value || canRight.value));
 
 const verticalScrollParent = (el: HTMLElement): HTMLElement => {
   let node: HTMLElement | null = el.parentElement;
@@ -216,22 +204,32 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+/* A Liner Notes section: serif heading with an optional quiet subtitle beside
+   it, controls on the right, then a horizontally scrolling row of cards. The
+   gutter follows the page (--ed-page-gutter) where one is set. */
 .ed-shelf {
-  --ed-gutter: 28px;
+  --ed-gutter: var(--ed-page-gutter, 28px);
   --ed-card-pad: 8px;
   position: relative;
-  margin-bottom: 32px;
+  /* the cards carry 12px of their own space below, so this reads as ~40px */
+  margin-bottom: 30px;
 }
 .ed-shelf__head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  gap: 16px;
+  min-height: 32px;
+  /* the track and card padding add 12px above the covers */
+  margin-bottom: 6px;
   padding: 0 var(--ed-gutter);
 }
 .ed-shelf__titles {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 14px;
+  row-gap: 2px;
   min-width: 0;
 }
 .ed-shelf__title-row {
@@ -239,32 +237,39 @@ onBeforeUnmount(() => {
   align-items: baseline;
   gap: 12px;
   min-width: 0;
+  max-width: 100%;
 }
 .ed-shelf__title {
   margin: 0;
   font-family: var(--font-heading);
   font-size: 26px;
+  line-height: 1.15;
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: rgb(var(--v-theme-on-background));
+  color: var(--foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .ed-shelf__subtitle {
+  min-width: 0;
+  max-width: 100%;
   font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  color: var(--subtle-foreground);
   white-space: nowrap;
-  margin-left: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .ed-shelf__aside {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
+  color: var(--muted-foreground);
 }
 .ed-shelf__provider {
   flex-shrink: 0;
+  opacity: 0.85;
 }
 .ed-shelf__actions {
   display: flex;
@@ -307,51 +312,57 @@ onBeforeUnmount(() => {
   display: none;
 }
 
+.ed-shelf__navs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* round hairline arrows, as quiet as the rest of the header */
 .ed-shelf__nav {
-  position: absolute;
-  top: var(--ed-nav-top, 96px);
-  transform: translateY(-50%);
-  z-index: 3;
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: rgb(var(--v-theme-on-background));
-  background: rgb(var(--v-theme-panel));
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  color: var(--muted-foreground);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 14%, transparent);
   transition:
     background 0.15s ease,
-    transform 0.15s ease;
+    color 0.15s ease,
+    opacity 0.15s ease;
 }
-.ed-shelf__nav:hover {
-  background: rgb(var(--v-theme-surface));
+.ed-shelf__nav:hover:not(:disabled) {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
 }
-.ed-shelf__nav:active {
-  transform: translateY(-50%) scale(0.94);
+.ed-shelf__nav:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
 }
-.ed-shelf__nav--left {
-  left: 12px;
-}
-.ed-shelf__nav--right {
-  right: 12px;
+.ed-shelf__nav:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 @media (max-width: 600px) {
   .ed-shelf {
     --ed-gutter: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 18px;
   }
   .ed-shelf__head {
     margin-bottom: 0;
   }
   .ed-shelf__title {
-    font-size: 19px;
+    font-size: 21px;
   }
-  .ed-shelf__nav {
+  .ed-shelf__subtitle {
+    font-size: 12px;
+  }
+  .ed-shelf__navs {
     display: none;
   }
 }

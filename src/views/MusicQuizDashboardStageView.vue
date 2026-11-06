@@ -18,7 +18,7 @@
         <header class="flex items-start justify-between gap-6">
           <div class="min-w-0">
             <h1
-              class="truncate text-[clamp(1.75rem,3.4vw,3rem)] leading-tight font-bold text-foreground/95"
+              class="ma-display truncate pb-[0.08em] text-[clamp(2rem,4.2vw,4rem)] leading-[1.05] text-foreground"
             >
               {{ activeState.name || $t("providers.music_quiz.title") }}
             </h1>
@@ -26,14 +26,14 @@
               role="status"
               aria-live="polite"
               aria-atomic="true"
-              class="mt-1 text-[clamp(0.95rem,1.5vw,1.6rem)] font-semibold tracking-[0.15em] text-foreground/45 uppercase"
+              class="mt-[0.6em] text-[clamp(0.85rem,1.3vw,1.4rem)] font-semibold tracking-[0.14em] text-muted-foreground uppercase"
             >
               {{ phaseLabel }}
             </p>
           </div>
           <p
             v-if="roundLabel"
-            class="shrink-0 rounded-full bg-foreground/10 px-[1.2em] py-[0.45em] text-[clamp(1rem,1.7vw,1.9rem)] font-semibold text-foreground/70"
+            class="quiz-chip shrink-0 rounded-full px-[1.1em] py-[0.4em] text-[clamp(1rem,1.6vw,1.8rem)] font-semibold tabular-nums text-foreground"
             data-testid="music-quiz-dashboard-round"
           >
             {{ roundLabel }}
@@ -60,16 +60,16 @@
           />
           <div class="flex min-h-0 min-w-0 flex-col gap-[2vh] self-stretch">
             <h2
-              class="text-[clamp(1.4rem,2.6vw,2.4rem)] font-bold text-foreground/90"
+              class="ma-display text-[clamp(1.6rem,3vw,2.8rem)] leading-[1.1] text-foreground"
             >
               {{ $t("providers.music_quiz.players") }}
-              <span class="text-foreground/50">
+              <span class="text-subtle-foreground tabular-nums">
                 ({{ activeState.players.length }})
               </span>
             </h2>
             <MusicQuizAutoStartStatus
               :state="activeState"
-              class="w-fit rounded-full bg-foreground/10 px-[1.1em] py-[0.4em] text-[clamp(1rem,1.7vw,1.75rem)] font-semibold text-foreground/75"
+              class="quiz-chip w-fit rounded-full px-[1.1em] py-[0.4em] text-[clamp(1rem,1.6vw,1.7rem)] font-semibold tabular-nums text-foreground"
             />
             <div
               v-if="activeState.players.length"
@@ -80,12 +80,12 @@
                 v-for="player in sortedPlayers"
                 :key="player.name"
                 :name="player.name"
-                class="border-foreground/10 bg-foreground/10 text-[clamp(1rem,1.4vw,1.5rem)]"
+                class="quiz-tile text-[clamp(1rem,1.4vw,1.5rem)]"
               />
             </div>
             <p
               v-else
-              class="text-[clamp(1rem,1.7vw,1.75rem)] text-foreground/60"
+              class="text-[clamp(1rem,1.7vw,1.75rem)] text-muted-foreground"
             >
               {{ $t("providers.music_quiz.waiting_for_start") }}
             </p>
@@ -134,7 +134,7 @@
             <p
               v-if="answeringPrompt"
               data-testid="music-quiz-dashboard-listening"
-              class="text-[clamp(1.5rem,3vw,2.8rem)] font-bold text-foreground/90"
+              class="ma-display text-[clamp(1.75rem,3.6vw,3.4rem)] leading-[1.1] text-foreground"
             >
               {{ answeringPrompt }}
             </p>
@@ -158,15 +158,17 @@
               <div
                 v-for="(option, index) in answerOptions"
                 :key="option.suggestion_id"
-                class="flex items-center gap-[0.9em] rounded-2xl bg-foreground/5 px-[1.1em] py-[0.9em] text-[clamp(1.1rem,2vw,2rem)] font-medium text-foreground/90"
+                class="quiz-panel flex items-center gap-[0.9em] rounded-[14px] px-[1.1em] py-[0.9em] text-[clamp(1.1rem,2vw,2rem)] text-foreground"
               >
                 <span
-                  class="grid size-[1.9em] shrink-0 place-items-center rounded-full bg-foreground/10 text-[0.75em] font-bold text-foreground/80"
+                  class="grid size-[1.9em] shrink-0 place-items-center rounded-full bg-primary/15 text-[0.7em] font-semibold text-primary"
                   aria-hidden="true"
                 >
                   {{ optionLetter(index) }}
                 </span>
-                <span class="min-w-0 break-words">{{ option.label }}</span>
+                <span class="ma-display min-w-0 leading-[1.2] break-words">
+                  {{ option.label }}
+                </span>
               </div>
             </div>
           </template>
@@ -174,7 +176,7 @@
             v-if="revealCountdownText"
             data-testid="music-quiz-dashboard-next-round"
             role="timer"
-            class="mx-auto w-fit rounded-full bg-foreground/10 px-[1.2em] py-[0.45em] text-[clamp(1rem,1.7vw,1.9rem)] font-semibold text-foreground/75"
+            class="quiz-chip mx-auto w-fit rounded-full px-[1.1em] py-[0.4em] text-[clamp(1rem,1.6vw,1.8rem)] font-semibold tabular-nums text-foreground"
           >
             {{ revealCountdownText }}
           </p>
@@ -186,7 +188,7 @@
           class="flex min-h-0 flex-1 flex-col items-center justify-center gap-[3vh]"
         >
           <p
-            class="text-center text-[clamp(1.6rem,3vw,3rem)] font-bold text-foreground/95"
+            class="ma-display text-center text-[clamp(2rem,4.4vw,4.2rem)] leading-[1.05] text-foreground"
           >
             {{ winnerText }}
           </p>
@@ -205,8 +207,10 @@
         data-testid="music-quiz-dashboard-waiting"
         class="flex min-h-0 flex-1 flex-col items-center justify-center gap-[2vh] text-center"
       >
-        <Disc3 class="size-[12vh] text-foreground/25" aria-hidden="true" />
-        <p class="text-[clamp(1.25rem,2.4vw,2.25rem)] text-foreground/60">
+        <Disc3 class="size-[12vh] text-subtle-foreground" aria-hidden="true" />
+        <p
+          class="ma-display text-[clamp(1.5rem,2.8vw,2.6rem)] text-muted-foreground"
+        >
           {{ $t("providers.music_quiz.dashboard_waiting") }}
         </p>
       </div>
@@ -417,14 +421,15 @@ watch(
   }
 }
 
+/* the revealed cover, blurred into a wash of its own colours */
 .music-quiz-dashboard-backdrop {
   position: absolute;
   /* overscanned so the blur has material to sample at every edge */
-  inset: -10%;
+  inset: -15%;
   background-position: center;
   background-size: cover;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(90px) saturate(1.4);
+  opacity: 0.55;
   transition: opacity 1s ease;
 }
 
@@ -434,9 +439,33 @@ watch(
   /* wash the blurred artwork toward the theme background so content stays readable */
   background: linear-gradient(
     to bottom,
-    color-mix(in srgb, var(--background) 35%, transparent),
-    color-mix(in srgb, var(--background) 75%, transparent)
+    color-mix(in srgb, var(--background) 30%, transparent),
+    color-mix(in srgb, var(--background) 78%, transparent)
   );
+}
+
+/* Glass pills and panels: enough fill to stay legible over the wash, a
+   hairline instead of an outline. */
+.quiz-chip,
+.quiz-panel {
+  background: color-mix(in oklab, var(--card) 70%, transparent);
+  box-shadow: inset 0 0 0 1px var(--border);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+}
+
+/* outranks the tile's own resting fill, which Tailwind marks !important */
+.quiz-tile {
+  border-color: var(--border) !important;
+  border-radius: 14px !important;
+  background: color-mix(in oklab, var(--card) 70%, transparent) !important;
+  padding: 0.6em 0.85em !important;
+  gap: 0.6em !important;
+}
+
+.quiz-tile :deep([data-slot="avatar"]) {
+  width: 1.9em !important;
+  height: 1.9em !important;
 }
 
 .music-quiz-dashboard-content {

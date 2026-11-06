@@ -1,10 +1,18 @@
 <template>
   <main class="grid min-h-full place-items-center p-4">
-    <Card class="w-full max-w-md">
-      <CardHeader class="justify-items-center text-center">
-        <CircleHelp class="text-muted-foreground size-10" aria-hidden="true" />
-        <CardTitle>{{ copy.title }}</CardTitle>
-        <CardDescription>{{ copy.description }}</CardDescription>
+    <Card class="w-full max-w-md py-8">
+      <CardHeader class="justify-items-center gap-2 text-center">
+        <span
+          class="bg-secondary text-muted-foreground mb-2 grid size-14 place-items-center rounded-full"
+        >
+          <CircleHelp class="size-7" aria-hidden="true" />
+        </span>
+        <CardTitle class="ma-display text-3xl leading-tight font-medium">
+          {{ copy.title }}
+        </CardTitle>
+        <CardDescription class="text-[0.9375rem]">
+          {{ copy.description }}
+        </CardDescription>
       </CardHeader>
     </Card>
   </main>

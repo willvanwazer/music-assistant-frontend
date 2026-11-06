@@ -18,7 +18,7 @@
       <div class="flex flex-col gap-3">
         <div class="flex items-center gap-2">
           <AudioWaveform :size="18" />
-          <span class="text-[0.95rem] font-semibold">
+          <span class="text-sm font-semibold">
             {{ $t("audio_analysis") }}
           </span>
         </div>
@@ -26,7 +26,7 @@
         <div class="grid auto-cols-fr grid-flow-col gap-2">
           <div
             v-if="bpm"
-            class="bg-accent/50 rounded-md px-3 py-2 text-center"
+            class="bg-secondary rounded-[10px] px-3 py-2 text-center"
             :title="$t('tooltip.bpm')"
           >
             <div class="text-base font-semibold tabular-nums">{{ bpm }}</div>
@@ -34,7 +34,7 @@
           </div>
           <div
             v-if="musicalKey"
-            class="bg-accent/50 rounded-md px-3 py-2 text-center"
+            class="bg-secondary rounded-[10px] px-3 py-2 text-center"
             :title="$t('tooltip.musical_key')"
           >
             <div class="text-base font-semibold">{{ musicalKey }}</div>

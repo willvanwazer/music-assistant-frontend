@@ -16,9 +16,11 @@
 
     <div
       v-if="seedLabels.length"
-      class="rounded-md border bg-card px-3 py-2 flex flex-col gap-1"
+      class="rounded-[10px] border bg-card px-3 py-2 flex flex-col gap-1"
     >
-      <span class="text-xs text-muted-foreground uppercase tracking-wide">
+      <span
+        class="text-subtle-foreground text-[0.6875rem] font-semibold tracking-[0.14em] uppercase"
+      >
         {{ $t("smart_playlist.seed_heading") }}
       </span>
       <div class="flex flex-wrap gap-1">
@@ -49,14 +51,16 @@
       <div
         v-for="row in ruleRows"
         :key="row.key"
-        class="flex items-start gap-2 rounded-md border bg-card/40 px-3 py-2"
+        class="flex items-start gap-2 rounded-[10px] border bg-card/40 px-3 py-2"
       >
         <component
           :is="row.icon"
           class="h-3.5 w-3.5 mt-0.5 text-muted-foreground flex-shrink-0"
         />
         <div class="flex flex-col gap-1 min-w-0">
-          <span class="text-xs uppercase tracking-wide text-muted-foreground">
+          <span
+            class="text-subtle-foreground text-[0.6875rem] font-semibold tracking-[0.14em] uppercase"
+          >
             {{ row.label }}
           </span>
           <div v-if="row.tags" class="flex flex-wrap gap-1">
@@ -75,7 +79,7 @@
     </div>
     <div
       v-else-if="!seedLabels.length"
-      class="rounded-md border bg-card/40 px-3 py-3 flex items-start gap-2"
+      class="rounded-[10px] border bg-card/40 px-3 py-3 flex items-start gap-2"
     >
       <Library class="h-3.5 w-3.5 mt-0.5 text-muted-foreground flex-shrink-0" />
       <div class="flex flex-col gap-0.5 min-w-0">

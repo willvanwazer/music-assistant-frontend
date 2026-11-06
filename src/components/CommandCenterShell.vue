@@ -27,7 +27,7 @@ const asSheet = computed(() => store.mobileLayout);
       data-player-panel
       side="bottom"
       :show-close="false"
-      class="player-bar-popout command-center-sheet z-[998] gap-0 overflow-hidden rounded-xl p-0"
+      class="player-bar-popout command-center-sheet z-[998] gap-0 overflow-hidden rounded-[20px] bg-popover p-0"
       overlay-class="command-center-sheet-overlay z-[997]"
       @open-auto-focus="focusCommandInputOnOpen"
     >
@@ -49,7 +49,7 @@ const asSheet = computed(() => store.mobileLayout);
     :description="props.description"
     :show-close-button="false"
     :focus-input-on-open="true"
-    content-class="top-[10%] flex translate-y-0 flex-col gap-0 sm:max-w-2xl"
+    content-class="top-[9%] flex translate-y-0 flex-col gap-0 rounded-[20px] bg-popover sm:max-w-[760px]"
   >
     <slot></slot>
   </CommandDialog>

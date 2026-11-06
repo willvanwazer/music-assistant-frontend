@@ -8,6 +8,7 @@
       'ed-card--unavailable': !isAvailable,
       'ed-card--fluid': fluid,
       'ed-card--disabled': disabled,
+      'ed-card--round': isArtist,
     }"
     @click="onClick"
     @keydown.enter.self="onClick"
@@ -44,7 +45,11 @@
       <NowPlayingBadge
         v-if="isPlaying"
         :show-badge="false"
-        icon-style="position: absolute; right: 6px; bottom: 6px; z-index: 2"
+        :icon-style="
+          isArtist
+            ? 'position: absolute; right: 50%; bottom: 10%; transform: translateX(50%); z-index: 2'
+            : 'position: absolute; right: 6px; bottom: 6px; z-index: 2'
+        "
       />
       <div
         v-if="showCheckboxes"
@@ -60,6 +65,14 @@
           "
         />
       </div>
+      <span v-if="showPlay" class="ed-card__play" @click.stop="onPlay">
+        <Play
+          :size="18"
+          fill="currentColor"
+          :stroke-width="0"
+          class="ed-card__play-icon"
+        />
+      </span>
     </div>
     <div class="ed-card__meta">
       <div
@@ -71,14 +84,6 @@
       <div class="ed-card__sub">
         <slot name="subtitle">{{ subtitle }}</slot>
       </div>
-      <span v-if="showPlay" class="ed-card__play" @click.stop="onPlay">
-        <Play
-          :size="18"
-          fill="currentColor"
-          :stroke-width="0"
-          class="ed-card__play-icon"
-        />
-      </span>
     </div>
 
     <slot name="actions"></slot>
@@ -156,6 +161,8 @@ const { t } = useI18n();
 const art = computed(() => itemArtwork(props.item, 320));
 
 const isGenre = computed(() => props.item.media_type === MediaType.GENRE);
+// people are shown as round portraits; every other cover stays square
+const isArtist = computed(() => props.item.media_type === MediaType.ARTIST);
 
 // provider entries in the browse root show the provider icon
 const { iconDataUri: providerRootIcon } = useProviderIcon(() =>
@@ -271,9 +278,15 @@ const onMenu = (e: MouseEvent) => {
 </script>
 
 <style scoped>
+/* Liner Notes card: a whole, square cover with a soft shadow and the text
+   beneath it. The cover lifts on hover and reveals the accent play button;
+   nothing is ever stamped over the art. */
 .ed-card {
   --ed-card-pad: 8px;
   --ed-art-size: var(--ed-tile-art, 168px);
+  --ed-art-radius: 4px;
+  --ed-art-shadow: 0 14px 28px -12px rgba(20, 20, 50, 0.35);
+  --ed-art-shadow-lift: 0 22px 34px -14px rgba(20, 20, 50, 0.42);
   position: relative;
   flex: 0 0 auto;
   width: calc(var(--ed-art-size) + 2 * var(--ed-card-pad));
@@ -284,9 +297,16 @@ const onMenu = (e: MouseEvent) => {
   border: none;
   padding: var(--ed-card-pad);
   border-radius: var(--ed-card-pad);
-  color: rgb(var(--v-theme-on-background));
+  color: var(--foreground);
   scroll-snap-align: start;
-  transition: background 0.15s ease;
+  outline: none;
+}
+.dark .ed-card {
+  --ed-art-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.7);
+  --ed-art-shadow-lift: 0 22px 36px -14px rgba(0, 0, 0, 0.75);
+}
+.ed-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
 }
 .ed-card--fluid {
   width: 100%;
@@ -299,9 +319,6 @@ const onMenu = (e: MouseEvent) => {
 .ed-card--fluid .ed-card__meta {
   width: 100%;
 }
-.ed-card:hover {
-  background: rgba(var(--v-theme-on-surface), 0.08);
-}
 .ed-card--unavailable {
   opacity: 0.3;
 }
@@ -313,11 +330,50 @@ const onMenu = (e: MouseEvent) => {
   container-type: inline-size;
   width: var(--ed-art-size);
   height: var(--ed-art-size);
-  border-radius: var(--ed-card-pad);
+  border-radius: var(--ed-art-radius);
   overflow: hidden;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background: var(--secondary);
+  box-shadow: var(--ed-art-shadow);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* a faint hairline keeps dark covers from bleeding into a dark page */
+.ed-card__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 7%, transparent);
+  pointer-events: none;
+}
+/* a soft shade under the play button, only while it shows */
+.ed-card__art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.42), transparent 48%);
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  pointer-events: none;
+}
+/* people are round portraits */
+.ed-card--round .ed-card__art {
+  --ed-art-radius: 50%;
+}
+.ed-card--round .ed-card__meta {
+  text-align: center;
+}
+/* keep corner overlays inside the circle */
+.ed-card--round .ed-card__provider {
+  top: 12%;
+  left: 12%;
+}
+.ed-card--round .ed-card__select {
+  padding: 14%;
 }
 .ed-card__initials {
   position: absolute;
@@ -325,11 +381,13 @@ const onMenu = (e: MouseEvent) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: var(--font-heading);
   font-size: 34cqw;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  /* sits on the banner artwork, so white is the art's own ink */
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   user-select: none;
 }
 .ed-card__provider {
@@ -388,24 +446,30 @@ const onMenu = (e: MouseEvent) => {
 }
 .ed-card__play {
   position: absolute;
-  bottom: 2px;
-  right: 0;
-  width: 38px;
-  height: 38px;
+  right: 10px;
+  bottom: 10px;
+  width: 40px;
+  height: 40px;
   border-radius: 999px;
-  background: rgb(var(--v-theme-primary));
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(8px);
+  transform: translateY(6px);
   transition:
-    opacity 0.18s,
-    transform 0.18s;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    opacity 0.18s ease,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45);
   z-index: 4;
+}
+/* a round portrait keeps the button inside its circle */
+.ed-card--round .ed-card__play {
+  right: 50%;
+  bottom: 12%;
+  transform: translate(50%, 6px);
 }
 .ed-card__play-icon {
   margin-left: 2px;
@@ -413,16 +477,46 @@ const onMenu = (e: MouseEvent) => {
   fill: currentColor;
   stroke: none;
 }
-.ed-card:hover .ed-card__play {
+.ed-card:hover .ed-card__art {
+  transform: translateY(-3px);
+  box-shadow: var(--ed-art-shadow-lift);
+}
+.ed-card:hover .ed-card__art::before,
+.ed-card:focus-visible .ed-card__art::before {
+  opacity: 1;
+}
+.ed-card:hover .ed-card__play,
+.ed-card:focus-visible .ed-card__play {
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
+  transform: none;
+}
+.ed-card--round:hover .ed-card__play,
+.ed-card--round:focus-visible .ed-card__play {
+  transform: translateX(50%);
+}
+.ed-card__play:hover {
+  filter: brightness(1.08);
 }
 /* Touch devices: no hover-revealed play button — tap goes straight to the
    content and long-press opens the context menu instead. */
 @media (hover: none) {
-  .ed-card__play {
+  .ed-card__play,
+  .ed-card__art::before {
     display: none;
+  }
+  .ed-card:hover .ed-card__art {
+    transform: none;
+    box-shadow: var(--ed-art-shadow);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ed-card__art,
+  .ed-card__play {
+    transition: none;
+  }
+  .ed-card:hover .ed-card__art {
+    transform: none;
   }
 }
 .ma-tap:active {
@@ -431,25 +525,27 @@ const onMenu = (e: MouseEvent) => {
 .ed-card__meta {
   position: relative;
   width: var(--ed-art-size);
-  margin-top: 10px;
+  margin-top: 11px;
 }
 .ed-card__title {
-  font-size: 14px;
+  font-size: 13.5px;
+  line-height: 18px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .ed-card__title--playing {
-  color: rgb(var(--v-theme-primary));
+  color: var(--primary);
 }
 .ed-card__sub {
-  font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--muted-foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 @media (max-width: 500px) {
@@ -457,10 +553,16 @@ const onMenu = (e: MouseEvent) => {
     --ed-card-pad: 4px;
   }
   .ed-card__meta {
-    margin-top: 4px;
+    margin-top: 8px;
   }
   .ed-card__sub {
     margin-top: 0;
+  }
+  .ed-card__play {
+    width: 36px;
+    height: 36px;
+    right: 8px;
+    bottom: 8px;
   }
 }
 </style>

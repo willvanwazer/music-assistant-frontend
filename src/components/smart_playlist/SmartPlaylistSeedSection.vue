@@ -17,7 +17,7 @@
 
     <div
       :class="[
-        'group flex items-center gap-2 rounded-md border bg-card/40 px-2 py-1.5 hover:bg-card transition-colors',
+        'group flex items-center gap-2 rounded-[10px] border bg-card/40 px-2 py-1.5 hover:bg-card transition-colors',
         invalid && !seedItems.hasSeed.value
           ? 'border-destructive ring-1 ring-destructive/40'
           : '',

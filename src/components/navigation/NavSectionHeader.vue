@@ -128,21 +128,29 @@ const toggleLabelHidden = async () => {
 .nav-edit-header-actions {
   display: flex;
   align-items: center;
-  opacity: 0.7;
+  color: var(--subtle-foreground);
 }
 
+/* the label is edited in its own case rather than the eyebrow's capitals, so
+   what is typed is what gets stored; it keeps the eyebrow's left edge */
 .nav-edit-rename-input {
   flex: 1;
   min-width: 0;
-  margin-left: 1rem;
+  margin-left: 1.125rem;
   height: 1.75rem;
-  padding: 0 0.25rem;
-  font-size: 0.875rem;
+  padding: 0 0.125rem;
+  font-size: 0.75rem;
+  font-weight: 600;
   background: transparent;
   border: none;
-  border-bottom: 1px solid hsl(var(--sidebar-border));
+  border-bottom: 1px solid var(--sidebar-border);
   border-radius: 0;
-  color: hsl(var(--sidebar-foreground));
+  color: var(--sidebar-foreground);
   outline: none;
+  transition: border-color 150ms ease;
+}
+
+.nav-edit-rename-input:focus {
+  border-bottom-color: var(--sidebar-ring);
 }
 </style>

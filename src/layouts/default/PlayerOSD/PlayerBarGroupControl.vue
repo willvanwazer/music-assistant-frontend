@@ -33,7 +33,7 @@
             'player-control-button rounded-none px-1',
             floating
               ? 'size-11 rounded-full me-3'
-              : 'player-bar-action player-bar-group-button h-20 w-[72px]',
+              : 'player-bar-action player-bar-group-button size-9 rounded-lg px-0',
           ]"
           :data-active="open"
           :data-suppress-hover="suppressHover"
@@ -49,11 +49,14 @@
             />
           </span>
           <template v-else>
+            <!-- an icon button among the room controls, so the count steps out
+                 onto the corner where it would otherwise cover the speaker -->
             <span class="player-bar-action-icon">
               <PlayerGroupIcon
                 :count="memberCount"
                 :stroke-width="1.4"
-                class="size-7"
+                outset-count
+                class="size-[22px]"
               />
             </span>
             <span class="player-bar-action-label">

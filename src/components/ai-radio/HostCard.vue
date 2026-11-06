@@ -101,35 +101,49 @@ function onDelete() {
   background: transparent;
   border: none;
   padding: var(--host-card-pad);
-  border-radius: var(--host-card-pad);
-  color: rgb(var(--v-theme-on-background));
-  transition: background 0.15s ease;
+  border-radius: 12px;
+  color: var(--foreground);
+  outline: none;
 }
-.host-card:hover {
-  background: rgba(var(--v-theme-on-surface), 0.08);
+.host-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
 }
 .ma-tap:active {
   transform: scale(0.97);
 }
 
+/* a host has no artwork, so its tile is a flat card with a hairline */
 .host-card__art {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: var(--host-card-pad);
+  border-radius: 12px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.15s ease;
+}
+.host-card:hover .host-card__art {
+  transform: translateY(-3px);
+  background: var(--secondary);
+}
+@media (prefers-reduced-motion: reduce) {
+  .host-card__art {
+    transition: background 0.15s ease;
+  }
+  .host-card:hover .host-card__art {
+    transform: none;
+  }
 }
 .host-card__icon {
   width: 34%;
   height: 34%;
-  color: rgba(var(--v-theme-on-surface), 0.5);
+  color: var(--subtle-foreground);
 }
 .host-card__menu {
   position: absolute;
@@ -141,10 +155,10 @@ function onDelete() {
 .host-card__meta {
   position: relative;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 11px;
 }
 .host-card__title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;

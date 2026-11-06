@@ -4,7 +4,6 @@
     <SettingsHeaderCard
       v-model:show-advanced-settings="showAdvancedSettings"
       :icon="Palette"
-      icon-class="text-orange-500"
       :title="$t('settings.frontend')"
       :description="$t('settings.frontend_description')"
       :show-advanced-toggle="hasAdvancedEntries(config)"

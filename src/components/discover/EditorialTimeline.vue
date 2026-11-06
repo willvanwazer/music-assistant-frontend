@@ -155,14 +155,18 @@ const timelineItems = computed((): TimelineEvent[] => {
 </script>
 
 <style scoped>
+/* the date beneath each portrait: a small icon for the kind of anniversary and
+   a tabular date, so a row of them lines up calmly */
 .timeline-event {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
 }
 
 .timeline-event__icon {
   flex-shrink: 0;
-  opacity: 0.75;
+  color: var(--subtle-foreground);
 }
 </style>

@@ -1,7 +1,9 @@
 <template>
-  <Card>
+  <Card class="gap-5">
     <CardHeader>
-      <CardTitle>{{ $t("auth.change_password") }}</CardTitle>
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
+        $t("auth.change_password")
+      }}</CardTitle>
       <CardDescription>
         {{ $t("auth.update_your_password") }}
       </CardDescription>
@@ -9,7 +11,7 @@
     <CardContent>
       <div
         v-if="store.isIngressSession"
-        class="mb-4 rounded-lg border border-blue-500/20 bg-blue-500/10 p-4 text-sm text-blue-600 dark:text-blue-400"
+        class="mb-4 rounded-xl bg-secondary px-4 py-3 text-[13px] text-muted-foreground"
       >
         {{ $t("auth.ingress_password_note") }}
       </div>

@@ -26,7 +26,7 @@
         </Select>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="showRestoreDialog = false">
+        <Button variant="secondary" @click="showRestoreDialog = false">
           {{ $t("cancel") }}
         </Button>
         <Button :disabled="restoreInProgress" @click="handleRestore">
@@ -46,7 +46,7 @@
         }}</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" @click="showFullRestoreDialog = false">
+        <Button variant="secondary" @click="showFullRestoreDialog = false">
           {{ $t("cancel") }}
         </Button>
         <Button variant="destructive" @click="handleFullRestoreStep2">
@@ -66,7 +66,7 @@
         }}</DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" @click="showFullRestoreDialog2 = false">
+        <Button variant="secondary" @click="showFullRestoreDialog2 = false">
           {{ $t("cancel") }}
         </Button>
         <Button

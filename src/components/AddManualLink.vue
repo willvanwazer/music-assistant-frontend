@@ -90,7 +90,7 @@
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button variant="outline" :disabled="loading" @click="model = false">
+        <Button variant="secondary" :disabled="loading" @click="model = false">
           {{ $t("cancel") }}
         </Button>
         <Button

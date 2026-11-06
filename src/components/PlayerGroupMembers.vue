@@ -1,25 +1,33 @@
 <template>
-  <div v-if="candidateSections.length > 0">
-    <Separator v-if="showSeparator" class="my-2" />
+  <div v-if="candidateSections.length > 0" class="player-group-members">
+    <Separator v-if="showSeparator" class="mt-2 mb-1" />
     <section
       v-for="section in candidateSections"
       :key="section.type"
       class="player-group-section"
     >
-      <p class="text-muted-foreground px-2 pt-1 pb-1 text-xs font-medium">
+      <p
+        class="text-subtle-foreground px-2 pt-2 pb-1 text-[11px] font-semibold tracking-[0.14em] uppercase"
+      >
         {{ section.translateLabel ? $t(section.label) : section.label }}
       </p>
-      <div class="space-y-1">
+      <div class="space-y-0.5">
         <label
           v-for="candidate in section.players"
           :key="candidate.player_id"
           :for="getCheckboxId(candidate)"
-          class="player-group-member flex min-h-9 items-center gap-2 rounded-md pr-2 transition-colors"
-          :class="{
-            'bg-primary/10': isGroupMember(candidate),
-            'hover:bg-accent/50 cursor-pointer': !isRequiredMember(candidate),
-            'cursor-not-allowed': isRequiredMember(candidate),
-          }"
+          class="player-group-member flex min-h-10 items-center gap-2 rounded-[10px] pr-2 transition-colors duration-150"
+          :class="[
+            isGroupMember(candidate) && 'bg-primary/10',
+            isRequiredMember(candidate)
+              ? 'cursor-not-allowed'
+              : [
+                  'cursor-pointer',
+                  isGroupMember(candidate)
+                    ? 'hover:bg-primary/15'
+                    : 'hover:bg-foreground/5',
+                ],
+          ]"
         >
           <span
             class="player-group-member-icon flex h-6 w-[30px] shrink-0 items-center justify-center"
@@ -27,11 +35,11 @@
             <PlayerIcon
               :icon="candidate.icon"
               :size="18"
-              class="text-muted-foreground"
+              class="text-subtle-foreground"
               :class="{ 'opacity-50': candidate.powered === false }"
             />
           </span>
-          <span class="min-w-0 flex-1 truncate text-xs font-medium">
+          <span class="min-w-0 flex-1 truncate text-[13px] font-medium">
             {{ candidate.name }}
           </span>
           <Checkbox
@@ -297,3 +305,11 @@ async function restorePlayer() {
   api.players[props.player.player_id] = restoredPlayer;
 }
 </script>
+
+<style scoped>
+/* a player card pads its volume row in to make room for the step buttons
+   either side of it; the member list below spans the full width again */
+.player-group-members {
+  margin-inline: calc(-1 * var(--player-card-volume-gutter, 0px));
+}
+</style>

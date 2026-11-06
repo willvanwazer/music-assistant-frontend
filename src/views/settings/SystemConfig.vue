@@ -9,16 +9,15 @@
       >
         <CardHeader>
           <div class="setting-header-top">
-            <div class="setting-icon" :style="getIconBackgroundStyle('blue')">
-              <div class="provider-icon-white">
-                <provider-icon :domain="item.domain" :size="20" />
-              </div>
+            <div class="setting-icon">
+              <provider-icon :domain="item.domain" :size="20" monochrome />
             </div>
             <div class="setting-chevron">
               <v-icon
                 v-if="item.last_error"
-                color="red"
+                class="setting-error"
                 icon="mdi-alert-circle"
+                size="18"
                 :title="item.last_error"
               />
               <v-icon icon="mdi-chevron-right" size="20" />
@@ -39,13 +38,13 @@
       >
         <CardHeader>
           <div class="setting-header-top">
-            <div class="setting-icon" :style="getIconBackgroundStyle('purple')">
+            <div class="setting-icon">
               <component
                 :is="item.icon"
                 v-if="typeof item.icon !== 'string'"
-                class="size-5 text-white"
+                class="size-5"
               />
-              <v-icon v-else :icon="item.icon" size="20" color="white" />
+              <v-icon v-else :icon="item.icon" size="20" />
             </div>
             <div class="setting-chevron">
               <v-icon icon="mdi-chevron-right" size="20" />
@@ -68,13 +67,8 @@
         @click="handleItemClick(item)"
       >
         <template #prepend>
-          <div
-            class="setting-list-icon"
-            :style="getIconBackgroundStyle('blue')"
-          >
-            <div class="provider-icon-white">
-              <provider-icon :domain="item.domain" :size="20" />
-            </div>
+          <div class="setting-list-icon">
+            <provider-icon :domain="item.domain" :size="18" monochrome />
           </div>
         </template>
         <template #title>{{ getItemTitle(item) }}</template>
@@ -82,12 +76,16 @@
         <template #append>
           <v-icon
             v-if="item.last_error"
-            color="red"
             icon="mdi-alert-circle"
-            class="mr-2"
+            size="18"
+            class="setting-error mr-2"
             :title="item.last_error"
           />
-          <v-icon icon="mdi-chevron-right" size="20" />
+          <v-icon
+            icon="mdi-chevron-right"
+            size="18"
+            class="setting-list-chevron"
+          />
         </template>
       </ListItem>
 
@@ -99,22 +97,23 @@
         @click="handleItemClick(item)"
       >
         <template #prepend>
-          <div
-            class="setting-list-icon"
-            :style="getIconBackgroundStyle('purple')"
-          >
+          <div class="setting-list-icon">
             <component
               :is="item.icon"
               v-if="typeof item.icon !== 'string'"
-              class="size-5 text-white"
+              class="size-[18px]"
             />
-            <v-icon v-else :icon="item.icon" size="20" color="white" />
+            <v-icon v-else :icon="item.icon" size="18" />
           </div>
         </template>
         <template #title>{{ t(item.name) }}</template>
         <template #subtitle>{{ t(item.description) }}</template>
         <template #append>
-          <v-icon icon="mdi-chevron-right" size="20" />
+          <v-icon
+            icon="mdi-chevron-right"
+            size="18"
+            class="setting-list-chevron"
+          />
         </template>
       </ListItem>
     </v-list>
@@ -234,14 +233,6 @@ const handleItemClick = (item: SystemConfigItem) => {
   }
 };
 
-const getIconBackgroundStyle = (color: "blue" | "purple") => {
-  const colorMap = {
-    blue: "rgb(59, 130, 246)",
-    purple: "rgb(168, 85, 247)",
-  };
-  return { backgroundColor: colorMap[color] };
-};
-
 onMounted(async () => {
   coreConfigs.value = await api.getCoreConfigs();
 });
@@ -254,25 +245,35 @@ onMounted(async () => {
   margin: 0 auto;
 }
 
+/* list view: one group container, rows divided by hairlines */
 .settings-list {
   padding: 0;
-  background: transparent;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
 }
 
-.list-item-main {
-  border-radius: 10px !important;
-}
-
-.settings-list-item {
+.settings-list .settings-list-item.list-item-main {
   cursor: pointer;
-  padding: 20px 24px;
-  min-height: 80px;
-  border-bottom: none;
+  min-height: 60px;
+  margin-right: 0 !important;
+  padding: 10px 16px !important;
+  border-radius: 0 !important;
   background: transparent;
+  transition: background-color 0.15s ease;
+}
+
+.settings-list .settings-list-item + .settings-list-item {
+  border-top: 1px solid var(--border);
 }
 
 .settings-list-item:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.05);
+  background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.settings-list-item :deep(.v-list-item__overlay) {
+  display: none;
 }
 
 .settings-list-item :deep(.v-list-item__prepend) {
@@ -288,42 +289,50 @@ onMounted(async () => {
 }
 
 .settings-list-item :deep(.v-list-item-title) {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
+  color: var(--foreground);
 }
 
 .settings-list-item :deep(.v-list-item-subtitle) {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-top: 4px;
-}
-
-.settings-list-item :deep(.v-list-item__append) {
-  opacity: 0.4;
-  transition: opacity 0.2s ease;
-}
-
-.settings-list-item:hover :deep(.v-list-item__append) {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
   opacity: 1;
+  margin-top: 2px;
+}
+
+.setting-list-chevron {
+  color: var(--subtle-foreground);
+  transition: color 0.15s ease;
+}
+
+.settings-list-item:hover .setting-list-chevron {
+  color: var(--foreground);
 }
 
 .setting-list-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--secondary);
+  color: var(--foreground);
   flex-shrink: 0;
 }
 
+.setting-error {
+  color: var(--destructive);
+}
+
+/* card view: flat tiles */
 .settings-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 @media (min-width: 960px) {
@@ -341,89 +350,62 @@ onMounted(async () => {
 .setting-card {
   cursor: pointer;
   position: relative;
-  transition:
-    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  padding: 6px 0 0 0;
+  box-shadow: none;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .setting-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 24px rgba(0, 0, 0, 0.15),
-    0 4px 8px rgba(0, 0, 0, 0.1);
-  border-color: rgba(var(--v-theme-primary), 0.3);
+  border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
 }
 
 .setting-header-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .setting-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: var(--secondary);
+  color: var(--foreground);
   flex-shrink: 0;
-}
-
-.setting-card:hover .setting-icon {
-  transform: scale(1.1) rotate(5deg);
 }
 
 .setting-chevron {
-  opacity: 0.4;
-  transition:
-    opacity 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease,
-    color 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  gap: 6px;
+  color: var(--subtle-foreground);
   flex-shrink: 0;
+  transition: color 0.15s ease;
 }
 
 .setting-card:hover .setting-chevron {
-  opacity: 1;
-  transform: translateX(4px);
-  background: rgba(var(--v-theme-primary), 0.1);
-  color: rgb(var(--v-theme-primary));
+  color: var(--foreground);
 }
 
 .setting-title {
-  font-size: 1rem;
+  font-size: 14px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   line-height: 1.3;
 }
 
 .setting-description {
-  font-size: 0.875rem;
-  line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
   margin: 0;
-}
-
-.provider-icon-white {
-  filter: brightness(0) invert(1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 @media (max-width: 768px) {
@@ -434,20 +416,6 @@ onMounted(async () => {
   .settings-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-
-  .setting-header-top {
-    margin-bottom: 8px;
-  }
-
-  .setting-icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .setting-chevron {
-    width: 26px;
-    height: 26px;
   }
 }
 </style>

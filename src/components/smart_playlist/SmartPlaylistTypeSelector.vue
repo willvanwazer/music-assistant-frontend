@@ -56,10 +56,10 @@ const emit = defineEmits<{
 
 function cardClass(value: SmartPlaylistMode) {
   const base =
-    "flex flex-col gap-1.5 rounded-lg border-2 px-3 py-3 text-left transition-all";
+    "flex flex-col gap-1.5 rounded-[12px] border px-3.5 py-3 text-left transition-colors";
   return props.modelValue === value
-    ? `${base} border-primary bg-primary/10 shadow-sm ring-2 ring-primary/30`
-    : `${base} border-border/60 hover:bg-accent/50 hover:border-border`;
+    ? `${base} border-primary bg-primary/10`
+    : `${base} border-border hover:bg-foreground/5`;
 }
 
 function headerClass(value: SmartPlaylistMode) {

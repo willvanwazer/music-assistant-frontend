@@ -1,9 +1,6 @@
 <template>
   <div class="overflow-hidden" @click.stop>
-    <div
-      v-if="showVolumeControl"
-      class="flex min-h-8 items-center gap-1 opacity-75"
-    >
+    <div v-if="showVolumeControl" class="flex min-h-8 items-center gap-1">
       <PlayerVolume
         :player="player"
         :allow-wheel="allowWheel"

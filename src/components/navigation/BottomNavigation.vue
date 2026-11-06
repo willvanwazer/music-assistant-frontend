@@ -13,7 +13,7 @@
       @click="handleMenuClick"
     >
       <span class="mobile-navigation-icon">
-        <Menu :stroke-width="1.6" class="size-8" />
+        <Menu :stroke-width="1.75" class="size-6" />
       </span>
     </Button>
 
@@ -26,7 +26,7 @@
       @click="handleDiscoverClick"
     >
       <span class="mobile-navigation-icon">
-        <Compass class="size-7" :stroke-width="1.6" />
+        <Compass class="size-[22px]" :stroke-width="1.75" />
       </span>
       <span class="mobile-navigation-label">
         {{ $t("discover") }}
@@ -45,9 +45,9 @@
     >
       <span class="mobile-navigation-icon">
         <Search
-          class="size-8"
+          class="size-6"
           :stroke-width="
-            commandCenterOpen && !store.showPlayersMenu ? 2.2 : 1.6
+            commandCenterOpen && !store.showPlayersMenu ? 2.2 : 1.75
           "
         />
       </span>
@@ -107,8 +107,9 @@ function closePlayersMenu() {
 
 /* one surface for the whole dock: it reaches up behind the player, which then
    sits on it as its own card. The player's measured height is published by the
-   footer, so the two always meet. Only a tint - the blur comes from the scrim
-   behind it, which ramps up from above the player. */
+   footer, so the two always meet. Only a tint of the chrome's own surface,
+   frosted by the scrim behind it, which ramps its blur up from above the
+   player; a hairline keeps its edge crisp over light content. */
 .mobile-bottom-navigation::before {
   position: absolute;
   z-index: -1;
@@ -122,30 +123,32 @@ function closePlayersMenu() {
   /* the top stays concentric with the player card sitting on it; the bottom is
      far rounder so it does not fight the screen's own corner curve */
   border-radius: 20px 20px 32px 32px;
-  background: color-mix(in srgb, var(--background) 70%, transparent);
+  background: color-mix(in oklab, var(--sidebar) 82%, transparent);
   box-shadow:
-    0 10px 15px -3px rgb(0 0 0 / 0.1),
+    inset 0 0 0 1px var(--sidebar-border),
+    0 12px 32px -12px rgb(0 0 0 / 0.35),
     0 4px 6px -4px rgb(0 0 0 / 0.1);
   content: "";
 }
 
-/* darker than the muted grey the player controls use elsewhere, so the labels
-   hold their own against the blurred content behind them. The active item is
-   left out so it keeps the primary colour, and hover is pinned here: iOS holds
-   hover after a tap, which would otherwise leave an item looking active. */
+/* the chrome stays quiet so the accent alone marks where you are; the surface
+   behind is opaque enough for the muted grey to hold its own. The active item
+   is left out so it keeps the primary colour, and hover is pinned here: iOS
+   holds hover after a tap, which would otherwise leave an item looking
+   active. */
 .mobile-bottom-navigation .player-control-button:not([data-active="true"]),
 .mobile-bottom-navigation
   .player-control-button:not([data-active="true"]):hover:not(
     [data-suppress-hover="true"]
   ) {
-  color: color-mix(in srgb, var(--foreground) 80%, transparent) !important;
+  color: var(--muted-foreground) !important;
 }
 
 /* an open picker is the active item, so the page underneath gives up both the
    colour and the weight and only one thing in the bar ever reads as active */
 .mobile-bottom-navigation[data-picker-open="true"]
   .player-control-button[data-active="true"]:not(#player-select-button) {
-  color: color-mix(in srgb, var(--foreground) 80%, transparent) !important;
+  color: var(--muted-foreground) !important;
 }
 
 .mobile-bottom-navigation:not([data-picker-open="true"])
@@ -189,13 +192,26 @@ function closePlayersMenu() {
   justify-content: center;
 }
 
+/* every labelled item draws its icon at one size and weight, whichever
+   component supplies it; the icon-only ends run a touch larger to carry the
+   same presence without a label under them */
+.mobile-bottom-navigation
+  .mobile-navigation-item:not(.mobile-navigation-item--bare)
+  .mobile-navigation-icon
+  > svg {
+  width: 22px !important;
+  height: 22px !important;
+  stroke-width: 1.75;
+}
+
 .mobile-navigation-label {
   display: block;
   width: 100%;
   height: 16px;
   overflow: hidden;
-  font-size: 11px;
-  font-weight: 400;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
   line-height: 16px;
   text-align: center;
   text-overflow: ellipsis;

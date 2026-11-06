@@ -1,8 +1,10 @@
 <template>
   <section v-if="dsp">
-    <div class="flex items-center gap-2 border-b px-4 py-2">
+    <div class="flex items-center gap-2.5 border-b px-4 py-3">
       <Switch v-model="dsp.enabled" />
-      <h2 class="min-w-0 flex-1 truncate text-base font-medium">
+      <h2
+        class="min-w-0 flex-1 truncate font-display text-xl font-medium tracking-[-0.01em]"
+      >
         {{ $t("settings.dsp.configure_on", { name: playerName }) }}
       </h2>
       <Badge
@@ -82,11 +84,12 @@
         </div>
 
         <!-- Filter Settings Panel -->
-        <div v-if="selectedStage != null" class="min-w-0 flex-1">
+        <div
+          v-if="selectedStage != null"
+          class="min-w-0 flex-1 self-start overflow-hidden rounded-[14px] border bg-card"
+        >
           <!-- Toolbar of the selected item -->
-          <div
-            class="flex min-h-12 items-center gap-1 border-b bg-muted px-2 py-1.5"
-          >
+          <div class="flex min-h-12 items-center gap-1 border-b px-2 py-1.5">
             <Button
               v-if="mobileLayout"
               variant="ghost"
@@ -96,7 +99,9 @@
             >
               <ArrowLeft />
             </Button>
-            <h3 class="min-w-0 flex-1 truncate px-2 font-medium">
+            <h3
+              class="min-w-0 flex-1 truncate px-2 font-display text-lg font-medium tracking-[-0.01em]"
+            >
               {{ stageTitle(selectedStage) }}
             </h3>
             <Button
@@ -143,19 +148,19 @@
           </div>
 
           <!-- Settings of the Input stage -->
-          <div v-if="selectedStage === 'input'" class="bg-muted">
+          <div v-if="selectedStage === 'input'">
             <DSPSlider v-model="dsp.input_gain" type="gain" />
             <DSPHelp :text="$t('settings.dsp.input_gain_help')" />
           </div>
 
           <!-- Settings of the Output stage -->
-          <div v-else-if="selectedStage === 'output'" class="bg-muted">
+          <div v-else-if="selectedStage === 'output'">
             <DSPSlider v-model="dsp.output_gain" type="gain" />
             <DSPHelp :text="$t('settings.dsp.output_gain_help')" />
           </div>
 
           <!-- Settings of the selected DSP Filter -->
-          <div v-else class="bg-muted">
+          <div v-else>
             <DSPParametricEQ
               v-if="
                 dsp.filters[selectedStage].type === DSPFilterType.PARAMETRIC_EQ
@@ -266,7 +271,7 @@
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="showSavePresetDialog = false">
+          <Button variant="secondary" @click="showSavePresetDialog = false">
             {{ $t("cancel") }}
           </Button>
           <Button :disabled="!newPresetName.trim()" @click="savePreset">
@@ -307,7 +312,7 @@
           </Select>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="showAddFilterDialog = false">
+          <Button variant="secondary" @click="showAddFilterDialog = false">
             {{ $t("cancel") }}
           </Button>
           <Button @click="addFilter">{{

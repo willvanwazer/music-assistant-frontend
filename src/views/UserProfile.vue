@@ -35,12 +35,12 @@
                 : $t("auth.revoke_session_confirm")
             }}
           </p>
-          <div class="rounded-md bg-destructive/10 p-4">
-            <p class="font-medium">{{ tokenToRevoke?.name }}</p>
+          <div class="rounded-xl bg-destructive/10 px-4 py-3">
+            <p class="text-sm font-medium">{{ tokenToRevoke?.name }}</p>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="showRevokeDialog = false">
+          <Button variant="secondary" @click="showRevokeDialog = false">
             {{ $t("cancel") }}
           </Button>
           <Button
