@@ -46,7 +46,7 @@
     </template>
 
     <!-- Traditional view -->
-    <template v-else-if="itemDetails && !loading">
+    <div v-else-if="itemDetails && !loading" class="item-details-body">
       <ItemsListing
         itemtype="artists"
         :load-items="loadGenreArtists"
@@ -65,7 +65,6 @@
           />
         </template>
       </ItemsListing>
-      <br />
       <ItemsListing
         itemtype="albums"
         :load-items="loadGenreAlbums"
@@ -84,7 +83,6 @@
           />
         </template>
       </ItemsListing>
-      <br />
       <ItemsListing
         itemtype="tracks"
         :load-items="loadGenreTracks"
@@ -104,7 +102,6 @@
           />
         </template>
       </ItemsListing>
-      <br />
       <ItemsListing
         itemtype="playlists"
         :load-items="loadGenrePlaylists"
@@ -123,7 +120,6 @@
           />
         </template>
       </ItemsListing>
-      <br />
       <ItemsListing
         itemtype="podcasts"
         :load-items="loadGenrePodcasts"
@@ -142,7 +138,6 @@
           />
         </template>
       </ItemsListing>
-      <br />
       <ItemsListing
         itemtype="audiobooks"
         :load-items="loadGenreAudiobooks"
@@ -161,15 +156,15 @@
           />
         </template>
       </ItemsListing>
-      <br />
-    </template>
+    </div>
 
-    <GenreAliasManager
-      v-if="itemDetails && isAdmin"
-      :genre="itemDetails"
-      :existing-genre-names="existingGenreNames"
-      @reload="loadItemDetails"
-    />
+    <div v-if="itemDetails && isAdmin" class="item-details-body">
+      <GenreAliasManager
+        :genre="itemDetails"
+        :existing-genre-names="existingGenreNames"
+        @reload="loadItemDetails"
+      />
+    </div>
   </section>
 </template>
 
@@ -490,38 +485,37 @@ onMounted(() => {
 
 <style scoped>
 .rows-loading {
-  margin: 20px 0;
-}
-
-.overview-row {
-  margin-top: 10px;
+  margin: 8px clamp(16px, 4vw, 48px) 20px;
 }
 
 .overview-row__nav {
   align-self: center;
   cursor: pointer;
-  opacity: 0.7;
+  color: var(--muted-foreground);
+  transition: color 150ms ease;
 }
 .overview-row__nav:hover {
-  opacity: 1;
+  color: var(--foreground);
 }
 
+/* the shelves scroll edge to edge, their headings on the page's 48px line */
 .overview-container {
-  padding: 16px 10px 16px 10px;
+  padding: 8px 0 16px;
 }
 
 .overview-container :deep(.ed-shelf) {
-  --ed-gutter: 16px;
+  --ed-gutter: clamp(16px, 4vw, 48px);
 }
 
 .navigate-icon {
-  margin-left: 6px;
+  margin-left: 8px;
   cursor: pointer;
-  opacity: 0.7;
   vertical-align: middle;
+  color: var(--muted-foreground);
+  transition: color 150ms ease;
 }
 
 .navigate-icon:hover {
-  opacity: 1;
+  color: var(--foreground);
 }
 </style>

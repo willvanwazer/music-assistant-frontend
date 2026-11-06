@@ -1,12 +1,12 @@
 <template>
   <section
     data-testid="music-quiz-session-header"
-    class="bg-card flex min-w-0 flex-col rounded-xl border shadow-sm sm:flex-row sm:items-center"
+    class="bg-card border-border flex min-w-0 flex-col rounded-[14px] border sm:flex-row sm:items-center"
     :class="present ? 'gap-2 p-3 sm:p-4' : 'gap-3 p-4'"
   >
     <div class="flex min-w-0 flex-1 items-center gap-3">
       <span
-        class="bg-primary/10 text-primary grid shrink-0 place-items-center rounded-lg"
+        class="bg-primary/10 text-primary grid shrink-0 place-items-center rounded-xl"
         :class="present ? 'size-11 sm:size-12' : 'size-11'"
       >
         <component
@@ -18,13 +18,13 @@
       <div class="min-w-0">
         <p
           v-if="name"
-          class="text-primary text-xs font-bold tracking-wide uppercase"
+          class="text-primary text-[11px] font-semibold tracking-[0.14em] uppercase"
         >
           {{ $t(game.labelKey) }}
         </p>
         <component
           :is="present ? 'h1' : 'h2'"
-          class="truncate font-bold"
+          class="ma-display truncate pb-0.5 leading-tight"
           :class="present ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl'"
         >
           {{ name || $t(game.labelKey) }}

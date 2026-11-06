@@ -7,7 +7,7 @@
       <v-card class="hero-card mb-6" elevation="0" rounded="lg">
         <v-card-item class="hero-content">
           <div class="hero-icon-wrapper">
-            <v-icon size="48" color="primary">mdi-cloud-lock</v-icon>
+            <v-icon size="22">mdi-cloud-lock</v-icon>
           </div>
           <v-card-title class="hero-title">
             {{ $t("settings.remote_access_title") }}
@@ -101,7 +101,7 @@
         rounded="lg"
       >
         <v-card-item class="upgrade-content">
-          <v-icon size="60" color="primary" class="upgrade-icon">
+          <v-icon size="32" color="primary" class="upgrade-icon">
             mdi-cloud-alert
           </v-icon>
           <v-card-title class="upgrade-title">
@@ -112,7 +112,7 @@
           </p>
           <v-btn
             color="primary"
-            variant="elevated"
+            variant="flat"
             size="large"
             class="upgrade-button"
             href="https://www.nabucasa.com"
@@ -132,7 +132,7 @@
         <!-- Text ID Card -->
         <v-card class="remote-id-card" elevation="0" rounded="lg">
           <v-card-item class="remote-id-header">
-            <v-icon size="28" color="primary" class="mr-2"
+            <v-icon size="18" class="remote-id-icon mr-2"
               >mdi-identifier</v-icon
             >
             <v-card-title class="remote-id-title">
@@ -166,7 +166,7 @@
         <!-- QR Code Card -->
         <v-card class="remote-id-card" elevation="0" rounded="lg">
           <v-card-item class="remote-id-header">
-            <v-icon size="28" color="primary" class="mr-2">mdi-qrcode</v-icon>
+            <v-icon size="18" class="remote-id-icon mr-2">mdi-qrcode</v-icon>
             <v-card-title class="remote-id-title">
               {{ $t("settings.remote_access_qr_code") }}
             </v-card-title>
@@ -267,13 +267,8 @@
             <!-- Technical Specifications -->
             <div class="specs-section">
               <div class="spec-item">
-                <v-avatar
-                  size="48"
-                  color="primary"
-                  variant="tonal"
-                  class="spec-icon"
-                >
-                  <v-icon>mdi-access-point-network</v-icon>
+                <v-avatar size="36" class="spec-icon">
+                  <v-icon size="18">mdi-access-point-network</v-icon>
                 </v-avatar>
                 <div class="spec-content">
                   <div class="spec-title">
@@ -287,13 +282,8 @@
                 </div>
               </div>
               <div class="spec-item">
-                <v-avatar
-                  size="48"
-                  color="primary"
-                  variant="tonal"
-                  class="spec-icon"
-                >
-                  <v-icon>mdi-lan-connect</v-icon>
+                <v-avatar size="36" class="spec-icon">
+                  <v-icon size="18">mdi-lan-connect</v-icon>
                 </v-avatar>
                 <div class="spec-content">
                   <div class="spec-title">
@@ -310,13 +300,8 @@
                 </div>
               </div>
               <div class="spec-item">
-                <v-avatar
-                  size="48"
-                  color="primary"
-                  variant="tonal"
-                  class="spec-icon"
-                >
-                  <v-icon>mdi-lock</v-icon>
+                <v-avatar size="36" class="spec-icon">
+                  <v-icon size="18">mdi-lock</v-icon>
                 </v-avatar>
                 <div class="spec-content">
                   <div class="spec-title">
@@ -490,74 +475,106 @@ watch(
 }
 
 .remote-access-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
   padding: 24px 0;
 }
 
-.hero-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+/* every block is a flat group container */
+.remote-access-wrapper .v-card {
+  background: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.remote-access-wrapper .v-card-title {
+  padding: 0;
+  white-space: normal;
+}
+
+/* the introduction reads as the page head: no box, serif title */
+.remote-access-wrapper .hero-card {
+  background: transparent !important;
+  border: none;
 }
 
 .hero-content {
-  padding: 32px;
+  padding: 4px 0 8px;
   position: relative;
   z-index: 1;
 }
 
 .hero-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
   margin-bottom: 16px;
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  color: var(--primary);
 }
 
 .hero-title {
+  font-family: var(--font-heading);
   font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: rgb(var(--v-theme-on-surface));
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  color: var(--foreground);
 }
 
 .hero-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 24px;
+  max-width: 64ch;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  margin-bottom: 16px;
 }
 
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  gap: 10px 16px;
+  margin-top: 8px;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 13.5px;
+  color: var(--muted-foreground);
 }
 
 .feature-item .v-icon {
-  color: rgb(var(--v-theme-primary));
-}
-
-.status-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  color: var(--primary);
 }
 
 .status-header {
-  padding: 24px;
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  padding: 16px 20px;
+}
+
+.status-header + .status-badges {
+  border-top: 1px solid var(--border);
 }
 
 .status-title {
+  font-family: var(--font-heading);
   font-size: 1.25rem;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  margin-bottom: 2px;
 }
 
 .status-text {
-  font-size: 1rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12.5px;
+  color: var(--subtle-foreground);
 }
 
 .status-switch {
@@ -565,90 +582,91 @@ watch(
 }
 
 .status-badges {
-  padding: 20px 24px;
+  padding: 12px 20px;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .status-chip {
   font-weight: 500;
-}
-
-.upgrade-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  font-size: 12px;
+  border-radius: 999px;
 }
 
 .upgrade-content {
-  padding: 32px;
+  padding: 28px 24px;
   text-align: center;
   position: relative;
   z-index: 1;
 }
 
 .upgrade-icon {
-  margin-bottom: 16px;
-  color: rgb(var(--v-theme-primary));
-}
-
-.upgrade-title {
-  font-size: 1.5rem;
-  font-weight: 600;
   margin-bottom: 12px;
 }
 
+.upgrade-title {
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
 .upgrade-description {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: rgba(var(--v-theme-on-surface), 0.8);
-  margin-bottom: 24px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+  margin-bottom: 20px;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .upgrade-button {
-  margin-top: 8px;
+  margin-top: 4px;
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .remote-id-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-.remote-id-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  gap: 14px;
 }
 
 .remote-id-header {
-  padding: 20px 20px 0 20px;
+  padding: 16px 20px 0;
   display: flex;
   align-items: center;
 }
 
+.remote-id-icon {
+  color: var(--muted-foreground);
+}
+
 .remote-id-title {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
 
 .remote-id-content {
-  padding: 20px;
+  padding: 12px 20px 20px;
 }
 
 .remote-id-explanation {
-  font-size: 0.9rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
-.usage-card {
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
+  margin-bottom: 14px;
+  line-height: 1.45;
 }
 
 .usage-content {
-  padding: 20px;
+  padding: 18px 20px;
 }
 
 .remote-id-display-wrapper {
@@ -667,77 +685,106 @@ watch(
   align-items: center;
 }
 
+/* a QR code needs a light quiet zone to scan, in both themes */
 .qr-code-image {
   width: 160px;
   height: 160px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: white;
   padding: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
 }
 
 .usage-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: rgb(var(--v-theme-on-surface));
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  color: var(--foreground);
 }
 
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .step-item {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
+  padding: 10px 0;
+}
+
+.step-item + .step-item {
+  border-top: 1px solid var(--border);
 }
 
 .step-number {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: rgb(var(--v-theme-primary));
-  color: white;
+  background: color-mix(in oklab, var(--primary) 14%, transparent);
+  color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
 
 .step-content {
   flex: 1;
-  font-size: 0.95rem;
-  line-height: 1.6;
-  color: rgba(var(--v-theme-on-surface), 0.8);
-  padding-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--foreground);
+  padding-top: 3px;
 }
 
 .step-link {
   margin-left: 4px;
+  text-transform: none;
+  letter-spacing: 0;
 }
 
 .technical-panels {
   margin-bottom: 24px;
 }
 
+.technical-panels :deep(.v-expansion-panel) {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+}
+
+.technical-panels :deep(.v-expansion-panel__shadow) {
+  box-shadow: none;
+}
+
+.technical-panels :deep(.v-expansion-panel-title) {
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .diagram-section {
-  margin: 24px 0;
+  margin: 16px 0;
 }
 
 .diagram-title {
-  font-size: 1rem;
+  font-size: 11px;
   font-weight: 600;
-  margin-bottom: 16px;
-  color: rgb(var(--v-theme-on-surface));
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  color: var(--subtle-foreground);
 }
 
-.diagram-card {
-  border-radius: 8px;
+.diagram-section .diagram-card {
+  background: var(--background) !important;
+  border-radius: 12px !important;
   padding: 24px;
 }
 
@@ -751,32 +798,26 @@ watch(
 }
 
 .specs-section {
-  margin-top: 24px;
+  margin-top: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
 }
 
 .spec-item {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   align-items: flex-start;
-  padding: 16px;
-  background: rgba(var(--v-theme-surface), 0.3);
-  border-radius: 8px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+  padding: 12px 0;
 }
 
-.spec-item:hover {
-  background: rgba(var(--v-theme-surface), 0.5);
-  border-color: rgba(var(--v-theme-primary), 0.2);
+.spec-item + .spec-item {
+  border-top: 1px solid var(--border);
 }
 
 .spec-icon {
   flex-shrink: 0;
+  background: var(--secondary);
+  color: var(--foreground);
 }
 
 .spec-content {
@@ -784,16 +825,16 @@ watch(
 }
 
 .spec-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-  color: rgb(var(--v-theme-on-surface));
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  color: var(--foreground);
 }
 
 .spec-description {
-  font-size: 0.9rem;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  line-height: 1.5;
+  font-size: 12.5px;
+  color: var(--subtle-foreground);
+  line-height: 1.45;
 }
 
 .error-alert {
@@ -807,10 +848,6 @@ watch(
 }
 
 @media (max-width: 960px) {
-  .hero-content {
-    padding: 24px;
-  }
-
   .feature-grid {
     grid-template-columns: 1fr;
   }
@@ -828,12 +865,6 @@ watch(
 
   .step-item {
     gap: 12px;
-  }
-
-  .step-number {
-    width: 32px;
-    height: 32px;
-    font-size: 0.9rem;
   }
 }
 

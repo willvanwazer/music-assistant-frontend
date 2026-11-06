@@ -1,14 +1,16 @@
 <template>
   <InfoHeader :item="itemDetails" />
 
-  <!-- audiobook chapters -->
-  <Chapters
-    v-if="itemDetails && itemDetails.metadata?.chapters"
-    :item-details="itemDetails"
-  />
+  <div class="item-details-body">
+    <!-- audiobook chapters -->
+    <Chapters
+      v-if="itemDetails && itemDetails.metadata?.chapters"
+      :item-details="itemDetails"
+    />
 
-  <!-- provider mapping details -->
-  <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    <!-- provider mapping details -->
+    <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+  </div>
 </template>
 
 <script setup lang="ts">

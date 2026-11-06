@@ -19,14 +19,19 @@
       <span class="w-full truncate text-center font-semibold">
         {{ spot.row.name }}
       </span>
-      <span class="text-primary text-lg font-bold tabular-nums">
+      <span
+        class="font-display text-primary text-xl leading-none font-medium lining-nums tabular-nums"
+      >
         {{ spot.row.score }}
       </span>
       <div
-        class="bg-muted flex w-full items-start justify-center rounded-t-md pt-2"
+        class="bg-card border-border flex w-full items-start justify-center rounded-t-[10px] border border-b-0 pt-2"
         :class="spot.barClass"
       >
-        <span class="text-2xl font-black tabular-nums" :class="spot.medalClass">
+        <span
+          class="font-display text-3xl leading-none font-medium lining-nums tabular-nums"
+          :class="spot.medalClass"
+        >
           {{ spot.row.rank }}
         </span>
       </div>

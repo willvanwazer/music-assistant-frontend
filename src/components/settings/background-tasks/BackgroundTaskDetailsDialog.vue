@@ -170,7 +170,7 @@
             </div>
             <MarkdownText
               :text="task.report"
-              class="task-report bg-muted/50 rounded-lg p-4 text-sm leading-relaxed select-text"
+              class="task-report bg-secondary rounded-xl p-4 text-sm leading-relaxed select-text"
             />
           </div>
 
@@ -182,7 +182,7 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 :disabled="!task || logLoading"
                 @click="emit('copy')"
@@ -191,7 +191,7 @@
                 {{ t("background_tasks.copy") }}
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 :disabled="!task || logLoading"
                 @click="emit('download')"
@@ -387,17 +387,17 @@ const formatDate = (value: string | null | undefined) =>
 }
 
 .detail-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(var(--v-theme-on-surface), 0.55);
+  color: var(--subtle-foreground);
 }
 
 .detail-value {
   font-size: 14px;
   line-height: 1.5;
-  color: rgba(var(--v-theme-on-surface), 0.9);
+  color: var(--foreground);
   word-break: break-word;
 }
 
@@ -416,7 +416,7 @@ const formatDate = (value: string | null | undefined) =>
 }
 
 .detail-inline-action {
-  color: rgba(var(--v-theme-on-surface), 0.55);
+  color: var(--muted-foreground);
 }
 
 .detail-link {
@@ -430,7 +430,7 @@ const formatDate = (value: string | null | undefined) =>
   font-size: inherit;
   font-weight: 400;
   line-height: inherit;
-  color: rgb(var(--v-theme-primary));
+  color: var(--primary);
   text-decoration: none;
   cursor: pointer;
 }
@@ -440,7 +440,7 @@ const formatDate = (value: string | null | undefined) =>
 }
 
 .detail-error {
-  color: rgb(var(--v-theme-error));
+  color: var(--destructive);
 }
 
 .detail-warning {
@@ -448,15 +448,18 @@ const formatDate = (value: string | null | undefined) =>
 }
 
 .section-title {
-  font-size: 15px;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
 
 .log-output {
   max-height: 320px;
   overflow: auto;
   border-radius: 12px;
-  background: rgba(var(--v-theme-on-surface), 0.04);
+  background: var(--secondary);
   padding: 16px;
   font-family:
     ui-monospace,

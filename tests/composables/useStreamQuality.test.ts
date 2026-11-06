@@ -18,8 +18,10 @@ describe("stream quality presentation", () => {
   it("maps authoritative qualities, colors, and labels", () => {
     expect(audioQualityToTier(AudioQuality.STANDARD)).toBe(QualityTier.GOOD);
     expect(audioQualityToTier("future")).toBe(QualityTier.UNKNOWN);
-    expect(qualityTierToColor(QualityTier.HIRES)).toBe("cyan");
-    expect(qualityTierToColor(QualityTier.UNKNOWN)).toBe("gray");
+    expect(qualityTierToColor(QualityTier.HIRES)).toBe("var(--quality-hires)");
+    expect(qualityTierToColor(QualityTier.UNKNOWN)).toBe(
+      "var(--subtle-foreground)",
+    );
     expect(qualityTierRangeLabel(QualityTier.LOW, QualityTier.HIRES)).toBe(
       "LQ-HR",
     );

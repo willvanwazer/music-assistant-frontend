@@ -1,7 +1,7 @@
 <template>
   <MusicQuizPreparingState
     v-if="state.preparing"
-    class="rounded-xl border shadow-sm"
+    class="border-border rounded-[14px] border"
   />
 
   <section v-else-if="state.phase === 'lobby'" class="flex flex-col gap-3">
@@ -28,7 +28,7 @@
   >
     <div
       v-if="state.phase === 'answering'"
-      class="bg-background sticky top-0 z-10 flex flex-col items-center pb-2"
+      class="bg-background/85 sticky top-0 z-10 flex flex-col items-center pb-2 backdrop-blur-xl"
     >
       <MusicQuizCountdown
         :size="120"
@@ -60,7 +60,7 @@
   <section v-else-if="state.phase === 'finished'" class="flex flex-col gap-4">
     <div class="flex flex-col items-center gap-1 text-center">
       <Trophy class="size-8 text-yellow-400" />
-      <h2 class="text-xl font-bold">
+      <h2 class="ma-display text-3xl leading-tight">
         {{ $t("providers.music_quiz.game_over") }}
       </h2>
       <p class="text-muted-foreground">{{ winnerText }}</p>

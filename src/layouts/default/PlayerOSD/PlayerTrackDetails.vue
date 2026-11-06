@@ -9,6 +9,7 @@
     <template #prepend>
       <div
         class="media-thumb player-media-thumb"
+        :class="{ 'player-media-thumb--compact': props.compact }"
         :style="`cursor: pointer; height: ${outerThumbSizePx}px; width: ${outerThumbSizePx}px;`"
         @click.stop="openPlayer"
       >
@@ -18,14 +19,21 @@
             store.activePlayer?.powered != false &&
             store.activePlayer?.current_media?.image_url
           "
-          class="w-full h-full"
+          class="player-media-thumb-art w-full h-full"
         >
           <v-img
             class="media-thumb"
-            style="border-radius: 4px"
             :src="getMediaImageUrl(store.activePlayer.current_media.image_url)"
             :alt="$t('tooltip.artwork')"
           />
+          <!-- the artwork already opens the player; this only says so on hover -->
+          <span
+            v-if="!props.compact"
+            class="player-media-thumb-expand"
+            aria-hidden="true"
+          >
+            <Maximize2 :size="20" />
+          </span>
         </div>
         <!-- fallback: display player icon -->
         <div
@@ -69,7 +77,7 @@
         <!-- track title -->
         <div
           v-else-if="store.activePlayer.current_media?.title"
-          class="ma-line-clamp-1"
+          class="ma-line-clamp-1 ma-display player-track-title"
           style="min-width: 0"
           @click.stop="onTitleClick"
         >
@@ -112,8 +120,17 @@
     </template>
     <!-- subtitle: off state or artist(s) + album, led by the active source -->
     <template #subtitle>
-      <div class="player-track-subtitle" :style="{ color: primaryColor }">
+      <div class="player-track-subtitle">
         <div class="player-track-subtitle-line">
+          <!-- the floating card says which room it plays in, as the full bar
+               does with its player button -->
+          <span v-if="roomName" class="player-track-room">{{ roomName }}</span>
+          <span
+            v-if="roomName && hasSubtitleMeta"
+            class="player-track-room-separator"
+            aria-hidden="true"
+            >·</span
+          >
           <!-- the external source; the compact bar only has room for its icon -->
           <NowPlayingSourceBadge
             v-if="props.compact"
@@ -160,7 +177,7 @@
                     !props.showOnlyArtist
                   "
                 >
-                  {{ store.activePlayer?.current_media?.artist }} •
+                  {{ store.activePlayer?.current_media?.artist }} ·
                   {{ albumSubtitle }}
                 </span>
                 <!-- artists(s) only -->
@@ -206,6 +223,7 @@ import { computed, onUnmounted, ref, watch } from "vue";
 import { useUserPreferences } from "@/composables/userPreferences";
 import { useActiveAudioPath } from "@/composables/useActiveAudioPath";
 import { useNowPlayingSource } from "@/composables/nowPlayingSource";
+import { Maximize2 } from "@lucide/vue";
 import NowPlayingSourceBadge from "./NowPlayingSourceBadge.vue";
 import PlayerFullscreen from "./PlayerFullscreen.vue";
 
@@ -258,7 +276,7 @@ onUnmounted(() => updateChapterTimer(false));
 
 const queueEnded = computed(() => isQueueEnded(store.activePlayerQueue));
 
-const { albumSubtitle } = useNowPlayingSource();
+const { albumSubtitle, nowPlayingSource } = useNowPlayingSource();
 const { hasActiveAudioPath } = useActiveAudioPath();
 
 // properties
@@ -288,13 +306,36 @@ const props = withDefaults(defineProps<Props>(), {
 // size of the clickable artwork area; cover art fills this via its
 // w-full h-full wrapper, so this is also the real artwork size
 const outerThumbSizePx = computed(() => {
-  if (props.compact) return 40;
-  return getBreakpointValue({ breakpoint: "phone" }) ? 60 : 64;
+  if (props.compact) return 46;
+  return getBreakpointValue({ breakpoint: "phone" }) ? 60 : 62;
 });
 
 // the icon fallback (no cover art) has its own fixed size, independent of
 // the breakpoint-driven outer container
-const fallbackThumbSizePx = computed(() => (props.compact ? 40 : 60));
+const fallbackThumbSizePx = computed(() => (props.compact ? 46 : 60));
+
+// Where the title is the player's own name (off, or nothing else to name) the
+// room is already said; everywhere else the compact card names it under the
+// track, since it has no player button of its own beside it.
+const roomName = computed(() => {
+  const player = store.activePlayer;
+  if (!props.compact || !player || player.powered == false) return undefined;
+  const titleNamesSomethingElse =
+    !!player.current_media?.title ||
+    queueEnded.value ||
+    (!!store.activePlayerQueue && store.activePlayerQueue.items == 0);
+  return titleNamesSomethingElse ? player.name : undefined;
+});
+
+// whether anything follows the room on its line, so the separator never
+// dangles at the end of it
+const hasSubtitleMeta = computed(
+  () =>
+    !!nowPlayingSource.value ||
+    !!currentChapter.value ||
+    (!!store.activePlayer?.current_media?.title &&
+      (!!store.activePlayer.current_media.artist || !!albumSubtitle.value)),
+);
 
 function openPlayer() {
   if (!store.activePlayer || store.activePlayer.powered == false) {
@@ -315,7 +356,61 @@ function onTitleClick() {
 
 <style scoped>
 .player-media-thumb {
-  margin-right: 10px;
+  position: relative;
+  flex: none;
+  margin-right: 14px;
+}
+
+.player-media-thumb--compact {
+  margin-right: 12px;
+}
+
+/* square and whole, a few pixels of radius and a soft shadow: the cover reads
+   as an object sitting on the bar rather than a tile cut out of it */
+.player-media-thumb-art {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.16),
+    0 6px 16px -6px rgb(0 0 0 / 0.38);
+}
+
+.player-media-thumb-art :deep(.v-img) {
+  border-radius: 3px;
+}
+
+.player-media-thumb--compact .player-media-thumb-art,
+.player-media-thumb--compact .player-media-thumb-art :deep(.v-img) {
+  border-radius: 4px;
+}
+
+/* over the artwork, so white on a dark veil is the readable pairing */
+.player-media-thumb-expand {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.42);
+  color: #fff;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease;
+}
+
+.player-media-thumb:hover .player-media-thumb-expand {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .player-media-thumb-art {
+    transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .player-media-thumb:not(.player-media-thumb--compact):hover
+    .player-media-thumb-art {
+    transform: scale(1.04);
+  }
 }
 
 .player-track-subtitle {
@@ -323,6 +418,32 @@ function onTitleClick() {
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+/* Vuetify fades the subtitle on top of its own colour; the muted token is
+   already the step down from the title, so it stays as it is */
+.player-track-details :deep(.v-list-item-subtitle) {
+  opacity: 1;
+}
+
+.player-track-room {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 60%;
+  overflow: hidden;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-track-room-separator {
+  flex: none;
+  color: var(--subtle-foreground);
 }
 
 /* the icon badge leads the line and keeps its width; the track metadata
@@ -349,10 +470,20 @@ function onTitleClick() {
   min-width: 0;
 }
 
+/* the serif reads smaller than Inter at the same size, so it gets a step up */
+.player-track-title {
+  font-size: 1.125rem;
+  line-height: 1.25;
+}
+
+.player-track-details--compact .player-track-title {
+  font-size: 1rem;
+}
+
 /* the floating player keeps both text lines but drops below the two-line
    height Vuetify reserves, so the bar stays shallow */
 .player-track-details.player-track-details--compact {
-  min-height: 44px;
+  min-height: 46px;
 }
 
 .player-track-chapter-button {
@@ -382,7 +513,8 @@ function onTitleClick() {
   width: 60px;
   height: 60px;
   border-radius: 3px;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: var(--secondary);
+  color: var(--subtle-foreground);
   display: flex;
   align-items: center;
   justify-content: center;

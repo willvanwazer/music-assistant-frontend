@@ -39,11 +39,11 @@
       :side-offset="PLAYER_BAR_POPOUT_GAP"
       :collision-padding="PLAYER_BAR_POPOUT_COLLISION_PADDING"
       :class="[
-        'player-bar-popout player-select-popover flex flex-col gap-0 overflow-hidden p-0',
+        'player-bar-popout player-select-popover flex flex-col gap-0 overflow-hidden rounded-[20px] p-0 shadow-[0_32px_80px_-16px_rgba(20,20,50,0.28)] dark:shadow-[0_32px_80px_-12px_rgba(0,0,0,0.75)]',
         popoutFromFullscreen && 'player-select-popover-fullscreen',
         store.mobileLayout
           ? 'w-[calc(100vw-2*var(--player-bar-popout-inset-x)-var(--device-inset-left)-var(--device-inset-right))]'
-          : 'w-[400px] max-w-[calc(100vw-2*var(--player-bar-popout-inset-x)-var(--device-inset-left)-var(--device-inset-right))]',
+          : 'w-[440px] max-w-[calc(100vw-2*var(--player-bar-popout-inset-x)-var(--device-inset-left)-var(--device-inset-right))]',
       ]"
       @keydown="handleSheetKeydown"
       @close-auto-focus="preventAutoFocus"
@@ -53,16 +53,34 @@
       <PanelDragHandle @dismiss="setMenuOpen(false)" />
       <div
         data-panel-drag-region
-        class="flex items-center justify-between gap-3 border-b px-4 pt-1 pb-3"
+        class="flex items-start justify-between gap-3 px-5 pt-1 pb-3"
       >
-        <div class="flex min-w-0 items-center gap-2">
-          <h2 class="truncate text-lg font-semibold">{{ $t("players") }}</h2>
+        <div class="min-w-0">
+          <!-- line height just clears the serif's descenders, which the
+               truncation would otherwise clip -->
+          <h2 class="ma-display truncate text-[30px] leading-[1.15]">
+            {{ $t("players") }}
+          </h2>
+          <p
+            v-if="orderedPlayers.length > 0"
+            class="player-select-count text-subtle-foreground mt-1 truncate text-[13px] tabular-nums"
+          >
+            <template v-if="playingPlayerCount > 0">
+              {{ playingPlayerCount }} {{ $t("state.playing") }} ·
+            </template>
+            {{
+              $t("settings.players_total", orderedPlayers.length, {
+                named: { count: orderedPlayers.length },
+              })
+            }}
+          </p>
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button
               variant="ghost"
               size="icon-sm"
+              class="text-muted-foreground hover:text-foreground -mr-1.5 shrink-0"
               :aria-label="$t('tooltip.more_options')"
             >
               <EllipsisVertical class="size-5" />
@@ -133,19 +151,20 @@
         <!-- outranks the selected player badge on the cards scrolling underneath -->
         <div
           v-if="showSearch"
-          class="bg-background sticky top-0 z-20 px-3 pt-3 pb-2"
+          class="bg-popover sticky top-0 z-20 px-3.5 pt-1 pb-1"
         >
           <SearchInput
             v-model="playerSearchQuery"
+            class="bg-secondary dark:bg-secondary rounded-[10px] border-transparent shadow-none"
             :placeholder="$t('search')"
             clearable
           />
         </div>
 
-        <div class="space-y-2 px-3 pt-3">
+        <div class="space-y-2 px-3.5 pt-3">
           <p
             v-if="filteredPlayers.length === 0"
-            class="text-muted-foreground px-3 py-8 text-center text-sm"
+            class="text-muted-foreground px-3 py-8 text-center text-[13px]"
           >
             {{ playerSearchQuery ? $t("no_content_filter") : $t("no_content") }}
           </p>
@@ -215,7 +234,11 @@ import {
   isSelectablePlayer,
 } from "@/helpers/players";
 import { api } from "@/plugins/api";
-import { PlayerType, type Player } from "@/plugins/api/interfaces";
+import {
+  PlaybackState,
+  PlayerType,
+  type Player,
+} from "@/plugins/api/interfaces";
 import { eventbus } from "@/plugins/eventbus";
 import { store } from "@/plugins/store";
 import { webPlayer } from "@/plugins/web_player";
@@ -280,6 +303,13 @@ const orderedPlayers = useOrderedPlayers({
 
 const showSearch = computed(
   () => orderedPlayers.value.length > SEARCH_PLAYER_THRESHOLD,
+);
+
+const playingPlayerCount = computed(
+  () =>
+    orderedPlayers.value.filter(
+      (player) => player.playback_state === PlaybackState.PLAYING,
+    ).length,
 );
 
 // the fullscreen player covers the player bar, so the panel pops out of the

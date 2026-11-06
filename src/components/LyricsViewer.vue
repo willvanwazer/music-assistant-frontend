@@ -39,6 +39,8 @@
             'lyrics-line',
             {
               active: activeLyricIndex === index,
+              'lyrics-line--past':
+                activeLyricIndex >= 0 && index < activeLyricIndex,
               'lyrics-line--far':
                 activeLyricIndex >= 0 &&
                 (index === activeLyricIndex + 2 ||
@@ -512,19 +514,25 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
+/* the song is named in the display serif, the artist in the body face */
 .song-title {
+  font-family: var(--font-heading);
   font-size: clamp(1.8rem, 3.5vw, 3.5rem);
-  font-weight: bold;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
   margin-bottom: 10px;
 }
 
 .artist-name {
-  font-size: clamp(1.4rem, 2.5vw, 2.5rem);
+  font-size: clamp(1.25rem, 2.2vw, 2.25rem);
+  font-weight: 600;
   margin-bottom: 40px;
   opacity: 0.8;
 }
 
 .lyrics-coming-soon {
+  font-family: var(--font-heading);
   font-size: clamp(1rem, 1.8vw, 1.8rem);
   opacity: 0.6;
   font-style: italic;
@@ -556,14 +564,22 @@ onBeforeUnmount(() => {
   padding: 10px 0;
 }
 
+/* Lines are set in the display serif; the current one comes up to full
+   strength and very slightly larger. */
 .lyrics-line {
   padding: 10px 4px;
+  font-family: var(--font-heading);
   font-size: clamp(2rem, 4vw, 4rem);
-  font-weight: bold;
-  opacity: 0.35;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  opacity: 0.32;
   margin: 8px 0;
+  transform-origin: center;
   will-change: opacity;
-  transition: opacity v-bind(transitionDuration) ease;
+  transition:
+    opacity v-bind(transitionDuration) ease,
+    transform v-bind(transitionDuration) ease;
 }
 
 .lyrics-line.lyrics-line--far {
@@ -577,6 +593,18 @@ onBeforeUnmount(() => {
 .lyrics-line.active {
   opacity: 1;
   color: v-bind(textColor);
+}
+
+/* only synced lyrics have a current line to lift; static ones are all
+   "active" */
+.synced-content .lyrics-line.active {
+  transform: scale(1.03);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lyrics-line {
+    transition: opacity v-bind(transitionDuration) ease;
+  }
 }
 
 .break-note {

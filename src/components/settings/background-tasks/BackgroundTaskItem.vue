@@ -55,7 +55,7 @@
         <Badge
           v-if="isScheduled"
           variant="outline"
-          class="border-slate-300 bg-slate-500/10 text-slate-700 dark:border-slate-700 dark:bg-slate-500/10 dark:text-slate-300"
+          class="border-transparent bg-secondary text-muted-foreground"
         >
           {{ t("background_tasks.scheduled") }}
         </Badge>
@@ -72,7 +72,7 @@
 
   <v-card
     v-else
-    class="flex-fill rounded-lg task-card"
+    class="flex-fill task-card"
     :class="{ 'task-card--disabled': isScheduled && !task.schedule?.enabled }"
     min-height="170px"
     @click="emit('click', task)"
@@ -130,7 +130,7 @@
           <Badge
             v-if="isScheduled"
             variant="outline"
-            class="border-slate-300 bg-slate-500/10 text-slate-700 dark:border-slate-700 dark:bg-slate-500/10 dark:text-slate-300"
+            class="border-transparent bg-secondary text-muted-foreground"
           >
             {{ t("background_tasks.scheduled") }}
           </Badge>
@@ -187,8 +187,9 @@ const {
 
 <style scoped>
 .task-name {
-  font-weight: 500;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--foreground);
 }
 
 .task-status-indicator {
@@ -211,14 +212,14 @@ const {
 }
 
 .task-summary {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
   line-height: 1.45;
 }
 
 .task-progress-text {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
   line-height: 1.45;
 }
 
@@ -236,37 +237,44 @@ const {
   justify-content: space-between;
   gap: 16px;
   font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  color: var(--subtle-foreground);
 }
 
 .task-progress-value {
   flex-shrink: 0;
   font-weight: 500;
-  color: rgb(var(--v-theme-on-surface));
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
 }
 
 .task-error {
-  font-size: 13px;
-  color: rgb(var(--v-theme-error));
+  font-size: 12.5px;
+  color: var(--destructive);
   line-height: 1.45;
 }
 
 .task-failure {
-  font-size: 13px;
+  font-size: 12.5px;
   color: rgb(var(--v-theme-warning));
   line-height: 1.45;
 }
 
 .task-card {
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  background: var(--card) !important;
+  color: var(--card-foreground) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease;
   cursor: pointer;
 }
 
 .task-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+
+.task-card :deep(.v-card__overlay) {
+  display: none;
 }
 
 .task-card--disabled {
@@ -294,14 +302,14 @@ const {
 }
 
 .task-card-title {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.35;
 }
 
 .task-card-summary {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
   line-height: 1.45;
   margin-top: 4px;
 }
@@ -313,8 +321,8 @@ const {
 }
 
 .task-card-progress-text {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
   line-height: 1.45;
 }
 

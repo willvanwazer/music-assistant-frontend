@@ -1,26 +1,35 @@
 <template>
   <div
     v-if="links.length"
-    class="bg-card overflow-hidden rounded-xl border shadow-sm"
+    class="bg-card overflow-hidden rounded-[14px] border"
   >
     <RouterLink
       v-for="link in links"
       :key="link.key"
       :to="link.to"
       :data-testid="`player-settings-link-${link.key}`"
-      class="hover:bg-accent/50 focus-visible:ring-ring flex items-center gap-4 border-b px-4 py-4 no-underline transition-colors last:border-b-0 focus-visible:ring-2 focus-visible:outline-none"
+      class="hover:bg-foreground/[0.04] focus-visible:ring-ring flex min-h-[60px] items-center gap-3.5 border-b border-border px-5 py-3 no-underline transition-colors duration-150 last:border-b-0 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-inset"
     >
-      <component :is="link.icon" class="text-primary size-5 shrink-0" />
+      <div
+        class="bg-secondary text-foreground flex size-9 shrink-0 items-center justify-center rounded-[10px]"
+      >
+        <component :is="link.icon" class="size-[18px]" />
+      </div>
       <div class="min-w-0 flex-1">
-        <div class="text-foreground text-sm font-medium">{{ link.label }}</div>
-        <div class="text-muted-foreground truncate text-sm">
+        <div class="text-foreground text-sm font-semibold">
+          {{ link.label }}
+        </div>
+        <div class="text-muted-foreground mt-0.5 truncate text-[0.78125rem]">
           {{ link.description }}
         </div>
       </div>
-      <span v-if="link.state" class="text-muted-foreground text-sm">
+      <span
+        v-if="link.state"
+        class="bg-secondary text-muted-foreground rounded-full px-2.5 py-0.5 text-[0.71875rem] font-medium"
+      >
         {{ link.state }}
       </span>
-      <ChevronRight class="text-muted-foreground size-4 shrink-0" />
+      <ChevronRight class="text-subtle-foreground size-4 shrink-0" />
     </RouterLink>
   </div>
 </template>

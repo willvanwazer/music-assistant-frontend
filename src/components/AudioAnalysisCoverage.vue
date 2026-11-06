@@ -1,16 +1,17 @@
 <template>
-  <Card v-if="rows.length > 0" data-test="aa-coverage">
+  <Card v-if="rows.length > 0" data-test="aa-coverage" class="gap-4">
     <CardHeader>
-      <CardTitle>{{ $t("settings.audio_analysis_coverage.title") }}</CardTitle>
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
+        $t("settings.audio_analysis_coverage.title")
+      }}</CardTitle>
     </CardHeader>
-    <CardContent class="space-y-2">
+    <CardContent class="divide-y divide-border">
       <Item
         v-for="row in rows"
         :key="row.instanceId"
         data-test="aa-row"
-        variant="outline"
         size="sm"
-        class="justify-between"
+        class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
       >
         <ItemContent>
           <ItemTitle class="flex items-center gap-2">

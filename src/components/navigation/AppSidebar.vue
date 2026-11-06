@@ -131,18 +131,19 @@ onUnmounted(() => {
     <SidebarHeader>
       <SidebarMenu>
         <div class="sidebar-header-row">
-          <!-- collapsed, the 30px logo centres on a margin anchored off the
+          <!-- collapsed, the 26px logo centres on a margin anchored off the
                rail's final width (less the header's 1rem side padding), so it
-               holds still while the width animates -->
+               holds still while the width animates; expanded, it centres on
+               the same axis as the nav icons below it -->
           <div
             class="sidebar-header"
             :style="
               collapsed
                 ? {
                     marginLeft:
-                      'calc((var(--sidebar-width-icon) - 1rem - 30px) / 2)',
+                      'calc((var(--sidebar-width-icon) - 1rem - 26px) / 2)',
                   }
-                : { marginLeft: '7px' }
+                : { marginLeft: '6px' }
             "
             @click="router.push('/')"
           >
@@ -152,7 +153,7 @@ onUnmounted(() => {
               class="sidebar-header-logo"
             />
             <div v-if="!collapsed" class="sidebar-header-title">
-              Music Assistant
+              Music <span class="sidebar-header-title-dim">Assistant</span>
             </div>
           </div>
         </div>
@@ -194,7 +195,9 @@ onUnmounted(() => {
       />
       <NavShortcuts :edit-mode="editMode" />
     </SidebarContent>
-    <SidebarFooter>
+    <!-- a hairline sets the account and the collapse control apart from the
+         menu that scrolls above them -->
+    <SidebarFooter class="border-t border-sidebar-border">
       <Button
         v-if="editMode"
         class="menu-edit-done"
@@ -220,26 +223,44 @@ onUnmounted(() => {
   gap: 0.5rem;
 }
 
+/* the house mark in a single ink rather than the brand cyan, as on the sign-in
+   screen: the chrome stays neutral and colour comes from the artwork. The bars
+   are drawn in white over the house, so a greyscale curve keeps them where a
+   mask would fill them in. */
 .sidebar-header-logo {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   flex-shrink: 0;
+  filter: grayscale(1) brightness(0.645) contrast(3.78);
 }
 
+/* a plain ancestor selector: :global(.dark) followed by more would compile to
+   a bare .dark rule and filter the whole page */
+.dark .sidebar-header-logo {
+  filter: grayscale(1) invert(1) brightness(2.5) contrast(0.93);
+}
+
+/* the wordmark stays quiet: it signs the app, the page title names the place */
 .sidebar-header-title {
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin: 3px 0 0 10px;
+  margin-left: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
   white-space: nowrap;
   overflow: hidden;
   transition: opacity 0.2s ease;
 }
 
+.sidebar-header-title-dim {
+  font-weight: 500;
+  opacity: 0.55;
+}
+
 .sidebar-header {
   display: flex;
   align-items: center;
-  margin: 2px 15px 8px 0;
-  gap: 6px;
+  margin: 8px 15px 10px 0;
   transition: opacity 0.3s ease;
   position: relative;
   cursor: pointer;
@@ -250,6 +271,12 @@ onUnmounted(() => {
   border-radius: 999px;
 }
 
+/* the sidebar sits on its own surface, set off from the page by a hairline
+   drawn inside its edge so the rail keeps its full width */
+:deep([data-sidebar="sidebar"]) {
+  box-shadow: inset -1px 0 0 var(--sidebar-border);
+}
+
 :deep([data-sidebar="group"]) {
   padding-left: 0 !important;
   padding-right: 0.5rem !important;
@@ -257,22 +284,24 @@ onUnmounted(() => {
   padding-bottom: 0.125rem !important;
 }
 
+/* section headers are eyebrow labels. The text sits at the foot of its box, so
+   the room opens up above a section rather than between the label and its
+   rows, and it starts on the same line as the row icons below it */
 :deep([data-sidebar="group-label"]) {
   height: 1.75rem !important;
-  padding-left: 1rem !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
-  letter-spacing: 0.01em !important;
-  color: hsl(var(--sidebar-foreground)) !important;
-  opacity: 0.55;
+  align-items: flex-end !important;
+  padding-left: 1.125rem !important;
+  padding-bottom: 0.3125rem !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  color: var(--subtle-foreground) !important;
 }
 
 :deep([data-sidebar="menu-button"]) {
   margin-left: 0.5rem !important;
   margin-right: 0.5rem !important;
-  min-height: 1.75rem !important;
-  padding-top: 0.125rem !important;
-  padding-bottom: 0.125rem !important;
 }
 
 /* collapsed to the icon rail, the buttons (2rem wide) centre on a margin
@@ -284,40 +313,63 @@ onUnmounted(() => {
   margin-right: 0 !important;
 }
 
-:deep([data-sidebar="menu-button"] > svg) {
-  width: 1.6rem !important;
-  height: 1.6rem !important;
-  margin-right: 0.5rem !important;
+/* ---- menu rows (NavMain links and pinned shortcuts) ---- */
+
+/* a row reads quietly in the muted foreground and comes up to the full
+   foreground under the pointer. The page you are on sits on the sidebar's
+   accent fill with its icon picked out in the accent colour. */
+:deep(.nav-row) {
+  border-radius: 9px !important;
+  font-weight: 500;
+  color: var(--muted-foreground) !important;
+  transition-property:
+    width, height, padding, background-color, color !important;
 }
 
-:deep([data-sidebar="menu-button"] > svg.artist-icon) {
-  width: 1.2rem !important;
-  height: 1.2rem !important;
-  margin-right: 0.3rem !important;
+:deep(.nav-row:hover) {
+  background-color: color-mix(
+    in oklab,
+    var(--sidebar-foreground) 5%,
+    transparent
+  ) !important;
+  color: var(--sidebar-foreground) !important;
 }
 
-:deep([data-sidebar="menu-button"] > svg.genre-icon) {
-  width: auto !important;
-  height: auto !important;
-  margin-right: 0.3rem !important;
+:deep(.nav-row[data-active="true"]) {
+  background-color: var(--sidebar-accent) !important;
+  color: var(--sidebar-foreground) !important;
+}
+
+:deep(.nav-row[data-active="true"] > svg) {
+  color: var(--sidebar-primary);
+}
+
+/* a main menu link: 34px tall around an 18px icon, a little shorter where the
+   screen has no height to spare */
+:deep(.nav-link) {
+  height: 1.875rem !important;
+  padding: 0 0.625rem !important;
+  gap: 0.75rem !important;
+  font-size: 0.84375rem !important;
+}
+
+:deep(.nav-link > svg) {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
 }
 
 @media (min-height: 700px) {
-  :deep([data-sidebar="menu-button"]) {
-    min-height: 2.25rem !important;
-    padding-top: 0.375rem !important;
-    padding-bottom: 0.375rem !important;
+  :deep(.nav-link) {
+    height: 2.125rem !important;
   }
+}
 
-  :deep([data-sidebar="menu-button"] > svg) {
-    width: 2rem !important;
-    height: 2rem !important;
-  }
-
-  :deep([data-sidebar="menu-button"] > svg.artist-icon) {
-    width: 1.4rem !important;
-    height: 1.4rem !important;
-  }
+/* on the rail the link is the primitive's 2rem square again, and 7px of
+   padding puts the 18px icon dead in its centre */
+[data-collapsible="icon"] :deep(.nav-link) {
+  width: 2rem !important;
+  height: 2rem !important;
+  padding: 7px !important;
 }
 </style>
 

@@ -1,21 +1,30 @@
 <template>
-  <Card class="mb-4 gap-0 py-0">
+  <Card
+    class="settings-page-head mb-6 gap-0 rounded-none border-0 bg-transparent py-0 shadow-none"
+  >
     <CardHeader
-      class="relative flex flex-col gap-5 p-6 pr-16 sm:flex-row sm:items-center"
+      class="flex flex-row items-start gap-4 px-0 pt-1 pb-5 sm:items-center"
     >
       <div
         :class="
           cn(
-            'flex size-14 shrink-0 items-center justify-center rounded-xl bg-current/10 text-primary',
+            'flex size-11 shrink-0 items-center justify-center rounded-[12px] bg-current/12 text-primary',
             iconClass,
           )
         "
       >
-        <component :is="icon" class="size-8" />
+        <component :is="icon" class="size-[22px]" />
       </div>
       <div class="min-w-0 flex-1">
-        <CardTitle class="text-xl leading-tight">{{ title }}</CardTitle>
-        <CardDescription v-if="description" class="mt-2 leading-relaxed">
+        <CardTitle
+          class="font-display text-[1.75rem] leading-[1.15] font-medium tracking-[-0.01em] text-foreground"
+        >
+          {{ title }}
+        </CardTitle>
+        <CardDescription
+          v-if="description"
+          class="mt-1 max-w-[64ch] text-[0.84375rem] leading-relaxed"
+        >
           {{ description }}
         </CardDescription>
       </div>
@@ -25,7 +34,7 @@
             data-testid="settings-menu"
             variant="ghost"
             size="icon-sm"
-            class="absolute top-4 right-4"
+            class="shrink-0 text-muted-foreground"
             :aria-label="$t('more_options')"
           >
             <MoreVertical class="size-4" />
@@ -44,7 +53,7 @@
     </CardHeader>
     <CardContent
       v-if="showAdvancedToggle"
-      class="flex items-center border-t bg-muted/20 px-6 py-4"
+      class="flex min-h-[52px] items-center border-t border-b border-border px-0 py-2.5"
     >
       <AdvancedSettingsToggle
         v-model:show-advanced-settings="showAdvancedSettings"

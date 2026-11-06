@@ -20,10 +20,12 @@
   <Popover :open="open" @update:open="handleOpenChange">
     <PopoverAnchor :reference="playerBarEndAnchor" />
     <PopoverTrigger as-child>
+      <!-- icon, level and number in a row; the whole of it opens the panel
+           with the sliders, so the level is a reading rather than a control -->
       <Button
         data-player-volume-trigger
         variant="ghost"
-        class="player-control-button player-bar-action player-bar-volume-button h-20 w-16 rounded-none px-1"
+        class="player-control-button player-bar-action player-bar-volume-button h-9 gap-1.5 rounded-full px-2"
         :data-active="open"
         :data-suppress-hover="suppressHover"
         :disabled="disabled"
@@ -34,10 +36,20 @@
         <span class="player-bar-action-icon">
           <component
             :is="volumeIcon"
-            :stroke-width="1.4"
-            class="size-7"
+            :stroke-width="1.6"
+            class="size-5"
             :style="{ transform: `translateX(${volumeIconOffset}px)` }"
           />
+        </span>
+        <span
+          class="player-bar-volume-meter"
+          :data-muted="muted || undefined"
+          aria-hidden="true"
+        >
+          <span
+            class="player-bar-volume-meter-fill"
+            :style="{ width: `${displayVolume}%` }"
+          ></span>
         </span>
         <span
           class="player-bar-action-label w-10 overflow-visible text-center tabular-nums"
@@ -173,5 +185,29 @@ function adjustVolume(event: WheelEvent) {
    component carries */
 .player-bar-popout.player-volume-popover {
   z-index: 998 !important;
+}
+
+/* the level as a thin rail, filled in the button's own colour so it follows
+   it to the accent under the pointer and while the panel is open */
+.player-bar-volume-meter {
+  position: relative;
+  width: 56px;
+  height: 4px;
+  flex: none;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--input);
+}
+
+.player-bar-volume-meter-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: inherit;
+  background: currentColor;
+  transition: width 150ms ease;
+}
+
+.player-bar-volume-meter[data-muted] .player-bar-volume-meter-fill {
+  opacity: 0.35;
 }
 </style>

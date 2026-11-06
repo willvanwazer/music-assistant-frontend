@@ -125,7 +125,7 @@ defineExpose({ listRef });
 
 <style scoped>
 .queue-section {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   flex: 1;
   min-height: 0;
   display: flex;
@@ -136,17 +136,18 @@ defineExpose({ listRef });
 .section-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
   flex: none;
 }
 
+/* a section heading, named in the display serif */
 .section-label {
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  opacity: 0.45;
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   white-space: nowrap;
   flex-shrink: 0;
 }
@@ -154,7 +155,7 @@ defineExpose({ listRef });
 .section-divider {
   flex: 1;
   height: 1px;
-  background: rgba(var(--v-theme-on-surface), 0.12);
+  background: var(--border);
 }
 
 .skip-area {
@@ -167,16 +168,19 @@ defineExpose({ listRef });
 .skip-btn {
   font-weight: 600;
   text-transform: none;
-  letter-spacing: 0.5px;
 }
 
 .skip-token-badge {
-  margin-left: 0.5rem;
-  padding: 0.125rem 0.375rem;
-  background: rgba(var(--v-theme-on-primary), 0.2);
-  border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
+  margin-left: 0.25rem;
+  min-width: 1.25rem;
+  padding: 0 0.4rem;
+  line-height: 1.15rem;
+  background: rgba(var(--v-theme-on-primary), 0.22);
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
 }
 
 .skip-token-badge.no-tokens {
@@ -192,13 +196,14 @@ defineExpose({ listRef });
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
 }
 
 .queue-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 2px;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -213,8 +218,18 @@ defineExpose({ listRef });
 }
 
 .empty-queue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
   text-align: center;
   padding: 2rem;
-  opacity: 0.5;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 768px) {
+  .section-label {
+    font-size: 1.375rem;
+  }
 }
 </style>

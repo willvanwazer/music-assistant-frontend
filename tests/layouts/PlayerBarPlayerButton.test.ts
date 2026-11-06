@@ -18,7 +18,12 @@ vi.mock("@/plugins/i18n", () => ({
 }));
 
 interface TestStore {
-  activePlayer?: { name: string };
+  activePlayer?: {
+    name: string;
+    player_id?: string;
+    type?: string;
+    group_members?: string[];
+  };
   showPlayersMenu: boolean;
 }
 
@@ -74,6 +79,33 @@ describe("PlayerBarPlayerButton", () => {
 
     expect(testStore.showPlayersMenu).toBe(false);
     expect(button.attributes("data-suppress-hover")).toBe("false");
+  });
+
+  // the name says which room the bar controls; the count says how many more
+  // are playing along with it
+  it("counts the rooms synced to the active one beside its name", () => {
+    testStore.activePlayer = {
+      name: "Kitchen",
+      player_id: "kitchen",
+      type: "player",
+      group_members: ["kitchen", "office", "den"],
+    };
+    const button = mountPlayerButton();
+
+    expect(button.get(".player-bar-action-label").text()).toBe("Kitchen");
+    expect(button.get(".player-bar-player-count").text()).toBe("+2");
+  });
+
+  it("adds no count to a group player, whose name already covers its rooms", () => {
+    testStore.activePlayer = {
+      name: "Downstairs",
+      player_id: "downstairs",
+      type: "group",
+      group_members: ["kitchen", "office"],
+    };
+    const button = mountPlayerButton();
+
+    expect(button.find(".player-bar-player-count").exists()).toBe(false);
   });
 
   it("names the empty selection when no player is active", () => {

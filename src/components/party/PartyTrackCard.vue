@@ -265,15 +265,20 @@ watch(
 </script>
 
 <style scoped>
+/* Glass panels over the art wash. Colours are rgb triplets with alpha rather
+   than color-mix(): older Cast and Android TV runtimes need precomputed alpha
+   colors. */
 .track-card {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 1.5vh;
-  padding: 1vh;
-  border-radius: 1.2vh;
-  background: rgba(var(--v-theme-on-surface), 0.08);
-  backdrop-filter: blur(1vh);
+  gap: 2vh;
+  padding: 1.2vh;
+  border-radius: 1.8vh;
+  background: rgba(var(--v-theme-surface), 0.42);
+  box-shadow: inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.08);
+  backdrop-filter: blur(2vh) saturate(1.3);
+  -webkit-backdrop-filter: blur(2vh) saturate(1.3);
   width: 95%;
   box-sizing: border-box;
   overflow: hidden;
@@ -286,6 +291,12 @@ watch(
     margin 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* over artwork or a dark wash the glass goes dark, with a white hairline */
+.track-card.white-text {
+  background: rgba(16, 16, 18, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .track-card.position-previous-2 {
@@ -306,8 +317,17 @@ watch(
   --scale: 1;
   --opacity: 1;
   --z-index: 3;
-  background: rgba(var(--v-theme-on-surface), 0.1);
-  box-shadow: 0 0.8vh 3.2vh rgba(0, 0, 0, 0.2);
+  background: rgba(var(--v-theme-surface), 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgba(var(--v-theme-on-surface), 0.1),
+    0 3vh 7vh -2.5vh rgba(0, 0, 0, 0.3);
+}
+
+.track-card.white-text.position-current {
+  background: rgba(16, 16, 18, 0.46);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 3vh 7vh -2.5vh rgba(0, 0, 0, 0.6);
 }
 
 .track-card.position-next-1 {
@@ -328,13 +348,14 @@ watch(
 .track-card.guest-request {
   background: var(--guest-background);
   border: 2px solid var(--guest-border);
+  box-shadow: none;
 }
 
 .track-card.guest-request.position-current {
   background: var(--guest-current-background);
   border: 2px solid var(--guest-current-border);
   box-shadow:
-    0 0.8vh 3.2vh rgba(0, 0, 0, 0.3),
+    0 3vh 7vh -2.5vh rgba(0, 0, 0, 0.45),
     0 0 2vh var(--guest-shadow);
 }
 
@@ -343,7 +364,7 @@ watch(
   display: flex;
   align-items: center;
   gap: 0.6vh;
-  padding: 0.5vh 1.2vh;
+  padding: 0.6vh 1.3vh;
   background: var(--badge-background);
   border: 1px solid var(--badge-border);
   border-radius: 999px;
@@ -351,9 +372,13 @@ watch(
   font-size: clamp(0.65rem, 1.2vh, 1.1rem);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
   flex-shrink: 0;
   margin-left: auto;
+}
+
+.white-text .guest-badge {
+  color: white;
 }
 
 .badge-icon {
@@ -361,26 +386,40 @@ watch(
   height: clamp(14px, 1.6vh, 24px);
 }
 
+/* The cover: square and whole, small radius, a soft shadow beneath. */
 .track-artwork {
   position: relative;
   flex-shrink: 0;
-  border-radius: 0.8vh;
+  border-radius: max(3px, 0.4vh);
   overflow: hidden;
+  box-shadow: 0 1.4vh 3vh -1.2vh rgba(0, 0, 0, 0.55);
   transition:
     width 0.8s cubic-bezier(0.4, 0, 0.2, 1),
     height 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.track-artwork::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+}
+
 .now-playing-overlay {
   position: absolute;
-  bottom: 0.4vh;
-  right: 0.4vh;
+  bottom: 0.5vh;
+  right: 0.5vh;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--v-theme-surface), 0.4);
-  border-radius: 6px;
-  padding: 0.3vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 0.6vh;
+  padding: 0.4vh;
 }
 
 .now-playing-overlay :deep(.now-playing-icon .bar) {
@@ -408,20 +447,25 @@ watch(
   transform: scale(0.85);
 }
 
+/* the track is named in the display serif; the artist line is Inter */
 .track-name {
-  font-weight: 600;
-  margin-bottom: 0.3em;
-  font-size: clamp(1.4rem, 3vh, 3.5rem);
-  color: rgba(var(--v-theme-on-surface), 0.95);
+  font-family: var(--font-heading);
+  font-weight: 500;
+  letter-spacing: -0.012em;
+  line-height: 1.18;
+  margin-bottom: 0.2em;
+  font-size: clamp(1.5rem, 3.4vh, 3.8rem);
+  color: rgba(var(--v-theme-on-surface), 0.96);
 }
 
 .track-artist {
-  font-size: clamp(1.1rem, 2.2vh, 2.5rem);
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: clamp(1.05rem, 2.1vh, 2.4rem);
+  font-weight: 500;
+  color: rgba(var(--v-theme-on-surface), 0.66);
 }
 
 .white-text .track-name {
-  color: rgba(255, 255, 255, 0.95);
+  color: rgba(255, 255, 255, 0.97);
 }
 
 .white-text .track-artist {
@@ -433,7 +477,7 @@ watch(
   bottom: 0;
   left: 0;
   right: 0;
-  height: 0.6vh;
+  height: 0.5vh;
   overflow: hidden;
   /* Make sure it sits behind the content */
   z-index: -1;
@@ -442,7 +486,6 @@ watch(
 .progress-fill {
   height: 100%;
   background: rgb(var(--v-theme-primary));
-  border-bottom-left-radius: 1.2vh;
   transform-origin: left center;
   transform: scaleX(var(--progress-scale, 0));
   transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);

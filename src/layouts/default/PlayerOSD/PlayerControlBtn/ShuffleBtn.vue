@@ -6,6 +6,7 @@
     :color="getValueFromSources(icon?.color, [[shuffleActive, 'primary', '']])"
     :title="shuffleTitle"
     :data-dynamic="isDynamic || undefined"
+    :data-toggled="shuffleActive || undefined"
     variant="button"
     @click="toggleShuffle"
   >

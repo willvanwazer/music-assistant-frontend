@@ -10,10 +10,12 @@
         <ArrowLeft class="h-4 w-4" />
       </Button>
       <div class="min-w-0 flex-1">
-        <p class="text-xs text-muted-foreground">
+        <p
+          class="text-[11px] font-semibold tracking-[0.14em] text-subtle-foreground uppercase"
+        >
           {{ $t("providers.ai_radio.hosts.editor.title") }}
         </p>
-        <h1 class="truncate text-xl font-semibold tracking-tight">
+        <h1 class="ma-display mt-1 truncate pb-1 text-3xl leading-none">
           {{ draft?.name || $t("providers.ai_radio.hosts.editor.title") }}
         </h1>
       </div>
@@ -32,7 +34,7 @@
 
     <div
       v-else-if="!draft"
-      class="rounded-xl border border-dashed py-16 text-center"
+      class="rounded-[14px] border border-dashed border-border py-16 text-center"
     >
       <p class="text-sm text-muted-foreground">{{ loadError }}</p>
       <Button variant="outline" class="mt-4" @click="emit('back')">
@@ -41,9 +43,9 @@
     </div>
 
     <template v-else>
-      <Card class="rounded-[6px]">
+      <Card>
         <CardHeader>
-          <CardTitle>{{
+          <CardTitle class="ma-display text-[22px] font-medium">{{
             $t("providers.ai_radio.customize.personality_title")
           }}</CardTitle>
         </CardHeader>
@@ -169,9 +171,9 @@
         </CardContent>
       </Card>
 
-      <Card class="rounded-[6px]">
+      <Card>
         <CardHeader class="flex-row items-center justify-between space-y-0">
-          <CardTitle>
+          <CardTitle class="ma-display text-[22px] font-medium">
             {{ $t("providers.ai_radio.customize.segments_title") }}
           </CardTitle>
           <DropdownMenu>

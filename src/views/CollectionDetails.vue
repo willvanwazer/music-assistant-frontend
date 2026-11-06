@@ -1,15 +1,17 @@
 <template>
   <InfoHeader :item="itemDetails" />
-  <ItemsListing
-    :itemtype="collectionMediaType"
-    :parent-item="itemDetails"
-    :show-refresh-button="false"
-    :load-items="loadCollectionItems"
-    :sort-keys="[]"
-    :title="title"
-    :empty-message="emptyMessage"
-    :allow-collapse="false"
-  />
+  <div class="item-details-body">
+    <ItemsListing
+      :itemtype="collectionMediaType"
+      :parent-item="itemDetails"
+      :show-refresh-button="false"
+      :load-items="loadCollectionItems"
+      :sort-keys="[]"
+      :title="title"
+      :empty-message="emptyMessage"
+      :allow-collapse="false"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">

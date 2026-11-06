@@ -1,13 +1,18 @@
 <template>
-  <div class="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+  <div
+    class="flex w-full items-center justify-between gap-3 sm:ml-auto sm:w-auto sm:justify-end"
+  >
+    <Label
+      :for="switchId"
+      class="cursor-pointer text-sm font-medium text-foreground"
+    >
+      {{ $t("settings.show_advanced_settings") }}
+    </Label>
     <Switch
       :id="switchId"
       v-model="showAdvancedSettings"
       :data-testid="testId"
     />
-    <Label :for="switchId" class="cursor-pointer">
-      {{ $t("settings.show_advanced_settings") }}
-    </Label>
   </div>
 </template>
 

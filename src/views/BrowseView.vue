@@ -1,5 +1,5 @@
 <template>
-  <section>
+  <section class="browse-page">
     <ItemsListing
       itemtype="browse"
       :show-provider="false"
@@ -92,3 +92,22 @@ const browseRoute = (path: string) => ({
   query: { path },
 });
 </script>
+
+<style scoped>
+/* the same room either side as the library pages */
+.browse-page {
+  padding-inline: 34px;
+}
+
+@media (max-width: 960px) {
+  .browse-page {
+    padding-inline: 14px;
+  }
+}
+
+@media (max-width: 500px) {
+  .browse-page {
+    padding-inline: 6px;
+  }
+}
+</style>

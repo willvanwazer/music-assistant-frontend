@@ -56,7 +56,7 @@ function pillRules() {
     ),
     fill: painting.find(
       (rule) =>
-        rule.selectorText.includes("bg-accent") &&
+        rule.selectorText.includes("bg-secondary") &&
         rule.selectorText.includes("dark"),
     ),
   };

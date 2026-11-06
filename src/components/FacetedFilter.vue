@@ -3,13 +3,26 @@
     <PopoverTrigger as-child>
       <!-- custom trigger (e.g. a compact icon button inside an input) -->
       <slot name="trigger">
-        <Button variant="outline" class="border-dashed">
+        <!-- a pill chip: dashed while it is only an offer, inverted once it
+             narrows the list -->
+        <Button
+          variant="outline"
+          :class="[
+            'h-[30px] gap-1.5 px-3 text-[12.5px] has-[>svg]:px-3',
+            selectedCount > 0
+              ? 'border-transparent bg-foreground text-background hover:bg-foreground/90 hover:text-background'
+              : 'border-dashed',
+          ]"
+        >
           <PlusCircle class="h-4 w-4" />
           {{ title }}
           <template v-if="selectedCount > 0">
-            <Separator orientation="vertical" class="mx-2 h-4" />
+            <Separator
+              orientation="vertical"
+              class="mx-1 h-4 bg-background/30"
+            />
             <Badge
-              class="lg:hidden font-medium rounded-[6px]"
+              class="lg:hidden font-medium bg-background/15 text-background"
               :aria-label="
                 $t('faceted_filter.selected', { count: selectedCount })
               "
@@ -17,7 +30,10 @@
               {{ $t("faceted_filter.selected", { count: selectedCount }) }}
             </Badge>
             <div class="hidden space-x-1 lg:flex">
-              <Badge v-if="selectedCount > 2" class="rounded-[6px] gap-2">
+              <Badge
+                v-if="selectedCount > 2"
+                class="gap-2 bg-background/15 text-background"
+              >
                 {{ $t("faceted_filter.selected", { count: selectedCount }) }}
                 <button
                   type="button"
@@ -32,7 +48,7 @@
                 <Badge
                   v-for="opt in selectedOptionLabels"
                   :key="opt.value"
-                  class="font-medium rounded-[6px] gap-2"
+                  class="font-medium gap-2 bg-background/15 text-background"
                 >
                   {{ opt.label }}
                   <button
@@ -208,8 +224,9 @@ const onOpenChange = (open: boolean) => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 4px 6px;
-  border-radius: 4px;
+  padding: 6px 8px;
+  border-radius: 9px;
+  font-size: 13.5px;
   background: transparent;
   border: none;
   cursor: pointer;
@@ -217,22 +234,29 @@ const onOpenChange = (open: boolean) => {
 }
 
 .faceted-filter-item:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.04);
+  background-color: var(--secondary);
+}
+
+.faceted-filter-item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
 }
 
 .faceted-filter-clear {
   margin-top: 4px;
   width: 100%;
-  padding: 4px 6px;
-  font-size: 0.8rem;
-  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 9px;
   border: none;
   background: transparent;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  color: var(--muted-foreground);
   cursor: pointer;
 }
 
 .faceted-filter-clear:hover {
-  background-color: rgba(var(--v-theme-on-surface), 0.04);
+  color: var(--foreground);
+  background-color: var(--secondary);
 }
 </style>

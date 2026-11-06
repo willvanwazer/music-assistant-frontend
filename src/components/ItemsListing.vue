@@ -1,41 +1,222 @@
 <!-- eslint-disable vue/no-v-for-template-key-on-child -->
 <template>
-  <section v-if="!(hideOnEmpty && pagedItems.length == 0 && !hasActiveFilters)">
-    <!-- eslint-disable vue/no-template-shadow -->
-    <Toolbar
-      :icon="icon"
-      :title="title"
-      :subtitle="subtitle"
-      :count="params.search ? pagedItems.length : total || allItems.length"
-      color="transparent"
-      :menu-items="menuItems"
-      :enforce-overflow-menu="true"
-      :menu-active="hasActiveFilters"
-      @title-clicked="toggleExpand"
-    >
-      <template #title>
+  <section
+    v-if="!(hideOnEmpty && pagedItems.length == 0 && !hasActiveFilters)"
+    class="items-listing"
+    :class="{ 'items-listing--page': isPageListing }"
+  >
+    <!-- a library page opens on an editorial heading; the bar beneath it then
+         carries only the controls -->
+    <header v-if="isPageListing" class="listing-head">
+      <div class="listing-head__eyebrow">{{ $t("library") }}</div>
+      <h1 class="listing-head__title ma-display">
         <slot name="title">{{ title }}</slot>
-      </template>
+      </h1>
+      <div v-if="headingCount" class="listing-head__count">
+        {{ $t("items_total", [headingCount.toLocaleString()]) }}
+      </div>
+    </header>
 
-      <template v-if="!store.mobileLayout" #append>
-        <Transition name="listing-search">
-          <div v-if="showSearchInput" class="listing-search-slot">
-            <SearchInput
-              ref="searchInputRef"
-              v-model="params.search"
-              clearable
-              class="listing-search listing-search--inline w-(--listing-search-width) shrink-0"
-              :placeholder="searchLabel"
-              :aria-label="searchLabel"
-              @focus="searchHasFocus = true"
-              @blur="searchHasFocus = false"
-            />
+    <div class="listing-bar" :class="{ 'listing-bar--sticky': isPageListing }">
+      <!-- eslint-disable vue/no-template-shadow -->
+      <Toolbar
+        :icon="isPageListing ? undefined : icon"
+        :title="title"
+        :subtitle="subtitle"
+        :count="params.search ? pagedItems.length : total || allItems.length"
+        color="transparent"
+        :menu-items="menuItems"
+        :enforce-overflow-menu="true"
+        :menu-active="hasActiveFilters"
+        @title-clicked="toggleExpand"
+      >
+        <!-- a library page has its title in the heading above instead -->
+        <template #title>
+          <slot v-if="!isPageListing" name="title">{{ title }}</slot>
+        </template>
+
+        <template v-if="!store.mobileLayout || showChips" #append>
+          <!-- shortcuts onto the menu entries: the current sort and view
+               always on show, the filters as chips (on a library page all of
+               them, elsewhere only the ones narrowing the list) -->
+          <div
+            v-if="showChips"
+            class="listing-chips"
+            :class="{ 'listing-chips--mobile': store.mobileLayout }"
+          >
+            <template v-for="chip in filterChips" :key="chip.item.label">
+              <DropdownMenu v-if="chip.item.subItems?.length">
+                <DropdownMenuTrigger as-child>
+                  <button
+                    type="button"
+                    class="listing-chip"
+                    :class="{ 'is-on': chip.active }"
+                    :title="menuItemLabel(chip.item)"
+                    :disabled="chip.item.disabled == true"
+                  >
+                    <component
+                      :is="chip.item.icon"
+                      v-if="
+                        chip.item.icon && typeof chip.item.icon !== 'string'
+                      "
+                      class="listing-chip__icon"
+                    />
+                    {{ chip.label }}
+                    <span v-if="chip.selectedCount" class="listing-chip__count">
+                      {{ chip.selectedCount }}
+                    </span>
+                    <ChevronDown class="listing-chip__caret" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  class="max-h-[60vh] min-w-52 overflow-y-auto"
+                >
+                  <DropdownMenuItem
+                    v-for="subItem of chip.item.subItems.filter((x) => !x.hide)"
+                    :key="subItem.label"
+                    :disabled="subItem.disabled === true"
+                    class="gap-3"
+                    @select="
+                      (e: Event) => onChipSubItemSelect(e, chip.item, subItem)
+                    "
+                  >
+                    <span class="min-w-0 flex-1 truncate">{{
+                      menuItemLabel(subItem)
+                    }}</span>
+                    <Check v-if="subItem.selected" class="ml-auto size-4" />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <button
+                v-else
+                type="button"
+                class="listing-chip"
+                :class="{ 'is-on': chip.active }"
+                :aria-pressed="chip.active"
+                :title="menuItemLabel(chip.item)"
+                :disabled="chip.item.disabled == true"
+                @click="chip.item.action?.()"
+              >
+                <component
+                  :is="chip.item.icon"
+                  v-if="chip.item.icon && typeof chip.item.icon !== 'string'"
+                  class="listing-chip__icon"
+                />
+                {{ chip.label }}
+              </button>
+            </template>
+
+            <div
+              v-if="sortMenuItem || showViewToggle"
+              class="listing-chips__end"
+            >
+              <DropdownMenu v-if="sortMenuItem">
+                <DropdownMenuTrigger as-child>
+                  <button
+                    type="button"
+                    class="listing-chip listing-chip--sort"
+                    :title="$t('tooltip.sort_options')"
+                    :disabled="sortMenuItem.disabled == true"
+                  >
+                    <ArrowUpDown class="listing-chip__icon" />
+                    <span class="listing-chip__prefix">{{
+                      $t("items_listing.sort")
+                    }}</span>
+                    <span class="listing-chip__value">{{ sortLabel }}</span>
+                    <ChevronDown class="listing-chip__caret" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  class="max-h-[60vh] min-w-52 overflow-y-auto"
+                >
+                  <DropdownMenuItem
+                    v-for="subItem of sortMenuItem.subItems"
+                    :key="subItem.label"
+                    class="gap-3"
+                    @select="
+                      (e: Event) =>
+                        onChipSubItemSelect(e, sortMenuItem!, subItem)
+                    "
+                  >
+                    <span class="min-w-0 flex-1 truncate">{{
+                      menuItemLabel(subItem)
+                    }}</span>
+                    <Check v-if="subItem.selected" class="ml-auto size-4" />
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div
+                v-if="showViewToggle"
+                class="listing-viewtog"
+                role="group"
+                :aria-label="$t('tooltip.toggle_view_mode')"
+              >
+                <button
+                  v-for="option in VIEW_MODE_OPTIONS"
+                  :key="option.mode"
+                  type="button"
+                  class="listing-viewtog__btn"
+                  :class="{ 'is-on': viewMode == option.mode }"
+                  :aria-pressed="viewMode == option.mode"
+                  :aria-label="$t(option.label)"
+                  :title="$t(option.label)"
+                  @click="selectViewMode(option.mode)"
+                >
+                  <component :is="option.icon" class="size-4" />
+                </button>
+              </div>
+            </div>
           </div>
-        </Transition>
-      </template>
-    </Toolbar>
 
-    <v-divider />
+          <Transition name="listing-search">
+            <div
+              v-if="showSearchInput && !store.mobileLayout"
+              class="listing-search-slot"
+            >
+              <SearchInput
+                ref="searchInputRef"
+                v-model="params.search"
+                clearable
+                class="listing-search listing-search--inline w-(--listing-search-width) shrink-0"
+                :placeholder="searchLabel"
+                :aria-label="searchLabel"
+                @focus="searchHasFocus = true"
+                @blur="searchHasFocus = false"
+              />
+            </div>
+          </Transition>
+        </template>
+      </Toolbar>
+
+      <div
+        v-if="showSearchInput && store.mobileLayout"
+        class="listing-search-row mx-2.5 flex items-center gap-1"
+      >
+        <SearchInput
+          ref="searchInputRef"
+          v-model="params.search"
+          clearable
+          class="listing-search listing-search--row min-w-0 flex-1"
+          :placeholder="searchLabel"
+          :aria-label="searchLabel"
+          @focus="searchHasFocus = true"
+          @blur="searchHasFocus = false"
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          class="size-10 shrink-0"
+          :aria-label="$t('close')"
+          :title="$t('close')"
+          @click="closeSearch"
+        >
+          <X class="size-[22px]" />
+        </Button>
+      </div>
+    </div>
 
     <div v-if="props.toolBarTabs !== undefined" class="content-tabs">
       <Tabs
@@ -56,35 +237,10 @@
       </Tabs>
     </div>
 
-    <div
-      v-if="showSearchInput && store.mobileLayout"
-      class="mx-2.5 mt-2.5 flex items-center gap-1"
-    >
-      <SearchInput
-        ref="searchInputRef"
-        v-model="params.search"
-        clearable
-        class="listing-search listing-search--row min-w-0 flex-1"
-        :placeholder="searchLabel"
-        :aria-label="searchLabel"
-        @focus="searchHasFocus = true"
-        @blur="searchHasFocus = false"
-      />
-      <Button
-        variant="ghost"
-        size="icon"
-        class="size-10 shrink-0"
-        :aria-label="$t('close')"
-        :title="$t('close')"
-        @click="closeSearch"
-      >
-        <X class="size-[22px]" />
-      </Button>
-    </div>
-
     <Container
       v-if="expanded"
       :variant="viewMode == 'list' ? 'default' : 'panel'"
+      class="listing-body"
       style="overflow: hidden"
     >
       <!-- Skeleton loading states -->
@@ -92,26 +248,23 @@
         <div v-if="viewMode === 'list'">
           <ListViewSkeleton v-for="n in 8" :key="'skeleton-list-' + n" />
         </div>
-        <v-row v-else-if="viewMode === 'panel'">
-          <v-col
+        <div v-else-if="viewMode === 'panel'" class="listing-grid">
+          <PanelViewSkeleton
             v-for="n in 12"
             :key="'skeleton-panel-' + n"
-            cols="12"
-            :class="`col-${panelViewItemResponsive($vuetify.display.width)}`"
-          >
-            <PanelViewSkeleton />
-          </v-col>
-        </v-row>
-        <v-row v-else-if="viewMode === 'panel_compact'">
-          <v-col
+            :class="{ 'skeleton--round': roundArtwork }"
+          />
+        </div>
+        <div
+          v-else-if="viewMode === 'panel_compact'"
+          class="listing-grid listing-grid--compact"
+        >
+          <PanelViewSkeleton
             v-for="n in 12"
             :key="'skeleton-compact-' + n"
-            cols="12"
-            :class="`col-${panelViewItemResponsive($vuetify.display.width)}`"
-          >
-            <PanelViewSkeleton />
-          </v-col>
-        </v-row>
+            :class="{ 'skeleton--round': roundArtwork }"
+          />
+        </div>
       </template>
 
       <v-infinite-scroll
@@ -126,64 +279,54 @@
         :empty-text="''"
         style="overflow: hidden"
       >
-        <!-- panel view -->
-        <v-row v-if="viewMode == 'panel'">
-          <v-col
+        <!-- panel view: an even grid that fills the width, as many columns
+             as the room allows -->
+        <div v-if="viewMode == 'panel'" class="listing-grid">
+          <PanelviewItem
             v-for="item in pagedItems"
             :key="item.uri"
-            cols="12"
-            :class="`col-${panelViewItemResponsive($vuetify.display.width)}`"
-          >
-            <PanelviewItem
-              :item="item"
-              :is-selected="isSelected(item)"
-              :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
-              :show-actions="
-                [
-                  'tracks',
-                  'albums',
-                  'albumtracks',
-                  'artists',
-                  'genres',
-                ].includes(itemtype)
-              "
-              :show-track-number="showTrackNumber"
-              :is-available="itemIsAvailable(item)"
-              :is-playing="isPlaying(item, itemtype)"
-              :disable-play-button="isPlayActionInProgress"
-              :parent-item="parentItem"
-              :sort-by="params.sortBy"
-              @select="onSelect"
-            />
-          </v-col>
-        </v-row>
+            :item="item"
+            :is-selected="isSelected(item)"
+            :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
+            :show-actions="
+              ['tracks', 'albums', 'albumtracks', 'artists', 'genres'].includes(
+                itemtype,
+              )
+            "
+            :show-track-number="showTrackNumber"
+            :is-available="itemIsAvailable(item)"
+            :is-playing="isPlaying(item, itemtype)"
+            :disable-play-button="isPlayActionInProgress"
+            :parent-item="parentItem"
+            :sort-by="params.sortBy"
+            @select="onSelect"
+          />
+        </div>
 
-        <!-- compact panel view -->
-        <v-row v-if="viewMode == 'panel_compact'">
-          <v-col
+        <!-- compact panel view: the same grid with smaller tiles -->
+        <div
+          v-if="viewMode == 'panel_compact'"
+          class="listing-grid listing-grid--compact"
+        >
+          <PanelviewItemCompact
             v-for="item in pagedItems"
             :key="item.uri"
-            cols="12"
-            :class="`col-${panelViewItemResponsive($vuetify.display.width)}`"
-          >
-            <PanelviewItemCompact
-              :item="item"
-              :is-selected="isSelected(item)"
-              :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
-              :is-available="itemIsAvailable(item)"
-              :is-playing="isPlaying(item, itemtype)"
-              :disable-play-button="isPlayActionInProgress"
-              :parent-item="parentItem"
-              :sort-by="params.sortBy"
-              @select="onSelect"
-            />
-          </v-col>
-        </v-row>
+            :item="item"
+            :is-selected="isSelected(item)"
+            :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
+            :is-available="itemIsAvailable(item)"
+            :is-playing="isPlaying(item, itemtype)"
+            :disable-play-button="isPlayActionInProgress"
+            :parent-item="parentItem"
+            :sort-by="params.sortBy"
+            @select="onSelect"
+          />
+        </div>
 
         <!-- list view -->
         <v-virtual-scroll
           v-if="viewMode == 'list'"
-          :item-height="70"
+          :item-height="58"
           height="100%"
           :items="listDisplayItems"
           style="height: 100%; overflow: hidden"
@@ -295,6 +438,12 @@ import { SMART_PLAYLIST_PROVIDER_DOMAIN } from "@/components/smart_playlist/cons
 import Toolbar, { ToolBarMenuItem } from "@/components/Toolbar.vue";
 import { Button } from "@/components/ui/button";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Empty,
   EmptyContent,
   EmptyDescription,
@@ -305,8 +454,12 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCommandCenter } from "@/composables/useCommandCenter";
 import { SEARCHABLE_MEDIA_TYPES } from "@/composables/useProgressiveSearch";
 import { useUserPreferences } from "@/composables/userPreferences";
+import {
+  menuItemLabel,
+  type ContextMenuItem,
+} from "@/helpers/context_menu_item";
 import { handleMenuBtnClick } from "@/helpers/media_item_actions";
-import { panelViewItemResponsive, scrollElement } from "@/helpers/utils";
+import { scrollElement } from "@/helpers/utils";
 import { api } from "@/plugins/api";
 import { itemIsAvailable, itemSupportsPlayLog } from "@/plugins/api/helpers";
 import {
@@ -329,6 +482,7 @@ import { eventbus } from "@/plugins/eventbus";
 import { store } from "@/plugins/store";
 import {
   ArrowUpDown,
+  Check,
   CheckCheck,
   ChevronDown,
   ChevronUp,
@@ -338,6 +492,7 @@ import {
   EyeOff,
   Files,
   FilterX,
+  Grid3x3,
   Heart,
   Layers,
   LayoutGrid,
@@ -1527,6 +1682,99 @@ const menuItems = computed(() => {
   return items;
 });
 
+// The library pages themselves (rather than the listings embedded in detail
+// pages, which share their itemtypes) open on a page heading and keep their
+// controls on a bar that stays in view while the list scrolls.
+const isPageListing = computed(() => props.restoreState && isLibraryItem.value);
+
+// The count under a page heading is only shown when it is the whole library: a
+// filtered or searched total is not something every page can count.
+const headingCount = computed(() => {
+  if (hasActiveFilters.value || !props.total) return undefined;
+  return props.total;
+});
+
+// artists are pictured in circles
+const roundArtwork = computed(() =>
+  ["artists", "similarartists"].includes(props.itemtype),
+);
+
+const VIEW_MODE_OPTIONS = [
+  { mode: "panel", label: "view.panel", icon: LayoutGrid },
+  { mode: "panel_compact", label: "view.panel_compact", icon: Grid3x3 },
+  { mode: "list", label: "view.list", icon: LayoutList },
+];
+
+// The toolbar chips are shortcuts onto existing menu entries, so each one runs
+// exactly what its menu entry runs. Keyed by the menu entry's label, in the
+// order the chips read best, with the shorter name each chip goes by.
+const FILTER_CHIP_LABELS: Record<string, string> = {
+  "tooltip.filter_favorites": "items_listing.favorites",
+  "tooltip.filter_library": "in_library",
+  "tooltip.album_artist_filter": "items_listing.album_artists",
+  "tooltip.collapse_collections": "tooltip.collapse_collections",
+  "tooltip.filter_hide_fully_played": "tooltip.filter_hide_fully_played",
+  "tooltip.filter_genre": "genres",
+  "tooltip.album_type": "album_type_label",
+  "tooltip.filter_provider": "settings.providers",
+};
+
+const findMenuItem = (label: string): ToolBarMenuItem | undefined =>
+  (menuItems.value as ToolBarMenuItem[]).find(
+    (item) => item.label === label && !item.hide,
+  );
+
+// phones have no room for the chips beside an embedded listing's title; the
+// menu keeps everything reachable there
+const showChips = computed(
+  () => expanded.value && (isPageListing.value || !store.mobileLayout),
+);
+
+const showViewToggle = computed(() => !props.forcedViewMode);
+
+// the sort in use is always named on the bar, not hidden in the menu
+const sortMenuItem = computed(() => {
+  const item = findMenuItem("tooltip.sort_options");
+  return item?.subItems && item.subItems.length > 1 ? item : undefined;
+});
+
+const sortLabel = computed(() => {
+  const selected = sortMenuItem.value?.subItems?.find((x) => x.selected);
+  return selected ? menuItemLabel(selected) : "";
+});
+
+const filterChips = computed(() =>
+  Object.entries(FILTER_CHIP_LABELS).flatMap(([menuLabel, chipLabel]) => {
+    const item = findMenuItem(menuLabel);
+    if (!item) return [];
+    const active = item.active === true;
+    if (!isPageListing.value && !active) return [];
+    return [
+      {
+        item,
+        label: t(chipLabel),
+        active,
+        selectedCount: item.subItems?.filter((x) => x.selected).length ?? 0,
+      },
+    ];
+  }),
+);
+
+// as in the toolbar menu: a multi-select list stays open to pick several
+const onChipSubItemSelect = (
+  event: Event,
+  parent: ToolBarMenuItem,
+  subItem: ContextMenuItem,
+) => {
+  if (
+    parent.closeOnContentClick === false ||
+    subItem.close_on_click === false
+  ) {
+    event.preventDefault();
+  }
+  subItem.action?.();
+};
+
 const loadData = async function (
   clear = false,
   refresh = false,
@@ -2248,71 +2496,358 @@ defineExpose({
   }
 }
 
+/* ---------------------------------------------------------------- page */
+
+/* the room either side of a library page; the heading, the bar and the grid
+   all start at the same inset inside it */
+.items-listing--page {
+  --listing-gutter: 34px;
+  padding-inline: var(--listing-gutter);
+}
+
+.listing-head {
+  padding: 44px 10px 20px;
+}
+
+.listing-head__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
+}
+
+.listing-head__title {
+  margin: 12px 0 0;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+}
+
+.listing-head__count {
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 960px) {
+  .items-listing--page {
+    --listing-gutter: 14px;
+  }
+
+  .listing-head {
+    padding-top: 28px;
+  }
+
+  .listing-head__title {
+    font-size: 44px;
+  }
+}
+
+@media (max-width: 500px) {
+  .items-listing--page {
+    --listing-gutter: 6px;
+  }
+
+  .listing-head {
+    padding: 20px 10px 14px;
+  }
+
+  .listing-head__title {
+    font-size: 38px;
+  }
+}
+
+/* ----------------------------------------------------------------- bar */
+
+.listing-bar {
+  border-bottom: 1px solid var(--border);
+}
+
+/* on a page the bar stays in view, full bleed, with the list sliding under */
+.listing-bar--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin-inline: calc(-1 * var(--listing-gutter));
+  padding-inline: var(--listing-gutter);
+  background: color-mix(in oklab, var(--background) 86%, transparent);
+  -webkit-backdrop-filter: saturate(1.3) blur(20px);
+  backdrop-filter: saturate(1.3) blur(20px);
+}
+
+.listing-search-row {
+  padding-bottom: 10px;
+}
+
+/* the controls ride in the toolbar's trailing slot, beside its own buttons:
+   the title keeps the room it needs and the chips give way, scrolling */
+.listing-bar :deep(.v-toolbar-title) {
+  flex: 1 1 auto;
+}
+
+.listing-bar :deep(.v-toolbar__append) {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+/* a library page has no title in its bar, so the controls take the width */
+.items-listing--page .listing-bar :deep(.v-toolbar-title) {
+  flex: 0 0 0;
+  min-width: 0;
+}
+
+.items-listing--page .listing-bar :deep(.v-toolbar__append) {
+  flex: 1 1 auto;
+}
+
+/* the chips scroll sideways rather than push the toolbar buttons away */
+.listing-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
+  /* room for the focus ring, which the scrolling would otherwise clip */
+  margin-inline: -3px 4px;
+  padding: 4px 3px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  font-family: var(--font-body);
+}
+
+.listing-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.items-listing--page .listing-chips {
+  flex: 1 1 auto;
+}
+
+.listing-chips__end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.items-listing--page .listing-chips__end {
+  margin-left: auto;
+  padding-left: 8px;
+}
+
+/* on a phone the row scrolls sideways; fade its trailing edge so a cut-off
+   chip reads as "more this way", and pad the end so the last chip can scroll
+   clear of the fade */
+.listing-chips--mobile {
+  padding-inline-end: 28px;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - 28px),
+    transparent
+  );
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
+}
+
+/* a phone leads with the sort and the view, the filters scroll after them */
+.items-listing--page .listing-chips--mobile .listing-chips__end {
+  order: -1;
+  margin-left: 0;
+  padding-left: 0;
+}
+
+.listing-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 14%, transparent);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.listing-chip:hover {
+  color: var(--foreground);
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+
+.listing-chip:focus-visible,
+.listing-viewtog__btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* a filter that is narrowing the list reads inverted */
+.listing-chip.is-on {
+  color: var(--background);
+  background: var(--foreground);
+  box-shadow: none;
+}
+
+/* disabled only for the moment a page loads, so it should not flicker */
+.listing-chip:disabled {
+  cursor: progress;
+}
+
+.listing-chip__icon {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.listing-chip__caret {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin-right: -3px;
+  opacity: 0.6;
+}
+
+.listing-chip__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.listing-chip--sort {
+  font-weight: 600;
+  color: var(--foreground);
+  background: var(--secondary);
+  box-shadow: none;
+}
+
+.listing-chip--sort:hover {
+  background: color-mix(in oklab, var(--foreground) 10%, var(--secondary));
+}
+
+.listing-chip__prefix {
+  font-weight: 500;
+  color: var(--subtle-foreground);
+}
+
+.listing-chip__value {
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* view mode as a segmented control */
+.listing-viewtog {
+  display: inline-flex;
+  flex: none;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--secondary);
+}
+
+.listing-viewtog__btn {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 26px;
+  border-radius: 7px;
+  color: var(--subtle-foreground);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.listing-viewtog__btn:hover {
+  color: var(--foreground);
+}
+
+.listing-viewtog__btn.is-on {
+  color: var(--foreground);
+  background: var(--background);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+}
+
+/* ---------------------------------------------------------------- body */
+
+/* the grid sits on the page itself rather than on a tinted panel */
+.listing-body.container-panel--light {
+  background: transparent;
+}
+
+.items-listing--page .listing-body {
+  padding-top: 22px;
+}
+
+/* even columns that use the whole width: as many tiles as fit */
+.listing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 24px 18px;
+}
+
+.listing-grid--compact {
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 18px 14px;
+}
+
+.listing-grid > * {
+  min-width: 0;
+}
+
+@media (max-width: 500px) {
+  .listing-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px 12px;
+  }
+
+  .listing-grid--compact {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 10px;
+  }
+}
+
+/* "load more" for listings that page by hand */
+.listing-body :deep(.v-infinite-scroll__side .v-btn) {
+  border-radius: 999px;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .disc-header {
   display: flex;
   align-items: flex-end;
   height: 100%;
-  padding: 16px 8px 8px;
-  font-size: 1.15rem;
+  padding: 22px 12px 8px;
+  font-size: 11px;
   font-weight: 600;
-  opacity: 0.7;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
 }
 
-/* ThumbView panel columns */
-.col-2 {
-  width: 50%;
-  max-width: 50%;
-  flex-basis: 50%;
-  padding: 8px;
-}
-.col-3 {
-  width: 33.3%;
-  max-width: 33.3%;
-  flex-basis: 33.3%;
-  padding: 8px;
-}
-.col-4 {
-  width: 25%;
-  max-width: 25%;
-  flex-basis: 25%;
-  padding: 8px;
-}
-.col-5 {
-  width: 20%;
-  max-width: 20%;
-  flex-basis: 20%;
-  padding: 8px;
-}
-.col-6 {
-  width: 16.6%;
-  max-width: 16.6%;
-  flex-basis: 16.6%;
-  padding: 8px;
-}
-.col-7 {
-  width: 14.2%;
-  max-width: 14.2%;
-  flex-basis: 14.2%;
-  padding: 8px;
-}
-.col-8 {
-  width: 12.5%;
-  max-width: 12.5%;
-  flex-basis: 12.5%;
-  padding: 8px;
-}
-.col-9 {
-  width: 11.1%;
-  max-width: 11.1%;
-  flex-basis: 11.1%;
-  padding: 8px;
-}
-.col-10 {
-  width: 10%;
-  max-width: 10%;
-  flex-basis: 10%;
-  padding: 8px;
-}
 .content-tabs {
   padding: 10px 16px 0;
   max-width: 100%;
@@ -2320,5 +2855,9 @@ defineExpose({
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+}
+
+.items-listing--page .content-tabs {
+  padding-inline: 10px;
 }
 </style>

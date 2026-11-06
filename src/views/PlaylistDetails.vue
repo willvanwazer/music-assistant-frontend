@@ -31,44 +31,46 @@
     :playlist="itemDetails"
     @saved="loadItemDetails"
   />
-  <!-- dynamic playlist: content is generated on the fly, so show a sample instead of a fixed tracklist -->
-  <DynamicItemSample
-    v-if="itemDetails && itemDetails.is_dynamic"
-    :item-details="itemDetails"
-    :provider="props.provider"
-    @edit-rules="showEditDialog = true"
-  />
-  <ItemsListing
-    v-else-if="itemDetails"
-    ref="listingRef"
-    itemtype="playlisttracks"
-    :parent-item="itemDetails"
-    :show-provider="false"
-    :show-library="false"
-    :show-favorites-only-filter="false"
-    :show-favorite="true"
-    :show-track-number="false"
-    :show-refresh-button="true"
-    :refresh-on-parent-update="true"
-    :load-items="loadPlaylistTracks"
-    :sort-keys="[
-      'position',
-      'position_desc',
-      'name',
-      'artist',
-      'album',
-      'duration',
-      'duration_desc',
-    ]"
-    :update-available="updateAvailable"
-    :title="$t('playlist_tracks')"
-    :allow-key-hooks="true"
-    :path="`playlist.${props.itemId}.${props.provider}`"
-    :restore-state="true"
-    :no-server-side-sorting="true"
-  />
+  <div class="item-details-body">
+    <!-- dynamic playlist: content is generated on the fly, so show a sample instead of a fixed tracklist -->
+    <DynamicItemSample
+      v-if="itemDetails && itemDetails.is_dynamic"
+      :item-details="itemDetails"
+      :provider="props.provider"
+      @edit-rules="showEditDialog = true"
+    />
+    <ItemsListing
+      v-else-if="itemDetails"
+      ref="listingRef"
+      itemtype="playlisttracks"
+      :parent-item="itemDetails"
+      :show-provider="false"
+      :show-library="false"
+      :show-favorites-only-filter="false"
+      :show-favorite="true"
+      :show-track-number="false"
+      :show-refresh-button="true"
+      :refresh-on-parent-update="true"
+      :load-items="loadPlaylistTracks"
+      :sort-keys="[
+        'position',
+        'position_desc',
+        'name',
+        'artist',
+        'album',
+        'duration',
+        'duration_desc',
+      ]"
+      :update-available="updateAvailable"
+      :title="$t('playlist_tracks')"
+      :allow-key-hooks="true"
+      :path="`playlist.${props.itemId}.${props.provider}`"
+      :restore-state="true"
+      :no-server-side-sorting="true"
+    />
 
-  <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+  </div>
 </template>
 
 <script setup lang="ts">

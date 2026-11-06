@@ -110,24 +110,30 @@
     width="auto"
     @update:model-value="showHelpInfo = undefined"
   >
-    <v-card>
-      <v-card-text>
-        <h2>
+    <v-card class="config-dialog config-dialog--help">
+      <v-card-text class="config-dialog-head">
+        <h2 class="config-dialog-title">
           {{ showHelpInfo?.label || "" }}
         </h2>
       </v-card-text>
-      <v-card-text>
+      <v-card-text class="config-dialog-body">
         <MarkdownText :text="showHelpInfo?.description" />
       </v-card-text>
-      <v-card-actions>
+      <v-card-actions class="config-dialog-actions">
         <v-btn
           v-if="showHelpInfo?.help_link"
+          class="config-dialog-btn config-dialog-btn--secondary"
           @click="openLink(showHelpInfo!.help_link!)"
         >
           {{ $t("read_more") }}
         </v-btn>
         <v-spacer />
-        <v-btn color="primary" @click="showHelpInfo = undefined">
+        <v-btn
+          color="primary"
+          variant="flat"
+          class="config-dialog-btn"
+          @click="showHelpInfo = undefined"
+        >
           {{ $t("close") }}
         </v-btn>
       </v-card-actions>
@@ -141,18 +147,28 @@
     persistent
     @update:model-value="cancelDiscard"
   >
-    <v-card>
-      <v-card-title>{{ $t("settings.unsaved_changes") }}</v-card-title>
-      <v-card-text>{{ $t("settings.unsaved_changes_message") }}</v-card-text>
-      <v-card-actions>
+    <v-card class="config-dialog">
+      <v-card-title class="config-dialog-title">
+        {{ $t("settings.unsaved_changes") }}
+      </v-card-title>
+      <v-card-text class="config-dialog-body">
+        {{ $t("settings.unsaved_changes_message") }}
+      </v-card-text>
+      <v-card-actions class="config-dialog-actions">
         <v-spacer />
-        <v-btn data-testid="config-stay" variant="text" @click="cancelDiscard">
+        <v-btn
+          data-testid="config-stay"
+          variant="flat"
+          class="config-dialog-btn config-dialog-btn--secondary"
+          @click="cancelDiscard"
+        >
           {{ $t("settings.stay") }}
         </v-btn>
         <v-btn
           data-testid="config-discard"
-          color="warning"
+          color="error"
           variant="flat"
+          class="config-dialog-btn"
           @click="confirmDiscard"
         >
           {{ $t("settings.discard") }}
@@ -587,45 +603,87 @@ const getCategoryIcon = function (category: string): Component {
 </script>
 
 <style scoped>
-/* Category sections (modern card, header aligned with fields) */
+/* Category sections: a serif heading over a flat group whose rows are
+   divided by hairlines */
 .category-section {
-  margin-bottom: 14px;
-  border: 1px solid rgba(var(--v-theme-on-surface), 0.08);
-  border-radius: 14px;
-  background: rgb(var(--v-theme-surface));
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  margin-bottom: 28px;
 }
 
 .category-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 11px 16px;
-  background: rgba(var(--v-theme-on-surface), 0.03);
-  border-bottom: 1px solid rgba(var(--v-theme-on-surface), 0.08);
+  gap: 8px;
+  padding: 0 4px 10px;
 }
 
 .category-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(var(--v-theme-primary), 0.12);
-  color: rgb(var(--v-theme-primary));
   flex-shrink: 0;
+  color: var(--muted-foreground);
 }
 
 .category-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: rgb(var(--v-theme-on-surface));
+  font-family: var(--font-heading);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--foreground);
 }
 
 .category-content {
-  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+/* the help and unsaved-changes dialogs */
+.config-dialog {
+  border-radius: 20px !important;
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  padding: 8px 4px 4px;
+}
+
+.config-dialog-head {
+  padding-bottom: 0 !important;
+}
+
+.config-dialog-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+.config-dialog-body {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--muted-foreground);
+}
+
+.config-dialog-actions {
+  gap: 8px;
+  padding: 8px 20px 16px !important;
+}
+
+.config-dialog-btn {
+  height: 40px !important;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.config-dialog-btn--secondary {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
 }
 
 .floating-save {

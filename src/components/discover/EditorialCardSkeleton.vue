@@ -12,7 +12,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 <style scoped>
 /* Mirrors .ed-card's sizing (EditorialMediaCard.vue) so a loading row reserves
-   exactly the height its resolved cards will occupy - no layout shift. */
+   exactly the height its resolved cards will occupy - no layout shift. The
+   bars sit centred in the card's 18px title and 16px subtitle lines (only top
+   margins between them, so nothing collapses). */
 .ed-card-skeleton {
   --ed-card-pad: 8px;
   --ed-art-size: var(--ed-tile-art, 168px);
@@ -24,17 +26,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 .ed-card-skeleton__art {
   width: var(--ed-art-size);
   height: var(--ed-art-size);
-  border-radius: var(--ed-card-pad);
+  border-radius: 4px;
 }
 .ed-card-skeleton__title {
   width: 70%;
-  height: 16px;
-  margin-top: 13px;
+  height: 12px;
+  margin-top: 14px;
 }
 .ed-card-skeleton__sub {
   width: 45%;
-  height: 14px;
-  margin-top: 6px;
+  height: 10px;
+  margin-top: 7px;
+  margin-bottom: 3px;
 }
 
 @media (max-width: 500px) {
@@ -42,7 +45,10 @@ import { Skeleton } from "@/components/ui/skeleton";
     --ed-card-pad: 4px;
   }
   .ed-card-skeleton__title {
-    margin-top: 7px;
+    margin-top: 11px;
+  }
+  .ed-card-skeleton__sub {
+    margin-top: 6px;
   }
 }
 </style>

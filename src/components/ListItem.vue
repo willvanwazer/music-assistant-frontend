@@ -44,11 +44,14 @@ const { listItemProps, listItemClasses } = useListItem(props);
 </script>
 
 <style scoped>
+/* rows are soft-cornered, and the hover is a faint fill of the text colour
+   (vuetify's overlay) */
 .list-item-main {
-  border-radius: 4px !important;
+  border-radius: 9px !important;
   padding: 7px !important;
   padding-right: 0 !important;
   margin-right: -18px !important;
+  transition: background-color 0.15s ease;
 }
 
 .list-item-main :deep(.v-list-item__append) {

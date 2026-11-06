@@ -1,13 +1,17 @@
 <template>
   <section class="edit-player">
     <div v-if="config">
-      <!-- Header card -->
-      <Card class="mb-4 gap-0 py-0">
-        <CardHeader class="relative flex flex-col gap-5 p-6 pr-16 sm:flex-row">
+      <!-- Header: names the player, then a hairline row of its actions -->
+      <Card
+        class="mb-6 gap-0 rounded-none border-0 bg-transparent py-0 shadow-none"
+      >
+        <CardHeader
+          class="relative flex flex-col gap-4 px-0 pt-1 pr-12 pb-5 sm:flex-row sm:items-start"
+        >
           <div class="header-icon">
             <PlayerIcon
               :icon="api.players[config.player_id]?.icon"
-              :size="32"
+              :size="24"
               class="text-primary"
             />
           </div>
@@ -87,7 +91,7 @@
             data-testid="player-menu"
             variant="ghost"
             size="icon-sm"
-            class="absolute top-4 right-4"
+            class="absolute top-1 right-0 text-muted-foreground"
             aria-haspopup="menu"
             :aria-label="$t('more_options')"
             @click="openPlayerMenu"
@@ -97,7 +101,7 @@
         </CardHeader>
         <CardContent
           v-if="playerSetupLabel || showAdvancedToggle"
-          class="flex flex-wrap items-center gap-3 border-t bg-muted/20 px-6 py-4"
+          class="flex flex-wrap items-center gap-2.5 border-t border-b border-border px-0 py-3"
         >
           <Button
             v-if="playerSetupLabel"
@@ -562,10 +566,10 @@ function resetPlayerState(playerId?: string) {
 
 .header-icon {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
-  background: rgba(var(--v-theme-primary), 0.1);
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -579,24 +583,26 @@ function resetPlayerState(playerId?: string) {
 .header-title-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .header-title {
-  font-size: 1.25rem;
-  font-weight: 600;
   margin: 0;
-  color: rgb(var(--v-theme-on-surface));
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: var(--foreground);
 }
 
 .rename-btn {
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  color: var(--muted-foreground);
 }
 
-.rename-btn:hover {
-  opacity: 1;
+.edit-player :deep(.v-alert) {
+  border-radius: 14px;
 }
 
 .disabled-banner {
@@ -606,30 +612,47 @@ function resetPlayerState(playerId?: string) {
   gap: 16px;
 }
 
+.disabled-banner :deep(.v-btn) {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
 .header-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  column-gap: 16px;
+  row-gap: 4px;
 }
 
 .meta-item {
   display: inline-flex;
   align-items: center;
-  font-size: 0.813rem;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+
+.meta-item :deep(.v-icon) {
+  color: var(--subtle-foreground);
 }
 
 .protocol-chips {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  margin-top: 8px;
+  margin-top: 10px;
 }
 
 @media (max-width: 600px) {
   .header-meta {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
+  }
+
+  .header-title {
+    font-size: 1.5rem;
   }
 }
 </style>

@@ -9,12 +9,13 @@
       :data-compact="!getBreakpointValue('bp6')"
     >
       <div class="mediacontrols-left">
+        <!-- the quality chip sits with the other room controls on the right -->
         <PlayerTrackDetails
-          :show-quality-details-btn="getBreakpointValue('bp9') ? true : false"
+          :show-quality-details-btn="false"
           :show-only-artist="getBreakpointValue('bp7') ? false : true"
           title-opens-details
           :color-palette="coverImageColorPalette"
-          :primary-color="$vuetify.theme.current.dark ? '#fff' : '#000'"
+          primary-color="var(--foreground)"
         />
       </div>
       <div class="mediacontrols-bottom-center">
@@ -25,16 +26,16 @@
             </div>
 
             <PlayerControls
-              :style="playIconStyle"
               :visible-components="{
                 repeat: { isVisible: getBreakpointValue('bp3') },
                 shuffle: { isVisible: getBreakpointValue('bp3') },
                 play: {
                   isVisible: true,
                   icon: {
-                    staticWidth: '48px',
-                    staticHeight: '48px',
+                    staticWidth: '42px',
+                    staticHeight: '42px',
                   },
+                  size: 20,
                 },
                 previous: { isVisible: getBreakpointValue('bp3') },
                 next: { isVisible: getBreakpointValue('bp3') },
@@ -53,11 +54,19 @@
             <SleepTimerBtn />
           </div>
         </div>
-        <!-- progress bar -->
-        <PlayerTimeline v-if="getBreakpointValue('bp6')" />
+        <!-- progress bar: the track's waveform where one has been analysed,
+             with the elapsed and total time either side of it -->
+        <PlayerTimeline
+          v-if="getBreakpointValue('bp6')"
+          class="player-bar-timeline"
+          :show-labels="true"
+          :waveform="waveformBins"
+        />
       </div>
       <div class="mediacontrols-bottom-right">
         <div>
+          <!-- what the room is receiving; it opens the signal path -->
+          <QualityDetailsBtn v-if="showQualityChip" />
           <!-- player extended control buttons -->
           <PlayerExtendedControls
             :player="{
@@ -84,7 +93,7 @@
           :show-only-artist="true"
           :compact="true"
           :color-palette="coverImageColorPalette"
-          :primary-color="$vuetify.theme.current.dark ? '#fff' : '#000'"
+          primary-color="var(--foreground)"
         />
       </div>
       <div class="mediacontrols-bottom-right">
@@ -131,6 +140,8 @@
 </template>
 
 <script setup lang="ts">
+import QualityDetailsBtn from "@/components/QualityDetailsBtn.vue";
+import { useActiveTrackWaveform } from "@/composables/useActiveTrackWaveform";
 import { ImageColorPalette, paletteFromServer } from "@/helpers/utils";
 import { getBreakpointValue } from "@/plugins/breakpoint";
 import { store } from "@/plugins/store";
@@ -161,6 +172,17 @@ const showMobileVolumeControls = ref(false);
 const showCenterExtras = computed(() => getBreakpointValue("bp7"));
 const showPlaybackSpeed = computed(() => getBreakpointValue("bp8"));
 
+// the quality chip joins the room controls on the right once they leave it the
+// room, which is the width the bar used to offer it beside the track at
+const showQualityChip = computed(
+  () =>
+    getBreakpointValue("bp9") && !getBreakpointValue({ breakpoint: "phone" }),
+);
+
+// shared with the full screen player, which already keeps it loaded for the
+// track that is playing, so the bar adds no request of its own
+const { waveformBins } = useActiveTrackWaveform();
+
 /** Opens the fullscreen player, or the player picker when there is nothing to show. */
 function openActivePlayer() {
   if (!store.activePlayer || store.activePlayer.powered === false) {
@@ -174,33 +196,18 @@ const coverImageColorPalette = computed<ImageColorPalette>(() =>
   paletteFromServer(store.activePlayer?.current_media?.palette),
 );
 
+// The artwork is the only colour the bar carries, as a soft wash; without
+// artwork there is nothing to tint it with and the chrome stays neutral.
 const backgroundColor = computed(() => {
   if (vuetify.theme.current.value.dark) {
     if (coverImageColorPalette.value && coverImageColorPalette.value.darkColor)
       return coverImageColorPalette.value.darkColor;
-    return "#CCCCCC26";
+    return "transparent";
   }
   if (coverImageColorPalette.value && coverImageColorPalette.value.lightColor)
     return coverImageColorPalette.value.lightColor;
-  return "#CCCCCC26";
+  return "transparent";
 });
-
-// this bar sits on an artwork tint rather than the app surface, so its
-// controls key off the theme contrast colour instead of the flat grey the
-// other player bars use
-const floatingControlColor = computed(() =>
-  vuetify.theme.current.value.dark
-    ? "rgba(255, 255, 255, 0.82)"
-    : "rgba(0, 0, 0, 0.72)",
-);
-
-const themeColor = computed(() =>
-  vuetify.theme.current.value.dark ? "#fff" : "#000",
-);
-
-const playIconStyle = computed(() => ({
-  "--play-icon-color": vuetify.theme.current.value.dark ? "#212121" : "#fff",
-}));
 
 watch(
   () => store.activePlayerId,
@@ -215,14 +222,59 @@ watch(
   opacity: 100;
 }
 
+/* The label beside a room control carries the value or the name it stands
+   for. Its resting weight lives up here, out of the nested blocks below, so the
+   open state's rule in the app stylesheet keeps out-ranking it. */
+.mediacontrols :deep(.player-bar-action-label) {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  line-height: 16px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------------
+   Floating mobile card
+   ------------------------------------------------------------------------ */
+
+/* Frosted: what scrolls beneath shows through, blurred, under a translucent
+   popover surface. The surface is a layer of its own rather than a colour-mix
+   so it still draws on the older Cast and Android TV runtimes. */
 .mediacontrols-mobile-container {
   position: relative;
+  isolation: isolate;
   width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   overflow: hidden;
-  background-color: rgb(var(--v-theme-overlay));
+  border-radius: 16px;
+  box-shadow:
+    0 16px 40px -14px rgb(20 20 50 / 0.24),
+    0 0 0 1px var(--border);
+  /* must stay unprefixed: the minifier keeps only the last of a hand-written
+     pair, and -webkit-backdrop-filter alone is dead in Chromium */
+  backdrop-filter: blur(30px) saturate(1.6);
 }
+
+.dark .mediacontrols-mobile-container {
+  box-shadow:
+    0 16px 40px -10px rgb(0 0 0 / 0.6),
+    0 0 0 1px var(--border);
+}
+
+.mediacontrols-mobile-container::before {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--popover);
+  opacity: 0.8;
+  pointer-events: none;
+  content: "";
+}
+
+/* ------------------------------------------------------------------------
+   The bar
+   ------------------------------------------------------------------------ */
 
 .mediacontrols {
   display: grid;
@@ -231,10 +283,23 @@ watch(
   width: 100%;
   min-height: var(--player-bar-height);
   padding: 8px 15px;
-  background-color: rgb(var(--v-theme-overlay));
+  background-color: var(--card);
   .mediacontrols-bottom-center {
     flex: 0 1 40%;
     min-width: 0;
+  }
+
+  /* set off from the page by a hairline rather than a shadow. It hangs off the
+     footer, as the artwork wash does, and draws over that wash */
+  &:not([data-mobile="true"])::before {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 1px;
+    background: var(--border);
+    pointer-events: none;
+    content: "";
   }
 
   &[data-mobile="true"] {
@@ -243,11 +308,11 @@ watch(
     min-height: 0;
     /* the artwork ends up as far from the top as from the left once the row
        centres it; the volume row carries the space below */
-    padding: 10px 12px 6px;
-    /* beats the global .player-control-button colour, which is tuned for the
-       app surface rather than an artwork tint */
+    padding: 10px 12px 6px 10px;
+    /* the card is a popover surface, so its controls take the text colour of
+       one rather than the muted grey the flat bars rest at */
     :deep(.player-control-button) {
-      color: v-bind(floatingControlColor) !important;
+      color: var(--foreground) !important;
     }
     :deep(.player-control-button:hover:not([data-suppress-hover="true"])),
     :deep(.player-control-button[data-active="true"]),
@@ -267,7 +332,7 @@ watch(
       min-height: 40px;
       border: 2px solid currentColor;
       background-color: transparent;
-      color: v-bind(floatingControlColor);
+      color: var(--foreground);
     }
     .mediacontrols-bottom-right {
       margin-right: 0;
@@ -284,25 +349,35 @@ watch(
   }
 }
 
+/* The artwork is the only colour here: a soft wash out of the corner the cover
+   sits in, never a band of colour across the bar. */
 .mediacontrols-bg {
   height: 100%;
   position: absolute;
-  width: 320px;
+  width: 440px;
   left: 0px;
   top: 0px;
   /* it is positioned, so it paints over the row behind it; without this it
      takes every click that does not land on the controls or the text */
   pointer-events: none;
-  background: linear-gradient(
-    to right,
+  opacity: 0.5;
+  background: radial-gradient(
+    ellipse 100% 160% at 0% 50%,
     v-bind("backgroundColor") 0%,
-    transparent
+    transparent 72%
   );
 
+  /* on the card it tints the frosted surface from under the content */
   &[data-floating="true"] {
+    z-index: -1;
     border-radius: 16px;
     width: 100%;
-    background: v-bind("backgroundColor");
+    opacity: 0.35;
+    background: linear-gradient(
+      to right,
+      v-bind("backgroundColor") 0%,
+      transparent 90%
+    );
   }
 }
 
@@ -322,16 +397,9 @@ watch(
   }
 }
 
-.mediacontrols-bottom-right {
-  min-width: 0;
-  display: flex;
-  justify-content: flex-end;
-  margin-right: -8px;
-  > div {
-    display: inline-flex;
-    align-items: center;
-  }
-}
+/* ------------------------------------------------------------------------
+   Transport
+   ------------------------------------------------------------------------ */
 
 /* the transport takes the middle track and the extras the one after it. Neither
    outer track asks for room of its own, so they stay equal and the play button
@@ -378,130 +446,350 @@ watch(
   justify-content: center;
 }
 
-.mediacontrols :deep(.player-bar-action) {
-  display: grid !important;
-  grid-template-rows: 40px 16px;
-  align-content: center;
-  justify-items: center;
-  row-gap: 4px;
+.mediacontrols:not([data-mobile="true"]) {
+  /* 20px glyphs in 42px cells leave the 22px between them the transport is
+     spaced at; play takes the same again either side of its disc */
+  .player-center-transport :deep(.player-controls-elements) {
+    width: 42px;
+  }
+
+  .player-center-transport :deep(.play-btn-wrapper) {
+    margin-inline: 8px;
+  }
+
+  /* resting controls are muted and come up to the text colour under the
+     pointer; Icon.vue's own resting fade is replaced by that */
+  .player-center-transport :deep(.icon-container--button) {
+    color: var(--muted-foreground);
+    opacity: 1;
+    transition: color 150ms ease;
+  }
+
+  .player-center-transport :deep(.icon-container--button:hover) {
+    color: var(--foreground);
+  }
+
+  /* the favourite and queue buttons either side follow the same rule rather
+     than the accent the app gives player controls under the pointer, which
+     here is what says shuffle or repeat is on; open, they keep the accent */
+  .player-center-transport :deep(.player-control-button:hover) {
+    color: var(--foreground) !important;
+  }
+
+  .player-center-transport
+    :deep(.player-control-button[data-suppress-hover="true"]) {
+    color: var(--muted-foreground) !important;
+  }
+
+  .player-center-transport :deep(.player-control-button[data-state="open"]) {
+    color: var(--primary) !important;
+  }
+
+  .player-center-transport
+    :deep(.icon-container--button.icon-container--disabled) {
+    opacity: 0.4;
+  }
+
+  /* play is a disc in the text colour with the glyph cut out of it in the
+     page colour, so it reads in both themes without a colour of its own */
+  .player-center-transport :deep(.icon-container--button.play-btn-icon) {
+    min-width: 42px;
+    min-height: 42px;
+    background-color: var(--foreground);
+    color: var(--background);
+  }
+
+  /* shuffle and repeat take the accent while on, and a dot under them, so the
+     state still reads where the accent alone would be easy to miss */
+  .player-center-transport :deep(.icon-container[data-toggled]) {
+    position: relative;
+  }
+
+  .player-center-transport :deep(.icon-container[data-toggled]::after) {
+    position: absolute;
+    top: calc(50% + 14px);
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 50%;
+    background: var(--primary);
+    content: "";
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .mediacontrols:not([data-mobile="true"])
+    .player-center-transport
+    :deep(.icon-container--button.play-btn-icon) {
+    transition:
+      transform 150ms ease,
+      color 150ms ease;
+  }
+
+  .mediacontrols:not([data-mobile="true"])
+    .player-center-transport
+    :deep(.icon-container--button.play-btn-icon:hover) {
+    transform: scale(1.06);
+  }
+
+  .mediacontrols:not([data-mobile="true"])
+    .player-center-transport
+    :deep(.icon-container--button.play-btn-icon:active) {
+    transform: scale(0.95);
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Seek
+   ------------------------------------------------------------------------ */
+
+/* elapsed time, the waveform and the length sit on one line under the
+   transport, as the times either side of a record's run-out groove */
+.player-bar-timeline {
+  width: 100%;
+  max-width: 640px;
+  height: auto !important;
+  margin: 2px auto 0;
+}
+
+.player-bar-timeline > :deep(div) {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  align-items: center;
+  column-gap: 12px;
+}
+
+.player-bar-timeline :deep([data-slot="slider"]) {
+  grid-row: 1;
+  grid-column: 2;
+  height: 20px !important;
+}
+
+.player-bar-timeline[data-waveform] :deep([data-slot="slider"]) {
+  height: 30px !important;
+}
+
+.player-bar-timeline[data-waveform] :deep([data-slot="slider-track"]) {
+  height: 26px !important;
+}
+
+/* the chapter names the full screen player floats over its timeline would sit
+   on the transport here, so the bar leaves them to the ticks */
+.player-bar-timeline :deep([data-slot="slider"] > button) {
+  display: none;
+}
+
+.player-bar-timeline :deep(.time-text-row) {
+  display: contents;
+}
+
+.player-bar-timeline :deep(.time-text-row > div) {
+  grid-row: 1;
+  display: block;
+  width: auto;
+  color: var(--subtle-foreground);
+  font-size: 11.5px !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+}
+
+.player-bar-timeline :deep(.time-text-left) {
+  grid-column: 1;
+  text-align: right;
+  cursor: pointer;
+}
+
+.player-bar-timeline :deep(.time-text-right) {
+  grid-column: 3;
+  text-align: left;
+}
+
+/* played bars in the text colour, the rest a quieter grey, and the accent
+   under the pointer, where the bright part previews the seek */
+.player-bar-timeline :deep(.waveform-layer path) {
+  transition: stroke 200ms ease;
+}
+
+.player-bar-timeline :deep(.waveform-layer:first-child path) {
+  stroke: var(--subtle-foreground);
+  stroke-opacity: 0.55;
+}
+
+.player-bar-timeline
+  :deep([data-slot="slider"]:hover .waveform-layer + .waveform-layer path) {
+  stroke: var(--primary);
+}
+
+.player-bar-timeline
+  :deep(
+    [data-slot="slider"][data-disabled] .waveform-layer + .waveform-layer path
+  ) {
+  stroke: var(--foreground);
+}
+
+.player-bar-timeline
+  :deep([data-slot="slider"]:hover [data-slot="slider-range"]),
+.player-bar-timeline
+  :deep([data-slot="slider"]:hover [data-slot="slider-thumb"]) {
+  background-color: var(--primary) !important;
+}
+
+/* ------------------------------------------------------------------------
+   Room controls
+   ------------------------------------------------------------------------ */
+
+.mediacontrols-bottom-right {
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  > div {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.mediacontrols :deep(.player-bar-action-row) {
+  justify-content: flex-end;
+}
+
+/* spacing the controls rather than the row keeps the popovers' own anchor
+   elements, which sit between them and take no space, out of the count */
+.mediacontrols :deep(.player-bar-action-row > button ~ button) {
+  margin-inline-start: 6px;
 }
 
 .mediacontrols :deep(.player-bar-action-icon) {
-  display: flex;
-  width: 100%;
-  height: 40px;
+  display: inline-flex;
+  flex: none;
   align-items: center;
   justify-content: center;
 }
 
-.mediacontrols[data-compact="true"] :deep(.player-bar-action) {
-  transform: translateY(10px);
+/* the volume and grouping triggers are compact enough that a soft fill is what
+   shows them as targets. The app stylesheet clears the ghost fill off every
+   player control, so they take one back, heavier than that rule; one tapped
+   shut gives it up again until the pointer comes back */
+.mediacontrols :deep(.player-control-button.player-bar-volume-button:hover),
+.mediacontrols :deep(.player-control-button.player-bar-group-button:hover),
+.mediacontrols
+  :deep(.player-control-button.player-bar-volume-button[data-state="open"]),
+.mediacontrols
+  :deep(.player-control-button.player-bar-group-button[data-state="open"]) {
+  background-color: var(--secondary) !important;
 }
 
-.mediacontrols :deep(.player-bar-action-label) {
-  display: block;
-  width: 100%;
-  height: 16px;
-  overflow: hidden;
-  font-size: 12px;
-  font-weight: 400;
-  line-height: 16px;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.mediacontrols
+  :deep(
+    .player-control-button.player-bar-volume-button[data-suppress-hover="true"]
+  ),
+.mediacontrols
+  :deep(
+    .player-control-button.player-bar-group-button[data-suppress-hover="true"]
+  ) {
+  background-color: transparent !important;
 }
 
-/* a wide screen leaves room to spare in this column, so the actions take a gap
-   between them and the two whose label varies in length grow with their text -
-   the player name is the first to run out. Growing only starts where the label
-   needs it, so a short name leaves no hole beside the button next to it. */
+.mediacontrols :deep(.player-bar-volume-button .player-bar-action-label) {
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the level beside the number only once the room controls have the width */
+.mediacontrols :deep(.player-bar-volume-meter) {
+  display: none;
+}
+
+/* the member count is on the speaker's badge, and spelt out in the button's
+   name, so the bar shows it once */
+.mediacontrols :deep(.player-bar-group-button .player-bar-action-label) {
+  display: none;
+}
+
+/* The player button names the room this bar controls, in words, in a pill: the
+   speaker in the accent, the name in the text colour. It keeps its fill in
+   every state and shows the open drawer with a ring, so the state colours the
+   app gives player controls do not apply to it. */
+.mediacontrols :deep(.player-control-button.player-bar-player-button) {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  max-width: 220px;
+  background-color: var(--secondary) !important;
+  color: var(--foreground) !important;
+}
+
+.mediacontrols :deep(.player-control-button.player-bar-player-button:hover) {
+  background-color: color-mix(
+    in oklab,
+    var(--foreground) 8%,
+    var(--secondary)
+  ) !important;
+}
+
+.mediacontrols
+  :deep(
+    .player-control-button.player-bar-player-button[data-suppress-hover="true"]
+  ) {
+  background-color: var(--secondary) !important;
+}
+
+.mediacontrols
+  :deep(.player-control-button.player-bar-player-button[data-active="true"]) {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.mediacontrols :deep(.player-bar-player-button .player-bar-action-icon) {
+  color: var(--primary);
+}
+
+.mediacontrols :deep(.player-bar-player-button .player-bar-action-label) {
+  font-size: 13px;
+}
+
+/* the room name is what the pill is for, so as the bar narrows the chevron
+   goes first, then the speaker and the count of rooms joined to it */
+@media screen and (max-width: 1099px) {
+  .mediacontrols :deep(.player-bar-player-chevron) {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 959px) {
+  .mediacontrols :deep(.player-bar-player-button .player-bar-action-icon),
+  .mediacontrols :deep(.player-bar-player-count) {
+    display: none;
+  }
+}
+
 @media screen and (min-width: 1100px) {
-  /* the room is only borrowed: these let the row hand it straight back should
-     another control ever join it, and send whatever still does not fit towards
-     the middle of the bar rather than off its end.
-
-     The budget, measured: the column offers 0.3 * (vw - 30) + 8 px, and the
-     three buttons rest at 64 + 72 + 96 = 232, so from 1100px up the row has
-     room to spare at every width. */
-  .mediacontrols-bottom-right > div {
-    min-width: 0;
-  }
-
-  .mediacontrols :deep(.player-bar-action-row) {
-    justify-content: flex-end;
-  }
-
-  /* spacing the controls rather than the row keeps the popovers' own anchor
-     elements, which sit between them and take no space, out of the count */
   .mediacontrols :deep(.player-bar-action-row > button ~ button) {
-    margin-inline-start: clamp(0px, 2vw - 25px, 16px);
-  }
-
-  .mediacontrols :deep(.player-bar-group-button),
-  .mediacontrols :deep(.player-bar-player-button) {
-    width: auto !important;
-    flex-shrink: 1 !important;
-  }
-
-  .mediacontrols :deep(.player-bar-group-button) {
-    min-width: 72px !important;
-    max-width: clamp(72px, 5vw + 17px, 112px);
-  }
-
-  .mediacontrols :deep(.player-bar-player-button) {
-    min-width: 96px !important;
-    max-width: clamp(96px, 10vw - 14px, 176px);
+    margin-inline-start: 8px;
   }
 }
 
-@media screen and (min-width: 769px) and (max-width: 1099px) {
-  .mediacontrols .mediacontrols-bottom-center {
-    width: auto;
-  }
-
-  .mediacontrols-bottom-right {
-    min-width: 0;
-  }
-
-  .mediacontrols :deep(.player-bar-volume-button) {
-    width: 56px !important;
-    height: 72px !important;
-  }
-
-  .mediacontrols :deep(.player-bar-group-button) {
-    width: 60px !important;
-    height: 72px !important;
-  }
-
-  .mediacontrols :deep(.player-bar-player-button) {
-    width: 68px !important;
-    height: 72px !important;
+@media screen and (min-width: 1300px) {
+  .mediacontrols :deep(.player-bar-volume-meter) {
+    display: block;
   }
 }
+
+/* ------------------------------------------------------------------------
+   Floating card volume
+   ------------------------------------------------------------------------ */
 
 .volume-slider {
   width: auto;
   margin: -4px 10px 2px 10px;
 }
 
-/* the slider only needs room for its own track in the floating bar */
+/* the slider only needs room for its own track in the floating bar. Its
+   colours are the shared slider's: the card is a popover surface now rather
+   than an artwork tint, so it needs no contrast colours of its own */
 .volume-slider :deep(.player-volume-container) {
   min-height: 28px;
-}
-
-.volume-slider :deep([data-slot="slider-range"]) {
-  background-color: v-bind("themeColor") !important;
-}
-
-.volume-slider :deep([data-slot="slider-thumb"])::before {
-  background-color: v-bind("themeColor") !important;
-}
-
-.volume-slider :deep([data-slot="slider-track"])::before {
-  background-color: color-mix(
-    in srgb,
-    v-bind("themeColor") 24%,
-    transparent
-  ) !important;
 }
 </style>

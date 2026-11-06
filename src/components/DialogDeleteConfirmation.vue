@@ -10,7 +10,7 @@
         </p>
       </div>
       <DialogFooter>
-        <Button type="button" variant="outline" @click="open = false">
+        <Button type="button" variant="secondary" @click="open = false">
           {{ $t("cancel") }}
         </Button>
         <Button

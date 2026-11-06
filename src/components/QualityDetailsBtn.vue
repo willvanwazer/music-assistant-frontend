@@ -5,9 +5,11 @@
          header controls. A single clean PopoverTrigger so it opens reliably
          inside the fullscreen v-dialog (a Tooltip wrapper here blocked it). -->
     <PopoverTrigger as-child>
+      <!-- the player bar's chip is a filled pill whose dot carries the tier -->
       <Button
-        :variant="pill ? 'ghost-outline' : 'outline'"
+        :variant="pill ? 'ghost-outline' : 'secondary'"
         size="xs"
+        :class="{ 'quality-chip': !pill }"
         :disabled="triggerDisabled"
         :title="$t('show_audio_chain_details')"
         :aria-label="qualityDetailsLabel"
@@ -15,7 +17,8 @@
         <span
           class="quality-pill-dot"
           :style="{
-            backgroundColor: qualityTierToColor(maxOutputQualityTier),
+            backgroundColor: qualityTierColor,
+            '--quality-dot': qualityTierColor,
           }"
         ></span>
         <span class="tracking-wide">{{ qualityLabel }}</span>
@@ -36,6 +39,19 @@
         class="audio-processing-popover-focus-target outline-none"
         tabindex="-1"
       >
+        <!-- the tier the room ends up receiving names the signal path, over
+             the steps that lead to it -->
+        <p class="audio-processing-popover-title ma-display">
+          <span
+            class="quality-pill-dot"
+            :style="{
+              backgroundColor: qualityTierColor,
+              '--quality-dot': qualityTierColor,
+            }"
+            aria-hidden="true"
+          ></span>
+          {{ qualityTierName }}
+        </p>
         <AudioProcessingDetails
           :chain="activeAudioPath.audioProcessing"
           :stream-details="activeAudioPath.streamDetails"
@@ -58,6 +74,7 @@ import AudioProcessingDetails from "@/components/AudioProcessingDetails.vue";
 import { store } from "@/plugins/store";
 import { $t } from "@/plugins/i18n";
 import {
+  QualityTier,
   qualityTierRangeLabel,
   qualityTierToColor,
   useStreamQuality,
@@ -79,6 +96,26 @@ const qualityLabel = computed(() => {
     minOutputQualityTier.value,
     maxOutputQualityTier.value,
   );
+});
+const qualityTierColor = computed(() =>
+  qualityTierToColor(maxOutputQualityTier.value),
+);
+
+// the signal path is titled by the best tier the room receives, in the words
+// its steps already use for a tier
+const qualityTierName = computed(() => {
+  switch (maxOutputQualityTier.value) {
+    case QualityTier.HIRES:
+      return $t("streamdetails.audio_processing.quality.hi_res");
+    case QualityTier.LOSSLESS:
+      return $t("streamdetails.audio_processing.quality.lossless");
+    case QualityTier.GOOD:
+      return $t("streamdetails.audio_processing.quality.standard");
+    case QualityTier.LOW:
+      return $t("streamdetails.audio_processing.quality.low");
+    default:
+      return $t("streamdetails.audio_processing.quality.unknown");
+  }
 });
 const qualityDetailsLabel = computed(() =>
   qualityLabel.value
@@ -127,7 +164,7 @@ export const iconFolder = new URL("@/assets/folder.svg", import.meta.url).href;
     calc(100dvh - 16px),
     var(--reka-popover-content-available-height, calc(100dvh - 16px))
   );
-  padding: 12px;
+  padding: 18px 20px 16px;
   font-size: 0.8125rem;
   line-height: 1.35;
   overscroll-behavior: contain;
@@ -141,9 +178,39 @@ export const iconFolder = new URL("@/assets/folder.svg", import.meta.url).href;
   flex: 0 0 auto;
 }
 
+/* The player bar's chip: a filled pill, the tier dot ringed in its own colour
+   so it still reads as a tier at that size. The button's size utilities are
+   !important, so the paired selector is what lets these through. */
+[data-slot="button"].quality-chip {
+  gap: 7px !important;
+  padding-inline: 10px 11px !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em;
+}
+
+.quality-chip .quality-pill-dot,
+.audio-processing-popover-title .quality-pill-dot {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--quality-dot) 22%, transparent);
+}
+
+.audio-processing-popover-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 14px 2px;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.audio-processing-popover-title .quality-pill-dot {
+  width: 10px;
+  height: 10px;
+}
+
 @media (max-width: 379px) {
   .audio-processing-popover[data-slot="popover-content"] {
-    padding: 10px;
+    padding: 14px 14px 12px;
     font-size: 0.8rem;
   }
 }

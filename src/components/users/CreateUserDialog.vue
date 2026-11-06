@@ -194,7 +194,7 @@
         </form>
       </div>
       <DialogFooter class="px-6 pb-6 pt-4 border-t shrink-0">
-        <Button variant="outline" @click="handleClose">
+        <Button variant="secondary" @click="handleClose">
           {{ $t("cancel") }}
         </Button>
         <Button

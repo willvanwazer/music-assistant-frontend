@@ -21,7 +21,7 @@
         :menu-props="{ zIndex: 10000 }"
       />
       <DialogFooter>
-        <Button variant="outline" @click="model = false">
+        <Button variant="secondary" @click="model = false">
           {{ $t("cancel") }}
         </Button>
         <Button :disabled="!selectedAlias || loading" @click="linkAlias">

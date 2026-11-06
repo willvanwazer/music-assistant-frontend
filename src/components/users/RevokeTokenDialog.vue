@@ -18,12 +18,12 @@
               : $t("auth.revoke_session_confirm")
           }}
         </p>
-        <div v-if="token" class="rounded-md bg-destructive/10 p-4">
-          <p class="font-medium">{{ token.name }}</p>
+        <div v-if="token" class="rounded-xl bg-destructive/10 px-4 py-3">
+          <p class="text-sm font-medium">{{ token.name }}</p>
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:modelValue', false)">
+        <Button variant="secondary" @click="emit('update:modelValue', false)">
           {{ $t("cancel") }}
         </Button>
         <Button variant="destructive" :loading="loading" @click="handleRevoke">

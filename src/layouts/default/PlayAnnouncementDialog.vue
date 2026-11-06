@@ -116,7 +116,7 @@
       <DialogFooter>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           :disabled="sending"
           @click="showDialog = false"
         >

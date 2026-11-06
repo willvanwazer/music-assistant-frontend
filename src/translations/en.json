@@ -44,6 +44,11 @@
     "goto_artist": "View artist {0}",
     "items_selected": "{0} item(s) selected",
     "items_total": "{0} total item(s)",
+    "items_listing": {
+        "album_artists": "Album artists",
+        "favorites": "Favorites",
+        "sort": "Sort"
+    },
     "library": "Library",
     "loading": "Data is being retrieved from the server.",
     "mass": "Music Assistant",
@@ -2423,6 +2428,11 @@
         "progress_empty": "Episodes appear here when you start listening.",
         "progress_error": "Podcast listening progress is unavailable. Try refreshing.",
         "partial_error": "Some podcast activity could not be refreshed. Try again in a moment.",
-        "new_release": "New release"
+        "new_release": "New release",
+        "greeting_morning": "Good morning, {name}",
+        "greeting_afternoon": "Good afternoon, {name}",
+        "greeting_evening": "Good evening, {name}",
+        "genre_albums": "{count} album | {count} albums",
+        "genre_tracks": "{count} track | {count} tracks"
     }
 }

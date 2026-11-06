@@ -1,5 +1,5 @@
 <template>
-  <section style="margin-bottom: 10px">
+  <section class="media-item-images">
     <Toolbar
       :title="$t('images')"
       :menu-items="toolbarMenuItems"
@@ -22,8 +22,7 @@
                 }
               "
               v-bind="props"
-              tile
-              hover
+              variant="flat"
               class="panel-item"
               @click="
                 (e: PointerEvent) => {
@@ -39,7 +38,7 @@
               <v-img
                 :src="getMediaItemImageUrl(image, 256)"
                 :alt="$t('tooltip.artwork')"
-                class="bg-grey-lighten-2"
+                class="panel-item-image"
                 width="100%"
               >
                 <template #placeholder>
@@ -74,8 +73,8 @@
                 <v-icon
                   v-if="idx == 0"
                   size="x-large"
-                  style="position: absolute; right: 0; bottom: 5px"
-                  color="orange"
+                  class="panel-item-primary"
+                  color="primary"
                   :title="$t('tooltip.primary_image')"
                   >mdi-star-box</v-icon
                 >
@@ -223,11 +222,41 @@ const toolbarMenuItems = computed(() => {
   padding: 8px;
 }
 
-.v-list-item--density-compact {
-  padding: 5px !important;
+/* flat tiles: the image whole on top, its type and source beneath */
+.panel-item {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--card);
+  box-shadow: inset 0 0 0 1px var(--border);
+  transition: background-color 150ms ease;
 }
 
-panel-item-details :deep(.v-list-item__content) {
-  height: 30px;
+.panel-item:hover {
+  background: color-mix(in oklab, var(--foreground) 4%, var(--card));
+}
+
+.panel-item-image {
+  background: var(--secondary);
+}
+
+.panel-item-primary {
+  position: absolute;
+  right: 4px;
+  bottom: 6px;
+}
+
+.v-list-item--density-compact {
+  padding: 8px 10px !important;
+}
+
+.panel-item-details :deep(.v-list-item-title) {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.panel-item-details :deep(.v-list-item-subtitle) {
+  font-size: 12px;
+  color: var(--subtle-foreground);
+  opacity: 1;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <template v-if="state.phase === 'answering'">
-    <p class="text-center text-lg font-bold">
+    <p class="ma-display text-center text-2xl leading-tight">
       {{ $t("providers.music_quiz.choose_answer") }}
     </p>
     <MultipleChoiceGrid

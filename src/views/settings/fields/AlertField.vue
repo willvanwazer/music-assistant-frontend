@@ -7,7 +7,7 @@ defineProps<{ text: string }>();
 </script>
 
 <template>
-  <Alert variant="warning" class="mt-2 mb-4">
+  <Alert variant="warning" class="my-1 rounded-[12px]">
     <TriangleAlert />
     <AlertDescription>
       <MarkdownText :text="text" />

@@ -6,10 +6,11 @@
   >
     <div
       data-slot="command-input-wrapper"
-      class="flex h-14 shrink-0 items-center gap-3 border-b px-4"
+      class="cc-input"
+      :class="{ 'cc-compact': mobileLayout }"
       @keydown.enter.capture="dismissKeyboardOnTouch"
     >
-      <Search class="size-5 shrink-0 opacity-50" />
+      <Search class="cc-input-icon" />
       <ListboxFilter
         ref="filterRef"
         v-model="query"
@@ -17,9 +18,12 @@
         auto-focus
         enterkeyhint="done"
         :placeholder="$t('type_to_search')"
-        class="placeholder:text-muted-foreground flex h-12 w-full rounded-md bg-transparent py-3 text-base outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
+        class="cc-input-field placeholder:text-subtle-foreground w-full min-w-0 bg-transparent outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
       />
-      <Spinner v-if="loading && queryActive" class="size-4 shrink-0" />
+      <Spinner
+        v-if="loading && queryActive"
+        class="text-subtle-foreground size-4 shrink-0"
+      />
       <button
         v-if="query"
         type="button"
@@ -30,11 +34,10 @@
       >
         {{ $t("clear") }}
       </button>
+      <Kbd v-if="!mobileLayout" :class="KBD_CLASS">esc</Kbd>
     </div>
 
-    <div
-      class="flex shrink-0 items-center gap-1.5 overflow-x-auto border-b px-4 py-2.5"
-    >
+    <div class="cc-scope" :class="{ 'cc-compact': mobileLayout }">
       <button
         type="button"
         tabindex="-1"
@@ -71,25 +74,78 @@
 
     <CommandList
       ref="listRef"
+      class="cc-list"
       :class="
         mobileLayout
-          ? 'min-h-0 max-h-none flex-1'
-          : 'h-[min(480px,60vh)] max-h-none'
+          ? 'min-h-0 max-h-none flex-1 px-3 pb-3'
+          : 'h-[min(540px,62vh)] max-h-none px-4 pb-4'
       "
     >
+      <!-- the strongest hit, picked out above the grouped rows. It is a
+           shortcut to a row the list already holds, so it stays out of the
+           listbox and its keyboard order -->
+      <div v-if="topResult" class="cc-top-section">
+        <div class="cc-eyebrow">{{ $t("topresult") }}</div>
+        <div class="cc-top">
+          <button
+            type="button"
+            tabindex="-1"
+            class="cc-top-open"
+            @mousedown.prevent
+            @click="onMediaSelect(topResult)"
+          >
+            <span
+              class="cc-top-art"
+              :class="{ 'cc-top-art--round': isRoundThumb(topResult) }"
+            >
+              <MediaItemThumb :item="topResult" :size="88" :rounded="false" />
+            </span>
+            <span class="cc-top-text">
+              <span class="cc-top-name">
+                <template
+                  v-for="(part, index) in highlightParts(topResult.name)"
+                  :key="index"
+                >
+                  <mark
+                    v-if="part.match"
+                    class="cc-match"
+                    v-text="part.text"
+                  ></mark>
+                  <span v-else v-text="part.text"></span>
+                </template>
+              </span>
+              <span class="cc-top-type">{{ itemSubtitle(topResult) }}</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            tabindex="-1"
+            class="cc-top-play"
+            @mousedown.prevent
+            @click.stop="onPlayClick(topResult, $event)"
+          >
+            <Play :size="14" fill="currentColor" :stroke-width="0" />
+            {{ $t("play") }}
+          </button>
+        </div>
+      </div>
+
       <CommandGroup
         v-if="recentResults.length"
+        class="p-0"
         :heading="$t('recent_searches')"
       >
         <CommandItem
           v-for="term in recentResults"
           :key="`recent:${term}`"
           :value="`recent:${term}`"
-          class="py-2"
+          :class="ROW_CLASS"
           @select="query = term"
         >
-          <History class="size-4" />
-          <span class="truncate">{{ term }}</span>
+          <span class="cc-row-icon">
+            <History class="size-4" />
+          </span>
+          <span class="cc-row-label truncate">{{ term }}</span>
         </CommandItem>
       </CommandGroup>
 
@@ -97,27 +153,43 @@
         v-if="isSearching && !hasMediaResults"
         class="flex items-center justify-center py-14"
       >
-        <Spinner class="text-muted-foreground size-6" />
+        <Spinner class="text-subtle-foreground size-6" />
       </div>
 
       <CommandGroup
         v-for="section in mediaSections"
         :key="section.mediaType"
+        class="p-0"
         :heading="section.title"
       >
         <CommandItem
           v-for="item in section.items"
           :key="item.uri"
           :value="item.uri"
-          class="gap-3 py-2"
+          :class="ROW_CLASS"
           @select="onMediaSelect(item)"
         >
-          <div class="relative size-10 shrink-0 overflow-hidden rounded-md">
-            <MediaItemThumb :item="item" :size="40" />
+          <div
+            class="cc-thumb"
+            :class="{ 'cc-thumb--round': isRoundThumb(item) }"
+          >
+            <MediaItemThumb :item="item" :size="42" :rounded="false" />
           </div>
           <div class="flex min-w-0 flex-col">
-            <span class="truncate">{{ item.name }}</span>
-            <span class="text-muted-foreground truncate text-xs">
+            <span class="cc-row-title truncate">
+              <template
+                v-for="(part, index) in highlightParts(item.name)"
+                :key="index"
+              >
+                <mark
+                  v-if="part.match"
+                  class="cc-match"
+                  v-text="part.text"
+                ></mark>
+                <span v-else v-text="part.text"></span>
+              </template>
+            </span>
+            <span class="cc-row-meta truncate">
               {{ itemSubtitle(item) }}
             </span>
           </div>
@@ -158,66 +230,92 @@
         ref="revealSentinel"
         class="flex items-center justify-center py-6"
       >
-        <Spinner class="text-muted-foreground size-5" />
+        <Spinner class="text-subtle-foreground size-5" />
       </div>
 
-      <CommandGroup v-if="pageResults.length" :heading="$t('pages')">
+      <CommandGroup
+        v-if="pageResults.length"
+        class="p-0"
+        :heading="$t('pages')"
+      >
         <CommandItem
           v-for="page in pageResults"
           :key="`page:${page.id}`"
           :value="`page:${page.id}`"
-          class="py-2"
+          :class="ROW_CLASS"
           @select="goToPage(page)"
         >
-          <component :is="page.icon" class="size-4" />
-          <span class="truncate">{{ page.title }}</span>
+          <span class="cc-row-icon">
+            <component :is="page.icon" class="size-4" />
+          </span>
+          <span class="cc-row-label truncate">
+            <template
+              v-for="(part, index) in highlightParts(page.title)"
+              :key="index"
+            >
+              <mark
+                v-if="part.match"
+                class="cc-match"
+                v-text="part.text"
+              ></mark>
+              <span v-else v-text="part.text"></span>
+            </template>
+          </span>
         </CommandItem>
       </CommandGroup>
 
-      <CommandGroup v-if="playerResults.length" :heading="$t('players')">
+      <CommandGroup
+        v-if="playerResults.length"
+        class="p-0"
+        :heading="$t('players')"
+      >
         <CommandItem
           v-for="player in playerResults"
           :key="`player:${player.player_id}`"
           :value="`player:${player.player_id}`"
-          class="py-2"
+          :class="ROW_CLASS"
           @select="selectPlayer(player)"
         >
-          <PlayerIcon :icon="player.icon" :size="16" />
-          <span class="truncate">{{ getPlayerName(player) }}</span>
+          <span class="cc-row-icon">
+            <PlayerIcon :icon="player.icon" :size="16" />
+          </span>
+          <span class="cc-row-label truncate">
+            <template
+              v-for="(part, index) in highlightParts(getPlayerName(player))"
+              :key="index"
+            >
+              <mark
+                v-if="part.match"
+                class="cc-match"
+                v-text="part.text"
+              ></mark>
+              <span v-else v-text="part.text"></span>
+            </template>
+          </span>
           <Check
             v-if="player.player_id === store.activePlayerId"
-            class="ml-auto size-4"
+            class="text-primary ml-auto size-4"
           />
         </CommandItem>
       </CommandGroup>
 
-      <p
-        v-if="statusNote"
-        class="text-muted-foreground py-10 text-center text-sm"
-      >
+      <p v-if="statusNote" class="cc-status">
         {{ statusNote }}
       </p>
     </CommandList>
 
-    <div
-      v-if="!mobileLayout"
-      class="text-muted-foreground flex shrink-0 items-center gap-4 border-t px-4 py-2.5 text-xs"
-    >
-      <span class="flex items-center gap-1.5">
-        <Kbd>↑</Kbd>
-        <Kbd>↓</Kbd>
+    <div v-if="!mobileLayout" class="cc-foot">
+      <span class="cc-foot-hint">
+        <Kbd :class="KBD_CLASS">↑</Kbd>
+        <Kbd :class="KBD_CLASS">↓</Kbd>
         {{ $t("command_center_navigate") }}
       </span>
-      <span class="flex items-center gap-1.5">
-        <Kbd>↵</Kbd>
+      <span class="cc-foot-hint">
+        <Kbd :class="KBD_CLASS">↵</Kbd>
         {{ $t("command_center_open") }}
       </span>
-      <span class="flex items-center gap-1.5">
-        <Kbd>esc</Kbd>
-        {{ $t("close") }}
-      </span>
-      <span class="ml-auto hidden items-center gap-1.5 sm:flex">
-        <Kbd>{{ commandCenterHotkeyLabel }}</Kbd>
+      <span class="cc-foot-hint ml-auto hidden sm:inline-flex">
+        <Kbd :class="KBD_CLASS">{{ commandCenterHotkeyLabel }}</Kbd>
       </span>
     </div>
   </CommandCenterShell>
@@ -270,6 +368,13 @@ const FETCH_PER_TYPE = 15;
 const FETCH_SINGLE_TYPE = 50;
 const MAX_RECENT_SEARCHES = 5;
 const RECENT_SEARCHES_PREF_KEY = "search.recent";
+
+// the primitives' own utilities are !important, so the palette's look is
+// handed to them as classes rather than set from the scoped styles
+const ROW_CLASS =
+  "cc-row gap-3 rounded-[10px] px-2 py-[7px] text-[13.5px] data-[highlighted]:bg-foreground/[0.06] data-[highlighted]:text-foreground";
+const KBD_CLASS =
+  "cc-kbd h-[18px] min-w-[18px] rounded-[5px] bg-transparent px-[5px] text-[10.5px] font-semibold text-subtle-foreground";
 
 const router = useRouter();
 const { isOpen, initialQuery, initialMediaTypes, open, close } =
@@ -417,6 +522,63 @@ useIntersectionObserver(
 const hasMediaResults = computed(() =>
   mediaSections.value.some((section) => section.items.length),
 );
+
+// the hit worth naming above the groups when every media type is in play: a
+// name that is the query outright, else an artist and then an album whose
+// name holds it, else whatever leads the first group. The mobile sheet has
+// too little room beside the keyboard for it.
+const topResult = computed<MediaItemTypeOrItemMapping | undefined>(() => {
+  if (mobileLayout.value || singleType.value || !hasMediaResults.value) {
+    return undefined;
+  }
+  const term = query.value.trim().toLowerCase();
+  const sections = mediaSections.value;
+  const named = (item: MediaItemTypeOrItemMapping) =>
+    item.name?.toLowerCase() ?? "";
+  for (const section of sections) {
+    const exact = section.items.find((item) => named(item) === term);
+    if (exact) return exact;
+  }
+  for (const mediaType of [MediaType.ARTIST, MediaType.ALBUM]) {
+    const match = sections
+      .find((section) => section.mediaType === mediaType)
+      ?.items.find((item) => named(item).includes(term));
+    if (match) return match;
+  }
+  return sections[0]?.items[0];
+});
+
+// artists are people, shown round; everything else is a cover, kept square
+const isRoundThumb = function (item: MediaItemTypeOrItemMapping) {
+  return item.media_type === MediaType.ARTIST;
+};
+
+// splits a name around each occurrence of the query, so the matched text can
+// take the accent colour
+const highlightParts = function (text: string | undefined) {
+  const value = text ?? "";
+  const term = query.value.trim().toLowerCase();
+  const lower = value.toLowerCase();
+  // case folding that changes the length would put the offsets out of step
+  if (!term || lower.length !== value.length) {
+    return [{ text: value, match: false }];
+  }
+  const parts: { text: string; match: boolean }[] = [];
+  let index = 0;
+  while (index < value.length) {
+    const found = lower.indexOf(term, index);
+    if (found === -1) {
+      parts.push({ text: value.slice(index), match: false });
+      break;
+    }
+    if (found > index) {
+      parts.push({ text: value.slice(index, found), match: false });
+    }
+    parts.push({ text: value.slice(found, found + term.length), match: true });
+    index = found + term.length;
+  }
+  return parts;
+};
 
 const itemSubtitle = function (item: MediaItemTypeOrItemMapping) {
   const label = $t(item.media_type);
@@ -622,78 +784,280 @@ watch(
 </script>
 
 <style scoped>
+/* query field: the display serif, set large, as the prototype's search */
+.cc-input {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cc-input-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  color: var(--subtle-foreground);
+}
+
+.cc-input-field {
+  height: 44px;
+  color: var(--foreground);
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.cc-input.cc-compact {
+  gap: 12px;
+  padding: 10px 16px 12px;
+}
+
+.cc-input.cc-compact .cc-input-field {
+  height: 40px;
+  font-size: 1.375rem;
+}
+
 .command-center-clear {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  height: 24px;
-  padding: 0 10px;
+  height: 26px;
+  padding: 0 11px;
   border-radius: 999px;
-  background: var(--muted);
+  background: var(--secondary);
   color: var(--muted-foreground);
   font-size: 0.75rem;
   font-weight: 500;
   white-space: nowrap;
   cursor: pointer;
+  transition: color 0.15s ease;
 }
 
 .command-center-clear:hover {
   color: var(--foreground);
 }
 
-.command-center-close {
-  display: inline-flex;
+.cc-kbd {
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+
+/* scope filters: pill chips, the chosen one inverted */
+.cc-scope {
+  display: flex;
   flex-shrink: 0;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  color: var(--muted-foreground);
-  cursor: pointer;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  scrollbar-width: none;
 }
 
-.command-center-more {
-  display: block;
-  width: fit-content;
-  margin: 4px auto 6px;
-  padding: 0;
-  border: none;
-  background: none;
-  font-size: 0.8125rem;
-  color: var(--muted-foreground);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  cursor: pointer;
+.cc-scope::-webkit-scrollbar {
+  display: none;
 }
 
-.command-center-more:hover {
-  color: var(--foreground);
+.cc-scope.cc-compact {
+  padding: 10px 16px;
 }
 
 .command-center-chip {
-  border: 1px solid var(--border);
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
   border-radius: 999px;
-  padding: 3px 10px;
-  font-size: 0.75rem;
-  line-height: 1.25;
-  white-space: nowrap;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 14%, transparent);
   color: var(--muted-foreground);
+  font-size: 0.78125rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.command-center-chip:hover {
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  color: var(--foreground);
+}
+
+.command-center-chip[data-active="true"] {
+  background: var(--foreground);
+  box-shadow: none;
+  color: var(--background);
+}
+
+/* group headings as eyebrow labels; the label's own utilities are
+   !important, so these have to be too */
+.cc-list :deep([data-slot="command-group-heading"]) {
+  padding: 16px 8px 6px !important;
+  color: var(--subtle-foreground) !important;
+  font-size: 0.6875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.cc-eyebrow {
+  padding: 16px 8px 8px;
+  color: var(--subtle-foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* top result */
+.cc-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px 14px 14px;
+  border-radius: 16px;
+  background: color-mix(in oklab, var(--foreground) 4.5%, transparent);
+}
+
+.cc-top-open {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cc-top-art {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 14px 30px -12px rgba(0, 0, 0, 0.55);
+}
+
+.cc-top-art--round {
+  border-radius: 50%;
+}
+
+.cc-top-text {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.cc-top-name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--foreground);
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+}
+
+.cc-top-type {
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cc-top-play {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 16px 0 13px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.cc-top-play:hover {
+  filter: brightness(1.08);
+}
+
+/* result rows */
+.cc-thumb {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.cc-thumb--round {
+  border-radius: 50%;
+}
+
+.cc-row-title {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.cc-row-meta {
+  color: var(--subtle-foreground);
+  font-size: 0.75rem;
+}
+
+.cc-row-icon {
+  display: inline-flex;
+  width: 24px;
+  flex-shrink: 0;
+  justify-content: center;
+  color: var(--muted-foreground);
+}
+
+.cc-row-label {
+  font-weight: 500;
+}
+
+.cc-match {
+  background: none;
+  color: var(--primary);
+}
+
+.command-center-more {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  margin: 2px 0 4px 6px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 500;
   cursor: pointer;
   transition:
     color 0.15s ease,
     background-color 0.15s ease;
 }
 
-.command-center-chip:hover {
+.command-center-more:hover {
+  background: color-mix(in oklab, var(--foreground) 6%, transparent);
   color: var(--foreground);
-}
-
-.command-center-chip[data-active="true"] {
-  background: var(--primary);
-  border-color: transparent;
-  color: var(--primary-foreground);
 }
 
 .command-center-play {
@@ -703,8 +1067,8 @@ watch(
   width: 28px;
   height: 28px;
   border-radius: 999px;
-  background: rgb(var(--v-theme-primary));
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
   cursor: pointer;
   opacity: 0;
   transition: opacity 0.15s ease;
@@ -718,5 +1082,30 @@ watch(
   .command-center-play {
     opacity: 1;
   }
+}
+
+.cc-status {
+  padding: 40px 0;
+  color: var(--muted-foreground);
+  font-size: 0.84375rem;
+  text-align: center;
+}
+
+/* keyboard hints */
+.cc-foot {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 24px;
+  border-top: 1px solid var(--border);
+  color: var(--subtle-foreground);
+  font-size: 0.75rem;
+}
+
+.cc-foot-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>

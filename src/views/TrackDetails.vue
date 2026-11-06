@@ -1,58 +1,56 @@
 <template>
   <section>
     <InfoHeader :item="itemDetails" :active-provider="provider" />
-    <ItemsListing
-      v-if="itemDetails"
-      itemtype="trackalbums"
-      :parent-item="itemDetails"
-      :show-provider="true"
-      :show-favorites-only-filter="false"
-      :show-library-only-filter="
-        itemDetails.provider == 'library' && api.hasStreamingProviders.value
-      "
-      :show-track-number="false"
-      :show-refresh-button="false"
-      :load-items="loadTrackAlbums"
-      :sort-keys="['name', 'sort_name', 'year', 'year_desc']"
-      :title="$t('appears_on')"
-      :path="provider + itemId"
-      :allow-collapse="true"
-    />
-    <br />
-    <ItemsListing
-      v-if="itemDetails"
-      itemtype="trackversions"
-      :parent-item="itemDetails"
-      :show-provider="true"
-      :show-favorites-only-filter="false"
-      :show-track-number="false"
-      :load-items="loadTrackVersions"
-      :sort-keys="['name', 'sort_name', 'duration']"
-      :title="$t('other_versions')"
-      :hide-on-empty="true"
-      :path="provider + itemId"
-      :allow-collapse="true"
-      :show-refresh-button="false"
-      :refresh-on-parent-update="true"
-    />
-    <br />
-    <!-- similar tracks -->
-    <ItemsListing
-      v-if="itemDetails && !loading && hasSimilarTracksProvider"
-      itemtype="similartracks"
-      :parent-item="itemDetails"
-      :show-provider="false"
-      :show-favorites-only-filter="false"
-      :show-library-only-filter="false"
-      :show-refresh-button="false"
-      :load-items="loadSimilarTracks"
-      :title="$t('similar_tracks')"
-      :allow-collapse="true"
-    />
-    <br />
-    <!-- provider mapping details -->
-    <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
-    <br />
+    <div class="item-details-body">
+      <ItemsListing
+        v-if="itemDetails"
+        itemtype="trackalbums"
+        :parent-item="itemDetails"
+        :show-provider="true"
+        :show-favorites-only-filter="false"
+        :show-library-only-filter="
+          itemDetails.provider == 'library' && api.hasStreamingProviders.value
+        "
+        :show-track-number="false"
+        :show-refresh-button="false"
+        :load-items="loadTrackAlbums"
+        :sort-keys="['name', 'sort_name', 'year', 'year_desc']"
+        :title="$t('appears_on')"
+        :path="provider + itemId"
+        :allow-collapse="true"
+      />
+      <ItemsListing
+        v-if="itemDetails"
+        itemtype="trackversions"
+        :parent-item="itemDetails"
+        :show-provider="true"
+        :show-favorites-only-filter="false"
+        :show-track-number="false"
+        :load-items="loadTrackVersions"
+        :sort-keys="['name', 'sort_name', 'duration']"
+        :title="$t('other_versions')"
+        :hide-on-empty="true"
+        :path="provider + itemId"
+        :allow-collapse="true"
+        :show-refresh-button="false"
+        :refresh-on-parent-update="true"
+      />
+      <!-- similar tracks -->
+      <ItemsListing
+        v-if="itemDetails && !loading && hasSimilarTracksProvider"
+        itemtype="similartracks"
+        :parent-item="itemDetails"
+        :show-provider="false"
+        :show-favorites-only-filter="false"
+        :show-library-only-filter="false"
+        :show-refresh-button="false"
+        :load-items="loadSimilarTracks"
+        :title="$t('similar_tracks')"
+        :allow-collapse="true"
+      />
+      <!-- provider mapping details -->
+      <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    </div>
   </section>
 </template>
 

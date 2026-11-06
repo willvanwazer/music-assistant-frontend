@@ -6,10 +6,12 @@
           v-if="imageUrl"
           :src="imageUrl"
           :alt="round.answer_label"
-          class="bg-muted mx-auto aspect-square w-full max-w-[min(15rem,26dvh)] rounded-lg object-cover"
+          class="bg-muted mx-auto aspect-square w-full max-w-[min(15rem,26dvh)] rounded-[4px] object-contain shadow-[0_18px_36px_-16px_rgba(0,0,0,0.6)]"
         />
         <div class="flex items-center justify-center gap-2">
-          <h2 class="min-w-0 text-lg font-bold break-words">
+          <h2
+            class="ma-display min-w-0 text-center text-2xl leading-tight break-words"
+          >
             {{ round.answer_label }}
           </h2>
           <Button

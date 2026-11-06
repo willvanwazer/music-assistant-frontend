@@ -8,7 +8,7 @@
       />
       <div
         v-else
-        class="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2"
+        class="flex items-center gap-2 rounded-[10px] border bg-muted/40 px-3 py-2"
       >
         <component
           :is="form.mode.value === 'seed' ? Sparkles : Library"

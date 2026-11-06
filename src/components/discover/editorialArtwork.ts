@@ -19,8 +19,9 @@ export const bannerArtwork = new URL(
 
 export const bannerBackground = `url("${bannerArtwork}") center / cover no-repeat`;
 
-/** Flat tile background for art that should not sit on the banner. */
-export const placeholderBackground = "rgba(var(--v-theme-on-surface), 0.08)";
+/** Flat tile background for art that should not sit on the banner: the raised
+ * fill a cover shows while it loads, in either theme. */
+export const placeholderBackground = "var(--secondary)";
 
 /** Up-to-two-letter initials from a name (first letters of the first two
  * words, or the first two characters of a single word). */

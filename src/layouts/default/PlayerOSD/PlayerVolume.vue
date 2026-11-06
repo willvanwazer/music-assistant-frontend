@@ -1,5 +1,9 @@
 <template>
-  <div ref="wrapperRef" class="player-volume-wrapper">
+  <div
+    ref="wrapperRef"
+    class="player-volume-wrapper"
+    :class="{ 'has-stepper': showStepper }"
+  >
     <!-- Sonos-style group volume popout (teleported to body to escape overflow clipping) -->
     <Teleport to="body">
       <!-- Volume readout, teleported for the same reason: the bars this slider
@@ -70,6 +74,21 @@
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Step buttons either side of the slider, for a change too small to land
+         with a drag. They sit outside the container so its touch and pointer
+         handling never mistakes a press on them for a grab of the slider. -->
+    <button
+      v-if="showStepper"
+      type="button"
+      class="volume-stepper-btn"
+      data-no-panel-drag
+      :disabled="isSliderDisabled || displayValue <= 0"
+      :aria-label="$t('tooltip.volume_down')"
+      @click="stepVolume(-step)"
+    >
+      <Minus :size="16" />
+    </button>
 
     <!-- Main volume slider -->
     <div
@@ -173,6 +192,18 @@
         </button>
       </div>
     </div>
+
+    <button
+      v-if="showStepper"
+      type="button"
+      class="volume-stepper-btn"
+      data-no-panel-drag
+      :disabled="isSliderDisabled || displayValue >= 100"
+      :aria-label="$t('tooltip.volume_up')"
+      @click="stepVolume(step)"
+    >
+      <Plus :size="16" />
+    </button>
   </div>
 </template>
 
@@ -209,6 +240,8 @@ export interface Props {
   requestExpandOnGroupTap?: boolean;
   /** Fatten the rail and swap the mute and level slots for step buttons while a finger is on it */
   expandOnTouch?: boolean;
+  /** Keep a step down and a step up button either side of the slider, for changes too fine to drag */
+  showStepper?: boolean;
   width?: string;
   step?: number;
   allowWheel?: boolean;
@@ -224,6 +257,7 @@ const props = withDefaults(defineProps<Props>(), {
   enablePopout: true,
   requestExpandOnGroupTap: false,
   expandOnTouch: false,
+  showStepper: false,
   width: "100%",
   step: 2,
   allowWheel: false,
@@ -1169,6 +1203,16 @@ const onSliderUpdate = (values: number[] | undefined) => {
   }, SLIDER_UPDATE_DEBOUNCE_MS);
 };
 
+// The step buttons move the slider by one step and hand the value to the same
+// handler the slider reports to, so a quick run of presses is sent once, like a
+// drag that came to rest there, and the readout follows them straight away.
+const stepVolume = (delta: number) => {
+  if (isSliderDisabled.value) return;
+  const target = clamp(Math.round(displayValue.value) + delta, 0, 100);
+  if (target === displayValue.value) return;
+  onSliderUpdate([target]);
+};
+
 // Desktop clicks use the same group action as touch taps.
 const onSliderClick = () => {
   // In relative mode the mouseup handler owns this, so don't run it twice
@@ -1208,6 +1252,54 @@ watch(
 .player-volume-wrapper {
   position: relative;
   width: 100%;
+}
+
+.player-volume-wrapper.has-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-volume-wrapper.has-stepper > .player-volume-container {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.volume-stepper-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border);
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.volume-stepper-btn:hover:not(:disabled) {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+.volume-stepper-btn:active:not(:disabled) {
+  background: var(--muted);
+}
+
+.volume-stepper-btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.volume-stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .player-volume-container {
@@ -1277,8 +1369,12 @@ watch(
   cursor: not-allowed;
 }
 
+/* the level is a number to read against its neighbours, so its digits keep one
+   width as it changes */
 .volume-level-text {
-  font-size: 0.75rem;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
   min-width: 28px;
   text-align: center;
   opacity: 0.8;
@@ -1396,9 +1492,10 @@ watch(
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1.4;
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.35);
   /* it tracks the thumb the finger is already on, so it must never take a touch */
   pointer-events: none;
 }
@@ -1423,14 +1520,15 @@ watch(
   background: transparent;
 }
 
+/* a popover surface like the player bar's own popouts: rounded, with the
+   large soft shadow that lifts it off whatever it opened over */
 .group-popout {
-  background: rgb(var(--v-theme-surface));
-  border: 1px solid rgba(var(--v-border-color), 0.12);
-  border-radius: 12px;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: 16px;
   padding: 8px 18px 16px 18px;
-  box-shadow:
-    0 -4px 16px rgba(0, 0, 0, 0.15),
-    0 -1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 24px 60px -16px rgb(0 0 0 / 0.45);
   /* Max-height is set inline: the room above the slider, less POPOUT_MARGIN */
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -1470,7 +1568,7 @@ watch(
 
 .group-popout-divider {
   height: 1px;
-  background: rgba(var(--v-border-color), 0.15);
+  background: var(--border);
   margin: 14px 0 10px 0;
 }
 

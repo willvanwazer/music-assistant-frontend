@@ -55,14 +55,14 @@ const handleLogout = () => {
             size="lg"
             class="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           >
-            <Avatar class="h-8 w-8 shrink-0 rounded-lg">
+            <Avatar class="h-8 w-8 shrink-0">
               <AvatarImage
                 v-if="store.currentUser?.avatar_url"
                 :src="store.currentUser.avatar_url"
                 :alt="displayName"
               />
               <AvatarFallback
-                class="rounded-lg bg-primary text-primary-foreground"
+                class="bg-primary text-primary-foreground text-[11.5px] font-semibold"
               >
                 {{ initial }}
               </AvatarFallback>
@@ -71,16 +71,17 @@ const handleLogout = () => {
                  chevron hide the moment collapsing starts rather than linger
                  over the still-shrinking row -->
             <div
-              class="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden"
+              class="grid min-w-0 flex-1 gap-0.5 text-left leading-tight group-data-[collapsible=icon]:hidden"
             >
-              <span class="truncate font-medium">{{ displayName }}</span>
-              <span class="text-muted-foreground truncate text-xs">
+              <span class="truncate text-[13px] font-semibold">
+                {{ displayName }}
+              </span>
+              <span class="text-subtle-foreground truncate text-[11.5px]">
                 {{ username }}
               </span>
             </div>
             <MoreVertical
-              style="width: 1rem !important"
-              class="ml-auto shrink-0 opacity-70 group-data-[collapsible=icon]:hidden"
+              class="ml-auto size-4 shrink-0 text-subtle-foreground group-data-[collapsible=icon]:hidden"
             />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
@@ -92,21 +93,23 @@ const handleLogout = () => {
         >
           <DropdownMenuLabel class="p-0 font-normal">
             <div class="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-              <Avatar class="h-8 w-8 rounded-lg">
+              <Avatar class="h-8 w-8">
                 <AvatarImage
                   v-if="store.currentUser?.avatar_url"
                   :src="store.currentUser.avatar_url"
                   :alt="displayName"
                 />
                 <AvatarFallback
-                  class="rounded-lg bg-primary text-primary-foreground"
+                  class="bg-primary text-primary-foreground text-[11.5px] font-semibold"
                 >
                   {{ initial }}
                 </AvatarFallback>
               </Avatar>
-              <div class="grid flex-1 text-left text-sm leading-tight">
-                <span class="truncate font-medium">{{ displayName }}</span>
-                <span class="text-muted-foreground truncate text-xs">
+              <div class="grid flex-1 gap-0.5 text-left leading-tight">
+                <span class="truncate text-[13px] font-semibold">
+                  {{ displayName }}
+                </span>
+                <span class="text-subtle-foreground truncate text-[11.5px]">
                   {{ username }}
                 </span>
               </div>

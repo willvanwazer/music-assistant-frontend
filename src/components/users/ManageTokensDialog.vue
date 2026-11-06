@@ -11,43 +11,48 @@
       <div class="space-y-6">
         <!-- Active Sessions Section -->
         <div>
-          <h3 class="text-base font-semibold mb-2 mt-4">
+          <h3
+            class="mt-2 mb-1 font-display text-lg font-medium tracking-[-0.01em]"
+          >
             {{ $t("auth.active_sessions") }}
           </h3>
-          <p class="text-sm text-muted-foreground mb-4">
+          <p class="mb-4 text-[13px] text-muted-foreground">
             {{ $t("auth.active_sessions_description") }}
           </p>
           <div
             v-if="sessionTokens.length === 0"
-            class="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-lg"
+            class="flex flex-col items-center justify-center rounded-[14px] border border-dashed py-10"
           >
             <div
-              class="size-16 rounded-full bg-blue-900/20 flex items-center justify-center mb-3"
+              class="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary"
             >
-              <Monitor :size="32" class="text-blue-500" />
+              <Monitor :size="22" class="text-muted-foreground" />
             </div>
             <p class="text-sm text-muted-foreground">
               {{ $t("auth.no_active_sessions") }}
             </p>
           </div>
-          <div v-else class="space-y-2">
-            <Card
+          <div
+            v-else
+            class="divide-y divide-border overflow-hidden rounded-[14px] border bg-card"
+          >
+            <div
               v-for="token in sessionTokens"
               :key="token.token_id"
-              class="p-4"
+              class="px-4 py-3"
             >
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3.5">
                 <div
-                  class="size-10 rounded-full bg-blue-900/20 flex items-center justify-center shrink-0"
+                  class="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary"
                 >
-                  <Monitor :size="20" class="text-blue-500" />
+                  <Monitor :size="18" class="text-muted-foreground" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="font-medium text-sm truncate">
+                  <div class="truncate text-sm font-semibold">
                     {{ token.name }}
                   </div>
                   <div
-                    class="text-xs text-muted-foreground flex items-center gap-2 flex-wrap"
+                    class="flex flex-wrap items-center gap-2 text-[12.5px] text-muted-foreground"
                   >
                     <span>
                       {{ $t("created") }}: {{ formatDate(token.created_at) }}
@@ -67,24 +72,26 @@
                 <Button
                   variant="ghost"
                   size="icon"
-                  class="text-destructive hover:text-destructive"
+                  class="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   :aria-label="$t('tooltip.revoke_session')"
                   @click.stop="emit('revoke', token)"
                 >
                   <Trash2 :size="16" />
                 </Button>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
 
         <div>
           <div class="flex items-start justify-between gap-4 mb-4">
             <div class="flex-1">
-              <h3 class="text-base font-semibold mb-2">
+              <h3
+                class="mb-1 font-display text-lg font-medium tracking-[-0.01em]"
+              >
                 {{ $t("auth.long_lived_tokens") }}
               </h3>
-              <p class="text-sm text-muted-foreground">
+              <p class="text-[13px] text-muted-foreground">
                 {{ $t("auth.long_lived_tokens_description") }}
               </p>
             </div>
@@ -98,7 +105,7 @@
             </Button>
             <Button
               v-else
-              variant="outline"
+              variant="secondary"
               size="sm"
               @click="showCreateForm = false"
             >
@@ -145,7 +152,7 @@
                 </template>
               </form.Field>
               <div class="flex justify-end gap-2 mt-4">
-                <Button variant="outline" @click="showCreateForm = false">
+                <Button variant="secondary" @click="showCreateForm = false">
                   {{ $t("cancel") }}
                 </Button>
                 <Button
@@ -183,7 +190,7 @@
               </InputGroupAddon>
             </InputGroup>
             <Button
-              variant="outline"
+              variant="secondary"
               class="mt-4 w-full"
               @click="handleCloseCreateForm"
             >
@@ -193,35 +200,38 @@
 
           <div
             v-if="longLivedTokens.length === 0"
-            class="flex flex-col items-center justify-center py-12 border-2 border-dashed rounded-lg"
+            class="flex flex-col items-center justify-center rounded-[14px] border border-dashed py-10"
           >
             <div
-              class="size-16 rounded-full bg-purple-900/20 flex items-center justify-center mb-3"
+              class="mb-3 flex size-12 items-center justify-center rounded-full bg-secondary"
             >
-              <Key :size="32" class="text-purple-500" />
+              <Key :size="22" class="text-muted-foreground" />
             </div>
             <p class="text-sm text-muted-foreground">
               {{ $t("auth.no_long_lived_tokens") }}
             </p>
           </div>
-          <div v-else class="space-y-2">
-            <Card
+          <div
+            v-else
+            class="divide-y divide-border overflow-hidden rounded-[14px] border bg-card"
+          >
+            <div
               v-for="token in longLivedTokens"
               :key="token.token_id"
-              class="p-4"
+              class="px-4 py-3"
             >
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-3.5">
                 <div
-                  class="size-10 rounded-full bg-purple-900/20 flex items-center justify-center shrink-0"
+                  class="flex size-9 shrink-0 items-center justify-center rounded-full bg-secondary"
                 >
-                  <Key :size="20" class="text-purple-500" />
+                  <Key :size="18" class="text-muted-foreground" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="font-medium text-sm truncate">
+                  <div class="truncate text-sm font-semibold">
                     {{ token.name }}
                   </div>
                   <div
-                    class="text-xs text-muted-foreground flex items-center gap-2 flex-wrap"
+                    class="flex flex-wrap items-center gap-2 text-[12.5px] text-muted-foreground"
                   >
                     <span>
                       {{ $t("created") }}: {{ formatDate(token.created_at) }}
@@ -241,20 +251,20 @@
                 <Button
                   variant="ghost"
                   size="icon"
-                  class="text-destructive hover:text-destructive"
+                  class="text-destructive hover:bg-destructive/10 hover:text-destructive"
                   :aria-label="$t('tooltip.revoke_token')"
                   @click.stop="emit('revoke', token)"
                 >
                   <Trash2 :size="16" />
                 </Button>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:modelValue', false)">
+        <Button variant="secondary" @click="emit('update:modelValue', false)">
           {{ $t("close") }}
         </Button>
       </DialogFooter>

@@ -1,9 +1,12 @@
 <template>
   <Container class="max-w-4xl mx-auto px-4 py-6 space-y-6">
     <!-- Server Information -->
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
-        <CardTitle>{{ $t("settings.server_info") }}</CardTitle>
+        <CardTitle
+          class="font-display text-xl font-medium tracking-[-0.01em]"
+          >{{ $t("settings.server_info") }}</CardTitle
+        >
         <CardAction v-if="isAdmin">
           <Button
             variant="ghost"
@@ -18,8 +21,11 @@
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent class="space-y-2">
-        <Item variant="outline" size="sm" class="justify-between">
+      <CardContent class="divide-y divide-border">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_name") }}</ItemTitle>
           </ItemContent>
@@ -30,7 +36,10 @@
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_version") }}</ItemTitle>
           </ItemContent>
@@ -41,7 +50,10 @@
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_internal_url") }}</ItemTitle>
           </ItemContent>
@@ -54,9 +66,8 @@
 
         <Item
           v-if="api.serverInfo.value?.external_url"
-          variant="outline"
           size="sm"
-          class="justify-between"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
         >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_external_url") }}</ItemTitle>
@@ -68,7 +79,10 @@
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_remote_access") }}</ItemTitle>
           </ItemContent>
@@ -85,7 +99,10 @@
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_clock_offset") }}</ItemTitle>
           </ItemContent>
@@ -99,7 +116,10 @@
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.server_as_addon") }}</ItemTitle>
           </ItemContent>
@@ -125,11 +145,11 @@
       as="a"
       href="https://www.openhomefoundation.org/"
       target="_blank"
-      class="group cursor-pointer transition-all hover:border-primary/40 hover:shadow-lg"
+      class="group cursor-pointer transition-colors hover:border-foreground/20"
     >
       <CardContent class="flex flex-col items-center text-center gap-4 py-8">
         <div
-          class="text-sm font-medium text-muted-foreground uppercase tracking-wide"
+          class="text-[11px] font-semibold tracking-[0.14em] text-subtle-foreground uppercase"
         >
           {{ $t("settings.proud_part_of") }}
         </div>
@@ -144,61 +164,79 @@
     </Card>
 
     <!-- Library Statistics -->
-    <Card>
+    <Card class="gap-4">
       <CardHeader>
-        <CardTitle>{{ $t("settings.library_stats") }}</CardTitle>
+        <CardTitle
+          class="font-display text-xl font-medium tracking-[-0.01em]"
+          >{{ $t("settings.library_stats") }}</CardTitle
+        >
       </CardHeader>
-      <CardContent class="space-y-2">
-        <Item variant="outline" size="sm" class="justify-between">
+      <CardContent class="divide-y divide-border">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.artists_in_library") }}</ItemTitle>
           </ItemContent>
           <ItemContent class="flex-none text-right">
-            <span class="text-sm font-medium">
+            <span class="text-sm font-medium tabular-nums">
               {{ (store.libraryArtistsCount || 0).toLocaleString() }}
             </span>
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.albums_in_library") }}</ItemTitle>
           </ItemContent>
           <ItemContent class="flex-none text-right">
-            <span class="text-sm font-medium">
+            <span class="text-sm font-medium tabular-nums">
               {{ (store.libraryAlbumsCount || 0).toLocaleString() }}
             </span>
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.tracks_in_library") }}</ItemTitle>
           </ItemContent>
           <ItemContent class="flex-none text-right">
-            <span class="text-sm font-medium">
+            <span class="text-sm font-medium tabular-nums">
               {{ (store.libraryTracksCount || 0).toLocaleString() }}
             </span>
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.playlists_in_library") }}</ItemTitle>
           </ItemContent>
           <ItemContent class="flex-none text-right">
-            <span class="text-sm font-medium">
+            <span class="text-sm font-medium tabular-nums">
               {{ (store.libraryPlaylistsCount || 0).toLocaleString() }}
             </span>
           </ItemContent>
         </Item>
 
-        <Item variant="outline" size="sm" class="justify-between">
+        <Item
+          size="sm"
+          class="justify-between rounded-none px-0 py-3 first:pt-0 last:pb-0"
+        >
           <ItemContent>
             <ItemTitle>{{ $t("settings.radio_in_library") }}</ItemTitle>
           </ItemContent>
           <ItemContent class="flex-none text-right">
-            <span class="text-sm font-medium">
+            <span class="text-sm font-medium tabular-nums">
               {{ (store.libraryRadiosCount || 0).toLocaleString() }}
             </span>
           </ItemContent>
@@ -207,27 +245,32 @@
     </Card>
 
     <!-- Links -->
-    <Card>
-      <CardHeader class="pb-2">
-        <CardTitle>{{ $t("settings.links") }}</CardTitle>
+    <Card class="gap-4">
+      <CardHeader>
+        <CardTitle
+          class="font-display text-xl font-medium tracking-[-0.01em]"
+          >{{ $t("settings.links") }}</CardTitle
+        >
       </CardHeader>
-      <CardContent class="space-y-2 p-4">
+      <CardContent class="divide-y divide-border">
         <a
           :href="changelogUrl"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 text-sky-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-text-box-outline" size="24" />
+              <v-icon icon="mdi-text-box-outline" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.changelog") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 github.com/music-assistant/server
               </span>
             </div>
@@ -235,26 +278,28 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
         <a
           :href="documentationUrl"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-bookshelf" size="24" />
+              <v-icon icon="mdi-bookshelf" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.documentation") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 music-assistant.io
               </span>
             </div>
@@ -262,7 +307,7 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
@@ -270,19 +315,21 @@
           v-if="apiDocsUrl"
           :href="apiDocsUrl"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-teal-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-api" size="24" />
+              <v-icon icon="mdi-api" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.api_docs") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 {{ apiDocsUrl }}
               </span>
             </div>
@@ -290,26 +337,28 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
         <a
           href="https://github.com/orgs/music-assistant/discussions/categories/feature-requests-and-ideas"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-lightbulb-outline" size="24" />
+              <v-icon icon="mdi-lightbulb-outline" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.feature_requests") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 GitHub Discussions
               </span>
             </div>
@@ -317,26 +366,28 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
         <a
           href="https://github.com/music-assistant/support"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-bug" size="24" />
+              <v-icon icon="mdi-bug" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.bug_reports") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 GitHub Support repository
               </span>
             </div>
@@ -344,26 +395,28 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
         <a
           href="https://github.com/orgs/music-assistant/discussions"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-purple-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-forum" size="24" />
+              <v-icon icon="mdi-forum" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.discussion_forums") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 GitHub Discussions
               </span>
             </div>
@@ -371,26 +424,28 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
 
         <a
           href="https://github.com/music-assistant/server/blob/dev/LICENSE"
           target="_blank"
-          class="flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-accent/50 no-underline"
+          class="group/link flex items-center justify-between gap-4 py-3 no-underline first:pt-0 last:pb-0"
         >
-          <div class="flex items-center gap-4 flex-1">
+          <div class="flex flex-1 items-center gap-3.5">
             <div
-              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-500"
+              class="flex size-9 shrink-0 items-center justify-center rounded-[10px] bg-secondary text-foreground"
             >
-              <v-icon icon="mdi-license" size="24" />
+              <v-icon icon="mdi-license" size="20" />
             </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-sm font-medium text-primary underline">
+            <div class="flex flex-col gap-0.5">
+              <span
+                class="text-sm font-semibold text-foreground transition-colors group-hover/link:text-primary"
+              >
                 {{ $t("settings.license") }}
               </span>
-              <span class="text-xs text-muted-foreground underline">
+              <span class="text-[12.5px] text-muted-foreground">
                 Apache 2.0 License
               </span>
             </div>
@@ -398,7 +453,7 @@
           <v-icon
             icon="mdi-open-in-new"
             size="20"
-            class="text-primary shrink-0"
+            class="shrink-0 text-subtle-foreground transition-colors group-hover/link:text-foreground"
           />
         </a>
       </CardContent>

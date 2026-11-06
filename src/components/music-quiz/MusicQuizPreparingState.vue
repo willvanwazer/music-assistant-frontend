@@ -10,7 +10,7 @@
   >
     <LoaderCircle class="text-primary size-8 animate-spin" aria-hidden="true" />
     <div class="flex flex-col gap-1">
-      <h2 class="text-lg font-semibold">
+      <h2 class="ma-display text-2xl leading-tight">
         {{ $t("providers.music_quiz.preparing_game") }}
       </h2>
       <p class="text-muted-foreground max-w-md text-sm">

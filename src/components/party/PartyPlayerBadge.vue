@@ -38,7 +38,7 @@ const label = computed(() =>
   font-size: 0.55rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
   color: rgb(var(--v-theme-on-primary));
   margin-right: 0.5rem;
 }

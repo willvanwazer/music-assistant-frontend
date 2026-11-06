@@ -54,7 +54,8 @@ const { containerProps, containerClasses } = useContainer(props, isDark.value);
 }
 
 .container-panel--light {
-  background: #f5f5f5;
+  /* the page surface, as in the dark theme, so the cards on it read as raised */
+  background: var(--background);
 }
 
 @media (min-width: 1920px) {

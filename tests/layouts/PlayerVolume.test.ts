@@ -1058,3 +1058,108 @@ describe("PlayerVolume touch expansion", () => {
     expect(bubble?.style.bottom).not.toBe("");
   });
 });
+
+describe("PlayerVolume step buttons", () => {
+  let wrapper: ReturnType<typeof mountStepper> | undefined;
+
+  function mountStepper(player: Player, props: Record<string, unknown> = {}) {
+    return mount(PlayerVolume, {
+      props: { player, showStepper: true, ...props },
+      global: { mocks: { $t: (key: string) => key }, stubs: sliderStub },
+    });
+  }
+
+  function stepButtons(target: ReturnType<typeof mountStepper>) {
+    const [down, up] = target.findAll(".volume-stepper-btn");
+    return { down, up };
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers();
+    api.players = {};
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+    wrapper = undefined;
+    vi.useRealTimers();
+  });
+
+  it("leaves the sliders that do not ask for them without step buttons", () => {
+    wrapper = mountStepper(createPlayer(), { showStepper: false });
+
+    expect(wrapper.findAll(".volume-stepper-btn")).toHaveLength(0);
+  });
+
+  // outside the container, so its touch and pointer handling never sees them
+  it("puts the buttons either side of the slider, not inside it", () => {
+    wrapper = mountStepper(createPlayer());
+    const { down, up } = stepButtons(wrapper);
+
+    expect(down.attributes("aria-label")).toBe("tooltip.volume_down");
+    expect(up.attributes("aria-label")).toBe("tooltip.volume_up");
+    expect(
+      wrapper.find(".player-volume-container .volume-stepper-btn").exists(),
+    ).toBe(false);
+  });
+
+  it("sets the volume one step away, the way the slider does", async () => {
+    wrapper = mountStepper(createPlayer({ volume_level: 25 }));
+
+    await stepButtons(wrapper).up.trigger("click");
+    vi.advanceTimersByTime(100);
+
+    expect(api.playerCommandVolumeSet).toHaveBeenCalledWith("parent", 27);
+    expect(api.playerCommandVolumeUp).not.toHaveBeenCalled();
+    expect(wrapper.find(".volume-level-text").text()).toBe("27");
+  });
+
+  it("sends a quick run of presses once, at the value they reach", async () => {
+    wrapper = mountStepper(createPlayer({ volume_level: 25 }));
+    const { down } = stepButtons(wrapper);
+
+    await down.trigger("click");
+    await down.trigger("click");
+    await down.trigger("click");
+    vi.advanceTimersByTime(100);
+
+    expect(api.playerCommandVolumeSet).toHaveBeenCalledTimes(1);
+    expect(api.playerCommandVolumeSet).toHaveBeenCalledWith("parent", 19);
+  });
+
+  it("steps the group volume on a group's own slider", async () => {
+    const child = createPlayer({ player_id: "child", name: "Office" });
+    const parent = createPlayer({
+      group_members: ["parent", "child"],
+      group_volume: 60,
+    });
+    api.players = { parent, child };
+    wrapper = mountStepper(parent, {
+      preferGroupVolume: true,
+      enablePopout: false,
+    });
+
+    await stepButtons(wrapper).down.trigger("click");
+    vi.advanceTimersByTime(100);
+
+    expect(api.playerCommandGroupVolume).toHaveBeenCalledWith("parent", 58);
+    expect(api.playerCommandVolumeSet).not.toHaveBeenCalled();
+  });
+
+  it("stops at the end of the range", () => {
+    wrapper = mountStepper(createPlayer({ volume_level: 100 }));
+    const { down, up } = stepButtons(wrapper);
+
+    expect(up.attributes("disabled")).toBeDefined();
+    expect(down.attributes("disabled")).toBeUndefined();
+  });
+
+  it("leaves a muted slider where it is", () => {
+    wrapper = mountStepper(createPlayer({ volume_muted: true }));
+    const { down, up } = stepButtons(wrapper);
+
+    expect(down.attributes("disabled")).toBeDefined();
+    expect(up.attributes("disabled")).toBeDefined();
+  });
+});

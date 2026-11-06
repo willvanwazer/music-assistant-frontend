@@ -568,13 +568,19 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
+/* section headings name things, so they take the display serif */
 .section-title {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
   margin: 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.2);
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .tokens-row {
@@ -598,7 +604,7 @@ onBeforeUnmount(() => {
 .results-list {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 2px;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
@@ -622,23 +628,26 @@ onBeforeUnmount(() => {
   justify-content: center;
   padding: 3rem;
   gap: 1rem;
-  opacity: 0.7;
+  color: var(--muted-foreground);
 }
 
 .empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   padding: 4rem 2rem;
-  opacity: 0.6;
+  color: var(--muted-foreground);
 }
 
 .empty-state p {
-  font-size: 1.125rem;
+  font-size: 1rem;
   margin-top: 1rem;
 }
 
 .empty-hint {
   font-size: 0.875rem;
-  opacity: 0.7;
+  color: var(--subtle-foreground);
 }
 
 @media (max-width: 768px) {
@@ -652,12 +661,10 @@ onBeforeUnmount(() => {
   }
 
   .section-title {
-    font-size: 1.1rem;
-    padding-bottom: 0.25rem;
+    font-size: 1.375rem;
   }
 
   .results-list {
-    gap: 0.5rem;
     padding-right: 0.25rem;
   }
 }

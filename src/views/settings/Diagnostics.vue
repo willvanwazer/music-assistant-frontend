@@ -5,13 +5,16 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
           <div class="flex items-center gap-2">
             <Switch id="auto-refresh" v-model="autoRefresh" />
-            <Label class="cursor-pointer" for="auto-refresh">
+            <Label
+              class="cursor-pointer text-sm font-medium"
+              for="auto-refresh"
+            >
               {{ $t("settings.auto_refresh_log") }}
             </Label>
           </div>
           <div class="flex gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               :disabled="refreshing"
               @click="refreshLog"
@@ -19,7 +22,7 @@
               <RefreshCw class="size-4" />
               {{ $t("settings.reload") }}
             </Button>
-            <Button variant="outline" size="sm" @click="downloadLog">
+            <Button variant="secondary" size="sm" @click="downloadLog">
               <Download class="size-4" />
               {{ $t("settings.download_log") }}
             </Button>
@@ -56,7 +59,7 @@
         <template v-else>
           <div v-if="isTruncated" class="px-4 pt-4">
             <div
-              class="rounded-md bg-muted/50 px-4 py-3 text-sm text-muted-foreground"
+              class="rounded-xl bg-secondary px-4 py-3 text-[13px] text-muted-foreground"
             >
               {{ $t("settings.log_truncated", [maxLines]) }}
             </div>
@@ -253,8 +256,11 @@ onUnmounted(() => {
 .log-content {
   margin: 0;
   padding: 16px;
-  font-family: "Courier New", Courier, monospace;
-  font-size: 0.875rem;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 12.5px;
+  color: var(--foreground);
   line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-all;

@@ -61,7 +61,7 @@
               v-for="entity of group.entities"
               :key="entity.entity_id"
               type="button"
-              class="entity-option hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 text-left disabled:pointer-events-none disabled:opacity-50"
+              class="entity-option hover:bg-foreground/5 flex w-full items-center gap-2 rounded-[10px] px-2.5 py-2 text-left transition-colors disabled:pointer-events-none disabled:opacity-50"
               :disabled="isAdded(entity)"
               @click="pick(entity)"
             >
@@ -95,7 +95,7 @@
       </div>
 
       <DialogFooter class="border-t px-5 py-3">
-        <Button type="button" variant="outline" @click="model = false">
+        <Button type="button" variant="secondary" @click="model = false">
           {{ $t("close") }}
         </Button>
       </DialogFooter>

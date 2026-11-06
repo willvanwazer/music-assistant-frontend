@@ -229,8 +229,9 @@ const seedNames = computed(() =>
 
 const showLabel = computed(() => !store.mobileLayout);
 
-// The ghost-outline variant provides the pill look (transparent with a subtle
-// border, frosted background on hover only).
+// The ghost-outline variant provides the pill shape; the stylesheet below
+// turns every pill in this row (the sleep timer, quality and dashboard ones
+// included) into frosted glass.
 const pillClass = "relative";
 
 // Solid primary pill for the "enabled" state of the toggles.
@@ -301,6 +302,56 @@ const openOverlay = () => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Glass pills: translucent fill, blur and a hairline ring over the artwork
+   wash. Every element in the row is one pill, and they come from several
+   components (the sleep timer, quality and dashboard ones are not rendered
+   here, and their tooltip/popover triggers rewrite data-slot), so the look is
+   applied to the row's children. The utilities those buttons carry are
+   !important, hence the same here. */
+.fullscreen-header-controls > :deep(*) {
+  height: 32px !important;
+  padding-inline: 13px !important;
+  gap: 7px !important;
+  border-radius: 999px !important;
+  border-color: var(
+    --np-glass-line,
+    color-mix(in oklab, var(--foreground) 12%, transparent)
+  ) !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
+}
+
+/* icon-only pills (the dashboard one, and every pill on mobile) are round */
+.fullscreen-header-controls > :deep(:not(:has(> span))) {
+  width: 32px !important;
+  padding-inline: 0 !important;
+}
+
+/* resting fill; an enabled toggle keeps its solid accent instead */
+.fullscreen-header-controls > :deep(:not(.bg-primary)) {
+  background-color: var(
+    --np-glass,
+    color-mix(in oklab, var(--popover) 62%, transparent)
+  ) !important;
+}
+
+.fullscreen-header-controls
+  > :deep(:not(.bg-primary):not(.cursor-default):hover) {
+  background-color: var(
+    --np-glass-hover,
+    color-mix(in oklab, var(--popover) 82%, transparent)
+  ) !important;
+}
+
+.fullscreen-header-controls > :deep(.bg-primary) {
+  border-color: transparent !important;
 }
 
 /* while the lyrics panel is open the mic gently sways, like it's being sung

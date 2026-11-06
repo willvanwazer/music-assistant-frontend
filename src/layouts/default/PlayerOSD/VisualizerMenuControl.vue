@@ -308,12 +308,15 @@ const onOpacityCommit = (value: number[]) => {
 </script>
 
 <style scoped>
+/* Sized like the menu items around it: muted icons, 500 labels, tabular
+   values; the one accent is a favourite preset. */
 .visualizer-menu {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: 10px;
+  padding: 8px 10px;
   font-size: 0.875rem;
+  font-weight: 500;
   min-width: 260px;
   min-height: 0;
 }
@@ -332,6 +335,7 @@ const onOpacityCommit = (value: number[]) => {
 
 .visualizer-menu__icon {
   flex: 0 0 auto;
+  color: var(--muted-foreground);
 }
 
 .visualizer-menu__label {
@@ -344,31 +348,39 @@ const onOpacityCommit = (value: number[]) => {
   justify-content: center;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: 6px;
-  color: inherit;
+  border-radius: 999px;
+  color: var(--muted-foreground);
   flex: 0 0 auto;
-  transition: background-color 0.12s ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease;
 }
 
 .visualizer-menu__star:hover {
-  background: var(--accent);
+  color: var(--foreground);
+  background: var(--secondary);
 }
 
-.visualizer-menu__star--active {
-  color: #f5c518;
+.visualizer-menu__star--active,
+.visualizer-menu__star--active:hover {
+  color: var(--primary);
 }
 
 .visualizer-menu__preset-header {
   cursor: pointer;
-  border-radius: 6px;
+  margin: 0 -6px;
+  padding: 4px 6px;
+  border-radius: 9px;
+  transition: background-color 150ms ease;
 }
 
 .visualizer-menu__preset-header:hover {
-  background: var(--accent);
+  background: var(--secondary);
 }
 
 .visualizer-menu__chevron {
   flex: 0 0 auto;
+  color: var(--muted-foreground);
   transition: transform 0.15s ease;
 }
 
@@ -392,6 +404,9 @@ const onOpacityCommit = (value: number[]) => {
 .visualizer-menu__value {
   min-width: 4ch;
   text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
   font-variant-numeric: tabular-nums;
 }
 </style>

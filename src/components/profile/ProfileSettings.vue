@@ -1,7 +1,9 @@
 <template>
-  <Card>
+  <Card class="gap-5">
     <CardHeader>
-      <CardTitle>{{ $t("auth.account_settings") }}</CardTitle>
+      <CardTitle class="font-display text-xl font-medium tracking-[-0.01em]">{{
+        $t("auth.account_settings")
+      }}</CardTitle>
       <CardDescription>
         {{ $t("auth.manage_your_profile_info") }}
       </CardDescription>
@@ -12,7 +14,7 @@
           <div class="flex flex-col sm:flex-row gap-6 mb-6">
             <div class="flex flex-col items-center gap-3">
               <div class="relative">
-                <Avatar class="size-32">
+                <Avatar class="size-24">
                   <AvatarImage
                     v-if="
                       currentAvatarUrl ||
@@ -33,8 +35,8 @@
                     "
                     @error="avatarError = true"
                   />
-                  <AvatarFallback class="bg-muted">
-                    <User :size="48" class="text-muted-foreground" />
+                  <AvatarFallback class="bg-secondary">
+                    <User :size="40" class="text-muted-foreground" />
                   </AvatarFallback>
                 </Avatar>
                 <Button
@@ -42,7 +44,7 @@
                   type="button"
                   variant="outline"
                   size="icon"
-                  class="absolute bottom-0 right-0 size-8 rounded-full border-2 border-background bg-background shadow-md hover:bg-accent"
+                  class="absolute right-0 bottom-0 size-8 rounded-full border-2 border-card bg-secondary hover:bg-secondary/80"
                   :aria-label="$t('tooltip.change_avatar')"
                   @click="showAvatarDialog = true"
                 >
@@ -130,7 +132,7 @@
         <Button
           v-if="hasChanges"
           type="button"
-          variant="outline"
+          variant="secondary"
           @click="handleReset"
         >
           {{ $t("cancel") }}
@@ -180,7 +182,7 @@
         </Field>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="closeAvatarDialog">
+        <Button variant="secondary" @click="closeAvatarDialog">
           {{ $t("cancel") }}
         </Button>
         <Button @click="handleAvatarChange">

@@ -154,19 +154,25 @@ onBeforeUnmount(() => {
   ) !important;
 }
 
+/* the current speed as a big display-serif numeral */
 .playback-speed-current {
   text-align: center;
-  font-size: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 2.75rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.012em;
   font-variant-numeric: tabular-nums;
-  padding: 4px 0 8px;
-  opacity: 0.85;
+  padding: 8px 0 16px;
 }
 
 .playback-speed-slider {
   width: 100%;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
+/* presets as a row of pills: the current one accent-filled (default
+   variant), the rest hairline outlines */
 .playback-speed-options {
   display: flex;
   flex-wrap: nowrap;
@@ -178,8 +184,7 @@ onBeforeUnmount(() => {
 .playback-speed-options > * {
   flex: 1 1 0;
   min-width: 0;
-  border: 1px solid var(--border, hsl(var(--border, 0 0% 80%)));
-  border-radius: 8px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 </style>

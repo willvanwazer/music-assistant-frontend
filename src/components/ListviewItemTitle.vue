@@ -92,8 +92,9 @@ withDefaults(defineProps<Props>(), {
 }
 
 .album-track-title {
-  font-size: 0.9375rem;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
   white-space: normal;
   overflow: hidden;
   display: -webkit-inline-box;
@@ -102,11 +103,18 @@ withDefaults(defineProps<Props>(), {
   vertical-align: middle;
 }
 
+/* the playing item's title takes the accent */
+.v-list-item-title.is-playing {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 /* Vertically center the explicit icon against the title in the album track view. */
 .explicit-icon-align {
   display: inline-flex;
   vertical-align: middle;
-  margin-left: 12px;
+  margin-left: 8px;
+  color: var(--subtle-foreground);
 }
 
 /* When checkbox is displayed, explicit icon will be shown to the right of the title.

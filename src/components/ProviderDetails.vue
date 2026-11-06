@@ -1,5 +1,5 @@
 <template>
-  <section style="margin-bottom: 10px">
+  <section class="provider-details">
     <Toolbar
       :title="$t('mapped_providers')"
       :menu-items="toolbarMenuItems"
@@ -7,10 +7,16 @@
     />
     <v-divider />
     <Container v-if="expanded">
-      <v-list>
+      <!-- where this item is available from; the one being viewed is marked -->
+      <v-list class="provider-details-list">
         <ListItem
           v-for="providerMapping in itemDetails?.provider_mappings"
           :key="providerMapping.provider_instance"
+          :class="
+            isActiveMapping(providerMapping)
+              ? 'provider-details-row provider-details-row--active'
+              : 'provider-details-row'
+          "
           :disabled="
             !providerMapping.available ||
             !api.getProvider(providerMapping.provider_instance)
@@ -27,37 +33,40 @@
           </template>
           <template #title>
             {{ getProviderName(providerMapping) }}
-            <v-chip
+            <span
               v-if="providerMapping.in_library"
-              size="x-small"
-              density="compact"
-              class="ml-2"
+              class="provider-details-tag"
               :title="$t('tooltip.in_provider_library')"
             >
               {{ $t("library") }}
-            </v-chip>
+            </span>
           </template>
           <template #subtitle>
-            <span v-if="itemDetails.media_type == MediaType.TRACK"
-              >{{ providerMapping.audio_format.content_type }} |
+            <span
+              v-if="itemDetails.media_type == MediaType.TRACK"
+              class="provider-details-format"
+              >{{ providerMapping.audio_format.content_type }} ·
               {{ providerMapping.audio_format.sample_rate / 1000 }}kHz/{{
                 providerMapping.audio_format.bit_depth
               }}
-              bits |
+              bits ·
             </span>
             <a
               v-if="
                 providerMapping.url &&
                 !providerMapping.provider_domain.startsWith('file')
               "
-              style="opacity: 0.4"
+              class="provider-details-uri"
               :title="$t('tooltip.open_provider_link')"
               @click.prevent="openLinkInNewTab(providerMapping.url)"
               >{{ getProviderUri(providerMapping) }}</a
             >
-            <span v-else style="opacity: 0.4" :title="$t('tooltip.copy_uri')">{{
-              getProviderUri(providerMapping)
-            }}</span>
+            <span
+              v-else
+              class="provider-details-uri"
+              :title="$t('tooltip.copy_uri')"
+              >{{ getProviderUri(providerMapping) }}</span
+            >
           </template>
           <template #append>
             <!-- hi res icon -->
@@ -89,11 +98,17 @@
                 @click="playBtnClick(providerMapping)"
               />
             </div>
+            <Check
+              v-if="isActiveMapping(providerMapping)"
+              :size="18"
+              class="provider-details-check"
+            />
           </template>
         </ListItem>
         <!-- virtual mapping for library -->
         <ListItem
           v-if="itemDetails.provider == 'library'"
+          class="provider-details-row provider-details-row--active"
           show-menu-btn
           @menu.stop="
             (evt) =>
@@ -111,11 +126,14 @@
           </template>
           <template #title>{{ $t("music_assistant_library") }}</template>
           <template #subtitle>
-            <span
+            <span class="provider-details-uri"
               >library://{{ itemDetails.media_type }}/{{
                 itemDetails.item_id
               }}</span
             >
+          </template>
+          <template #append>
+            <Check :size="18" class="provider-details-check" />
           </template>
         </ListItem>
       </v-list>
@@ -132,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDown, ChevronUp, DatabaseSearch } from "@lucide/vue";
+import { Check, ChevronDown, ChevronUp, DatabaseSearch } from "@lucide/vue";
 import Container from "@/components/Container.vue";
 import GenreExclusionManager from "@/components/genre/GenreExclusionManager.vue";
 import ListItem from "@/components/ListItem.vue";
@@ -202,6 +220,15 @@ type ProviderMappingRef = Pick<
   ProviderMapping,
   "provider_instance" | "provider_domain" | "item_id" | "available" | "url"
 >;
+
+// the mapping of the provider item being viewed; a library item is marked on
+// the virtual library row instead
+const isActiveMapping = function (mapping: ProviderMapping) {
+  return (
+    props.itemDetails.provider != "library" &&
+    mapping.provider_instance == props.itemDetails.provider
+  );
+};
 
 const getProviderUri = function (mapping: ProviderMappingRef) {
   return `${mapping.provider_instance}://${props.itemDetails.media_type}/${mapping.item_id}`;
@@ -325,7 +352,91 @@ const toolbarMenuItems = computed(() => {
 });
 </script>
 
-<style>
+<style scoped>
+/* "Available from": one row per source, the one being viewed filled in and
+   checked in the accent */
+.provider-details-list {
+  padding: 0;
+  background: transparent;
+}
+
+.provider-details-list :deep(.v-list-item.provider-details-row) {
+  min-height: 56px;
+  margin: 0 0 2px !important;
+  padding: 8px 4px !important;
+  border-radius: 10px !important;
+  transition: background-color 150ms ease;
+}
+
+.provider-details-list :deep(.v-list-item.provider-details-row:hover) {
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.provider-details-list :deep(.v-list-item.provider-details-row--active) {
+  background: var(--secondary);
+}
+
+/* hover and focus overlays: the row fills itself */
+.provider-details-list :deep(.provider-details-row .v-list-item__overlay) {
+  display: none;
+}
+
+.provider-details-list :deep(.provider-details-row .provider-icon-wrapper) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.provider-details-list :deep(.provider-details-row .v-list-item-title) {
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.provider-details-list :deep(.provider-details-row .v-list-item-subtitle) {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--subtle-foreground);
+  opacity: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.provider-details-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  margin-left: 8px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--secondary);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 500;
+  vertical-align: 1px;
+}
+
+.provider-details-row--active .provider-details-tag {
+  background: color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+
+.provider-details-uri {
+  color: var(--subtle-foreground);
+}
+
+a.provider-details-uri {
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+a.provider-details-uri:hover {
+  color: var(--primary);
+}
+
+.provider-details-check {
+  flex: none;
+  margin-inline: 6px 2px;
+  color: var(--primary);
+}
+
 .hiresicon {
   margin-top: 5px;
   margin-right: 15px;

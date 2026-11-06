@@ -1,7 +1,7 @@
 <template>
   <template v-if="state.phase === 'answering'">
     <template v-if="canAnswerRound">
-      <p class="text-center text-lg font-bold">
+      <p class="ma-display text-center text-2xl leading-tight">
         {{
           placementLocked
             ? $t("providers.music_quiz.timeline_placement_locked")

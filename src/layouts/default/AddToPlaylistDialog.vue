@@ -5,70 +5,79 @@
 -->
 <template>
   <Sheet v-model:open="show">
-    <SheetContent side="bottom" class="h-[85vh] flex flex-col p-0">
-      <SheetHeader class="flex-row items-center gap-3 border-b px-4 py-3">
-        <ListPlus class="size-5 shrink-0 opacity-80" />
-        <SheetTitle>{{ $t("add_playlist") }}</SheetTitle>
+    <SheetContent
+      side="bottom"
+      class="bg-popover flex h-[85vh] flex-col rounded-t-[20px] p-0"
+    >
+      <SheetHeader
+        class="flex-row items-center gap-3 border-b border-border px-6 pt-5 pb-4"
+      >
+        <ListPlus class="text-subtle-foreground size-5 shrink-0" />
+        <SheetTitle
+          class="font-display text-[1.375rem] leading-tight font-medium tracking-[-0.01em]"
+        >
+          {{ $t("add_playlist") }}
+        </SheetTitle>
       </SheetHeader>
       <SheetDescription class="sr-only">
         {{ $t("add_playlist") }}
       </SheetDescription>
 
       <ScrollArea class="h-full max-h-full overflow-hidden flex-1">
-        <div class="playlist-list pt-2">
+        <div class="playlist-list px-3 pt-3">
           <button
             v-for="playlist of playlists"
             :key="playlist.item_id"
             type="button"
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent"
+            class="playlist-row"
             @click="addToPlaylist(playlist)"
           >
-            <div class="shrink-0">
-              <MediaItemThumb :item="playlist" :size="50" />
+            <div class="playlist-row-art">
+              <MediaItemThumb :item="playlist" :size="44" :rounded="false" />
             </div>
             <div class="min-w-0 flex-1">
-              <div class="truncate text-sm font-medium">
+              <div class="playlist-row-title truncate">
                 {{ playlist.name }}
               </div>
-              <div class="truncate text-xs text-muted-foreground">
+              <div class="playlist-row-meta truncate">
                 {{ playlist.owner }}
               </div>
             </div>
             <provider-icon
               v-if="playlist.provider_mappings"
               :domain="playlist.provider_mappings[0].provider_domain"
-              :size="20"
+              :size="18"
               class="shrink-0"
             />
           </button>
 
-          <div class="py-4">
+          <div class="px-2 py-3">
             <Separator />
           </div>
 
           <button
             v-for="providerId of createPlaylistProviders"
             :key="providerId"
-            class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-accent"
+            class="playlist-row"
             @click="newPlaylist(providerId)"
           >
-            <div class="shrink-0">
+            <div class="playlist-row-new">
               <provider-icon
                 :domain="api.providers[providerId].domain"
-                :size="50"
+                :size="24"
               />
             </div>
             <div class="min-w-0 flex-1">
-              <div class="truncate text-sm font-medium">
+              <div class="playlist-row-title truncate">
                 {{ $t("new_playlist") }}
               </div>
-              <div class="truncate text-xs text-muted-foreground">
+              <div class="playlist-row-meta truncate">
                 {{ $t("create_playlist_on", [api.providers[providerId].name]) }}
               </div>
             </div>
             <provider-icon
               :domain="api.providers[providerId].domain"
-              :size="20"
+              :size="18"
               class="shrink-0"
             />
           </button>
@@ -308,5 +317,54 @@ const close = function () {
 <style scoped>
 .playlist-list {
   padding-bottom: calc(2rem + var(--device-inset-bottom));
+}
+
+.playlist-row {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.playlist-row:hover,
+.playlist-row:focus-visible {
+  background: color-mix(in oklab, var(--foreground) 5%, transparent);
+  outline: none;
+}
+
+/* covers stay square and whole */
+.playlist-row-art {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 3px;
+}
+
+.playlist-row-new {
+  display: flex;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--secondary);
+}
+
+.playlist-row-title {
+  color: var(--foreground);
+  font-size: 0.84375rem;
+  font-weight: 600;
+}
+
+.playlist-row-meta {
+  color: var(--subtle-foreground);
+  font-size: 0.75rem;
 }
 </style>

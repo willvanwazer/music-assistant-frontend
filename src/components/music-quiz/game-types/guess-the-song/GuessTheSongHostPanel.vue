@@ -15,13 +15,15 @@
               v-if="currentRoundImageUrl"
               :src="currentRoundImageUrl"
               :alt="currentRound?.answer_label"
-              class="bg-muted aspect-square w-full rounded-lg object-cover"
+              class="bg-muted aspect-square w-full rounded-[3px] object-contain shadow-[0_10px_22px_-12px_rgba(0,0,0,0.55)]"
             />
             <div class="flex min-w-0 flex-col gap-1">
               <span class="text-muted-foreground text-sm">
                 {{ $t("providers.music_quiz.current_music") }}
               </span>
-              <strong class="text-xl leading-tight break-words">
+              <strong
+                class="font-display text-[22px] leading-tight font-medium break-words"
+              >
                 {{ currentRound?.answer_label }}
               </strong>
             </div>

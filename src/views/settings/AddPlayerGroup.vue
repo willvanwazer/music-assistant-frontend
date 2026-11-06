@@ -1,9 +1,9 @@
 <template>
-  <section>
+  <section class="add-group">
     <v-card-text>
       <!-- header -->
       <div style="margin-left: -5px; margin-right: -5px">
-        <v-card-title>
+        <v-card-title class="add-group-title">
           {{ $t("settings.add_group_player") }}
         </v-card-title>
         <v-card-subtitle
@@ -72,6 +72,8 @@
           <v-btn
             block
             color="primary"
+            variant="flat"
+            class="add-group-btn"
             :disabled="!valid || (members.length == 0 && !dynamic)"
             @click="onSubmit"
           >
@@ -79,7 +81,12 @@
           </v-btn>
         </v-form>
         <br />
-        <v-btn block @click="goBack(router, { name: 'playersettings' })">
+        <v-btn
+          block
+          variant="flat"
+          class="add-group-btn add-group-btn--secondary"
+          @click="goBack(router, { name: 'playersettings' })"
+        >
           {{ $t("close") }}
         </v-btn>
       </div>
@@ -190,3 +197,42 @@ const onSubmit = async function () {
   router.push({ name: "playersettings" });
 };
 </script>
+
+<style scoped>
+.add-group {
+  max-width: 760px;
+}
+
+.add-group-title {
+  font-family: var(--font-heading);
+  font-size: 1.75rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  white-space: normal;
+}
+
+.add-group :deep(.v-card-subtitle) {
+  font-size: 0.84375rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+  opacity: 1;
+}
+
+.add-group :deep(.v-field) {
+  border-radius: 10px;
+}
+
+.add-group-btn {
+  height: 40px !important;
+  border-radius: 999px !important;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+.add-group-btn--secondary {
+  background: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+}
+</style>

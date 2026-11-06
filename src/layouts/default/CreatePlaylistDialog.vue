@@ -61,7 +61,7 @@
         </div>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" @click="showDialog = false">
+        <Button variant="secondary" @click="showDialog = false">
           {{ $t("close") }}
         </Button>
         <Button :disabled="!playlistName" @click="doSave">

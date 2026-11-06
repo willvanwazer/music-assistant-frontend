@@ -7,7 +7,7 @@
     </Button>
   </div>
 
-  <div class="pl-5 font-weight-medium">
+  <div class="providers-count pl-5">
     {{
       $t("settings.providers_total", getAllFilteredProviders().length, {
         named: { count: getAllFilteredProviders().length },
@@ -24,6 +24,7 @@
         :key="item.instance_id"
         link
         :show-menu-btn="true"
+        class="provider-row"
         :class="{
           'provider-disabled': !item.enabled,
         }"
@@ -31,7 +32,7 @@
         @menu="(evt) => onMenu(evt, item)"
       >
         <template #prepend>
-          <ProviderIcon :domain="item.domain" :size="40" />
+          <ProviderIcon :domain="item.domain" :size="36" />
         </template>
 
         <template #title>
@@ -58,7 +59,7 @@
                 size="x-small"
                 color="error"
                 variant="tonal"
-                class="ml-2"
+                class="provider-reconfigure ml-2"
                 @click.stop="reconfigureProvider(item.instance_id)"
               >
                 {{ $t("settings.reconfigure") }}
@@ -102,8 +103,12 @@
               "
               size="x-small"
               variant="flat"
-              class="mx-1 text-uppercase"
-              :color="getStageColor(api.providerManifests[item.domain]?.stage)"
+              class="stage-chip mx-1"
+              :class="{
+                'stage-chip--warn': isCautionStage(
+                  api.providerManifests[item.domain]?.stage,
+                ),
+              }"
             >
               {{ getStageLabel(api.providerManifests[item.domain]?.stage) }}
             </v-chip>
@@ -122,7 +127,8 @@
         class="d-flex"
       >
         <v-card
-          class="flex-fill rounded-lg provider-card d-flex flex-column"
+          class="flex-fill provider-card d-flex flex-column"
+          variant="flat"
           :class="{ 'player-provider-card': item.type === ProviderType.PLAYER }"
           min-height="200px"
           @click="openProvider(item)"
@@ -171,8 +177,12 @@
               "
               size="x-small"
               variant="flat"
-              class="mx-1 text-uppercase"
-              :color="getStageColor(api.providerManifests[item.domain]?.stage)"
+              class="stage-chip mx-1"
+              :class="{
+                'stage-chip--warn': isCautionStage(
+                  api.providerManifests[item.domain]?.stage,
+                ),
+              }"
             >
               {{ getStageLabel(api.providerManifests[item.domain]?.stage) }}
             </v-chip>
@@ -210,7 +220,7 @@
               size="small"
               color="error"
               variant="tonal"
-              class="mt-2"
+              class="provider-reconfigure mt-2"
               block
               @click.stop="reconfigureProvider(item.instance_id)"
             >
@@ -561,15 +571,9 @@ const isTextTruncated = function (text: string) {
   return text && text.length > 150;
 };
 
-const getStageColor = function (stage?: string) {
-  return match(stage)
-    .with("stable", () => "green")
-    .with("beta", () => "blue")
-    .with("alpha", () => "purple")
-    .with("experimental", () => "orange")
-    .with("unmaintained", () => "grey")
-    .with("deprecated", () => "red")
-    .otherwise(() => "green");
+// the stage badge stays neutral; only the stages that ask for caution stand out
+const isCautionStage = function (stage?: string) {
+  return stage === "deprecated" || stage === "unmaintained";
 };
 
 // status indicator helpers: a loaded (healthy) provider shows no indicator
@@ -666,7 +670,7 @@ const getAllFilteredProviders = function () {
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  padding: 20px 20px 6px 20px;
+  padding: 20px 20px 10px 20px;
 }
 
 .add-provider-btn {
@@ -687,42 +691,46 @@ const getAllFilteredProviders = function () {
   }
 }
 
-.provider-description {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4em;
-  max-height: 4.2em;
+.providers-count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--subtle-foreground);
 }
 
-.provider-description.truncated-text {
-  margin-bottom: 16px !important;
-}
-
-.provider-card {
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.provider-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.player-provider-card {
-  cursor: pointer;
-}
+/* ---------- list view: rows in one flat group ---------- */
 
 .providers-list {
-  background: transparent;
+  padding: 0;
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.provider-row.list-item-main {
+  min-height: 64px;
+  padding: 10px 6px 10px 16px !important;
+  margin-right: 0 !important;
+  border-radius: 0 !important;
+  transition: background-color 0.15s ease;
+}
+
+.provider-row + .provider-row {
+  border-top: 1px solid var(--border);
+}
+
+.provider-row:hover {
+  background-color: color-mix(in oklab, var(--foreground) 4%, transparent);
+}
+
+.provider-row :deep(.v-list-item__overlay) {
+  display: none;
 }
 
 .providers-list :deep(.v-list-item__prepend) {
-  padding-inline-end: 6px;
+  padding-inline-end: 14px;
 }
 
 .providers-list :deep(.v-list-item__content > div) {
@@ -730,36 +738,43 @@ const getAllFilteredProviders = function () {
 }
 
 @media (max-width: 960px) {
-  .providers-list :deep(.list-item-main) {
-    padding-left: 0 !important;
+  .provider-row.list-item-main {
+    padding-left: 12px !important;
   }
 }
 
 .provider-name-title {
-  font-weight: 500;
-  font-size: 16px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  color: var(--foreground);
 }
 
 .provider-meta {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
+  margin-top: 2px;
   flex-wrap: wrap;
 }
 
 .provider-description-text {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.78125rem;
+  color: var(--muted-foreground);
+  line-height: 1.45;
 }
 
 .provider-type-badge {
-  font-size: 11px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
+  font-size: 0.6875rem;
+  color: var(--subtle-foreground);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
+  letter-spacing: 0.14em;
+  font-weight: 600;
 }
 
 .provider-status-icons {
@@ -769,14 +784,39 @@ const getAllFilteredProviders = function () {
   flex-wrap: nowrap;
 }
 
+/* neutral stage badge: a quiet pill, not a colour code */
+.stage-chip {
+  height: 22px !important;
+  padding: 0 9px !important;
+  border-radius: 999px !important;
+  background: var(--secondary) !important;
+  color: var(--muted-foreground) !important;
+  font-size: 0.71875rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.stage-chip--warn {
+  background: color-mix(
+    in oklab,
+    var(--destructive) 12%,
+    transparent
+  ) !important;
+  color: var(--destructive) !important;
+}
+
+.provider-reconfigure {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
 @media (max-width: 960px) {
   .provider-description-text {
-    display: -webkit-box;
     -webkit-line-clamp: 1;
     line-clamp: 1;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .provider-status-icons {
@@ -793,23 +833,71 @@ const getAllFilteredProviders = function () {
   display: flex;
   align-items: center;
   gap: 6px;
-  color: rgb(var(--v-theme-error));
+  color: var(--destructive);
 }
 
 .provider-error-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
 }
 
+/* ---------- card view: flat tiles ---------- */
+
+.provider-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.45em;
+  max-height: 4.35em;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+.provider-description.truncated-text {
+  margin-bottom: 16px !important;
+}
+
+.provider-card {
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.provider-card:hover {
+  border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+
+.provider-card :deep(.v-card__overlay) {
+  display: none;
+}
+
+.provider-card :deep(.v-card-title) {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: normal;
+}
+
+.player-provider-card {
+  cursor: pointer;
+}
+
 .provider-error-card {
-  background: rgba(var(--v-theme-error), 0.08);
-  border-radius: 8px;
+  background: color-mix(in oklab, var(--destructive) 8%, transparent);
+  border-radius: 10px;
   margin: 0 12px 12px 12px;
 }
 
 .provider-error-detail {
-  font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.7);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -829,20 +917,22 @@ const getAllFilteredProviders = function () {
 }
 
 .empty-icon {
-  color: rgba(var(--v-theme-on-surface), 0.3);
+  color: var(--subtle-foreground);
   margin-bottom: 16px;
 }
 
 .empty-title {
-  font-size: 18px;
+  font-family: var(--font-heading);
+  font-size: 1.375rem;
   font-weight: 500;
-  color: rgba(var(--v-theme-on-surface), 0.7);
-  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+  color: var(--foreground);
+  margin-bottom: 6px;
 }
 
 .empty-message {
-  font-size: 14px;
-  color: rgba(var(--v-theme-on-surface), 0.5);
-  line-height: 1.4;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  line-height: 1.45;
 }
 </style>

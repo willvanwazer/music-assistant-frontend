@@ -23,6 +23,7 @@ vi.mock("@/plugins/store", () => ({
 vi.mock("vue-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("@/helpers/utils", () => ({
   panelViewItemResponsive: () => 5,
+  shelfTilesPerView: () => 5.5,
   formatDuration: (seconds: number) => `${seconds}s`,
 }));
 vi.mock("@/plugins/breakpoint", () => ({ getBreakpointValue: () => false }));

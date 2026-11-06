@@ -26,10 +26,18 @@ const { apiMock, emitContextMenu } = vi.hoisted(() => ({
         items?: number;
       }
     >,
+    getProviderName: vi.fn<MusicAssistantApi["getProviderName"]>((provider) =>
+      provider === "test" ? "AirPlay" : provider,
+    ),
+    playerCommandGroupVolume:
+      vi.fn<MusicAssistantApi["playerCommandGroupVolume"]>(),
     playerCommandPlayPause:
       vi.fn<MusicAssistantApi["playerCommandPlayPause"]>(),
     playerCommandPowerToggle:
       vi.fn<MusicAssistantApi["playerCommandPowerToggle"]>(),
+    playerCommandVolumeSet: vi.fn<MusicAssistantApi["playerCommandVolumeSet"]>(
+      () => Promise.resolve(),
+    ),
   },
   emitContextMenu: vi.fn(),
 }));
@@ -533,55 +541,82 @@ describe("PlayerCard", () => {
     expect(members.classes()).toContain("text-[11px]");
   });
 
-  it("stacks player identity above loaded media only when requested", () => {
+  it("sums the media up on one status line only in the selector", () => {
     const player = createPlayer({
-      playback_state: PlaybackState.PLAYING,
+      playback_state: PlaybackState.PAUSED,
       current_media: createPlayerMedia({
         title: "Hate Me Now",
         artist: "Nas",
+        album: "I Am...",
       }),
     });
 
+    // elsewhere the track gets its own line in the display serif
     const mainCard = mountPlayerCard(player);
-    expect(mainCard.find(".player-card-main").classes()).not.toContain(
-      "flex-col",
-    );
-    expect(mainCard.find(".player-card-actions").classes()).not.toContain(
-      "self-end",
-    );
+    expect(mainCard.find(".player-card-track").text()).toBe("Hate Me Now");
+    expect(mainCard.find(".player-card-status").exists()).toBe(false);
+    expect(mainCard.find(".player-card-device").exists()).toBe(false);
     mainCard.unmount();
 
     const selectorCard = mountPlayerCard(player, {
       stackMediaDetails: true,
     });
-    expect(selectorCard.find(".player-card-main").classes()).toContain(
-      "flex-col",
-    );
     expect(
       selectorCard.find(".player-card-main > .player-card-title").exists(),
     ).toBe(true);
     expect(
       selectorCard.find(".player-card-media-row .player-card-title").exists(),
     ).toBe(false);
-    expect(selectorCard.find(".player-card-media-row").text()).toContain(
-      "Hate Me Now",
+    expect(selectorCard.find(".player-card-track").exists()).toBe(false);
+    const status = selectorCard.get(
+      ".player-card-media-row .player-card-status",
     );
-    expect(selectorCard.find(".player-card-actions").classes()).toContain(
-      "self-end",
+    expect(status.text().replace(/\s+/g, " ")).toBe(
+      "state.paused · Hate Me Now · Nas",
+    );
+    expect(selectorCard.find(".player-card-device").text()).toBe(
+      "Test · AirPlay",
     );
   });
 
-  it("keeps idle selector cards compact", () => {
+  it("describes an idle selector card by its state and device", () => {
     const wrapper = mountPlayerCard(createPlayer(), {
       stackMediaDetails: true,
     });
 
-    expect(wrapper.find(".player-card-main").classes()).not.toContain(
-      "flex-col",
+    expect(wrapper.find("img").exists()).toBe(false);
+    expect(wrapper.get(".player-card-status").text()).toBe("state.idle");
+    expect(wrapper.get(".player-card-device").text()).toBe("Test · AirPlay");
+  });
+
+  it("names the output a player is reached over", () => {
+    const wrapper = mountPlayerCard(
+      createPlayer({
+        active_output_protocol: "kitchen-cast",
+        output_protocols: [
+          {
+            output_protocol_id: "kitchen-cast",
+            name: "Chromecast",
+            is_native: false,
+            protocol_domain: "chromecast",
+            priority: 1,
+            available: true,
+            derived_from: null,
+          },
+        ],
+      }),
+      { stackMediaDetails: true },
     );
-    expect(wrapper.find(".player-card-actions").classes()).not.toContain(
-      "self-end",
-    );
+
+    expect(wrapper.get(".player-card-device").text()).toBe("Test · Chromecast");
+  });
+
+  it("says a powered-off player is off", () => {
+    const wrapper = mountPlayerCard(createPlayer({ powered: false }), {
+      stackMediaDetails: true,
+    });
+
+    expect(wrapper.get(".player-card-status").text()).toBe("off");
   });
 
   it.each([PlaybackState.PLAYING, PlaybackState.PAUSED])(
@@ -740,6 +775,65 @@ describe("PlayerCard", () => {
     expect(event.defaultPrevented).toBe(true);
     expect(parentHandler).not.toHaveBeenCalled();
     expect(emitContextMenu).toHaveBeenCalledOnce();
+  });
+
+  it("steps the volume by two through the slider's own command", async () => {
+    vi.clearAllMocks();
+    const player = createPlayer({
+      supported_features: [PlayerFeature.VOLUME_SET],
+      volume_level: 25,
+    });
+    const wrapper = mountPlayerCard(player);
+
+    await wrapper.get('[aria-label="tooltip.volume_up"]').trigger("click");
+    await wrapper.get('[aria-label="tooltip.volume_up"]').trigger("click");
+    await wrapper.get('[aria-label="tooltip.volume_down"]').trigger("click");
+
+    // presses in a burst build on each other rather than on the level the
+    // server has yet to report back
+    expect(
+      apiMock.playerCommandVolumeSet.mock.calls.map(([, volume]) => volume),
+    ).toEqual([27, 29, 27]);
+    expect(apiMock.playerCommandVolumeSet).toHaveBeenCalledWith("player", 27);
+    expect(wrapper.emitted("click")).toBeUndefined();
+  });
+
+  it("steps a group's volume while the player leads one", async () => {
+    vi.clearAllMocks();
+    const player = createPlayer({
+      supported_features: [PlayerFeature.VOLUME_SET],
+      group_members: ["player", "child"],
+      group_volume: 40,
+    });
+    const wrapper = mountPlayerCard(player);
+
+    await wrapper.get('[aria-label="tooltip.volume_down"]').trigger("click");
+
+    expect(apiMock.playerCommandGroupVolume).toHaveBeenCalledWith("player", 38);
+    expect(apiMock.playerCommandVolumeSet).not.toHaveBeenCalled();
+  });
+
+  it("locks the volume steps with a muted slider", () => {
+    const wrapper = mountPlayerCard(
+      createPlayer({
+        supported_features: [PlayerFeature.VOLUME_SET],
+        volume_muted: true,
+      }),
+    );
+
+    expect(
+      wrapper.get('[aria-label="tooltip.volume_up"]').attributes("disabled"),
+    ).toBeDefined();
+  });
+
+  it("leaves the volume steps out without a volume row", () => {
+    const wrapper = mountPlayerCard(createPlayer(), {
+      showVolumeControl: false,
+    });
+
+    expect(wrapper.find('[aria-label="tooltip.volume_up"]').exists()).toBe(
+      false,
+    );
   });
 
   it("disables every action for an unavailable player", async () => {

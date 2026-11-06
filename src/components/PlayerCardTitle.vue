@@ -6,39 +6,39 @@
         :key="`${index}-${name}`"
         class="flex min-w-0 items-center gap-1.5"
       >
-        <span class="player-card-name truncate text-sm leading-5 font-medium">
+        <span class="player-card-name truncate text-sm leading-5 font-semibold">
           {{ name }}
         </span>
         <slot v-if="index === 0"></slot>
       </div>
     </template>
     <div v-else class="flex min-w-0 items-center gap-1.5">
-      <span class="player-card-name truncate text-sm font-medium">
+      <span class="player-card-name truncate text-sm leading-5 font-semibold">
         {{ playerName }}
       </span>
       <slot></slot>
     </div>
     <p
       v-if="memberLayout === 'subtitle' && memberNames.length > 0"
-      class="player-card-group-members text-muted-foreground mt-0.5 text-pretty text-[11px] leading-4"
+      class="player-card-group-members text-subtle-foreground mt-px text-pretty text-[11px] leading-4"
     >
       {{ memberNames.join(" • ") }}
     </p>
     <div
       v-else-if="memberLayout === 'subtitle-list' && memberNames.length > 0"
-      class="player-card-group-members text-muted-foreground mt-0.5"
+      class="player-card-group-members text-subtle-foreground"
     >
       <p
         v-for="(name, index) in visibleMemberNames"
         :key="`${index}-${name}`"
-        class="player-card-group-member truncate text-xs leading-5"
+        class="player-card-group-member truncate text-xs leading-[18px]"
       >
         {{ name }}
       </p>
       <button
         v-if="hasOverflow"
         type="button"
-        class="player-card-group-toggle text-muted-foreground hover:text-foreground pointer-events-auto relative z-[2] block text-left text-xs leading-5 underline-offset-2 hover:underline focus-visible:underline focus-visible:outline-none"
+        class="player-card-group-toggle text-subtle-foreground hover:text-foreground pointer-events-auto relative z-[2] block text-left text-xs leading-[18px] font-medium underline-offset-2 transition-colors hover:underline focus-visible:underline focus-visible:outline-none"
         :aria-expanded="showAllMembers"
         :data-remaining-count="remainingMemberCount"
         @click.stop.prevent="showAllMembers = !showAllMembers"

@@ -175,7 +175,7 @@ const draggedItem = computed(() =>
         <!-- Floating ghost that follows the pointer while dragging -->
         <div
           v-if="isDragging && draggedItem"
-          class="nav-edit-ghost bg-sidebar-accent text-sidebar-accent-foreground"
+          class="nav-edit-ghost bg-popover text-popover-foreground"
           :style="{ top: `${ghostY}px`, height: `${dragRowHeight}px` }"
         >
           <GripVertical class="size-4 opacity-60" />
@@ -189,7 +189,7 @@ const draggedItem = computed(() =>
       </div>
 
       <!-- Normal mode: navigation links -->
-      <SidebarMenu v-else>
+      <SidebarMenu v-else class="gap-0.5">
         <!-- the row gutter would skew the centred icon rail, so it lifts when
              collapsed -->
         <SidebarMenuItem
@@ -197,6 +197,8 @@ const draggedItem = computed(() =>
           :key="item.title"
           class="mr-1.5 group-data-[collapsible=icon]:mr-0"
         >
+          <!-- the row's look (height, fill, colours, icon size) lives with
+               the rest of the sidebar shell in AppSidebar -->
           <SidebarMenuButton
             :as="
               item.disabled || item.openInNewTab || item.action
@@ -212,9 +214,7 @@ const draggedItem = computed(() =>
             :tooltip="item.title"
             :disabled="item.disabled"
             :class="[
-              itemActive(item)
-                ? 'no-underline font-bold text-sm'
-                : 'no-underline font-medium text-sm',
+              'nav-row nav-link no-underline',
               item.disabled ? 'opacity-50 cursor-not-allowed' : '',
             ]"
             @click="(e: Event) => handleClick(item, e)"
@@ -222,13 +222,13 @@ const draggedItem = computed(() =>
             <component
               :is="item.icon"
               v-if="item.icon"
-              class="mr-1"
-              :stroke-width="itemActive(item) ? 2.5 : 2"
+              :stroke-width="itemActive(item) ? 2 : 1.75"
             />
             <span class="min-w-0 truncate">{{ item.title }}</span>
+            <!-- a small bordered key cap, quieter than the row it sits in -->
             <Kbd
               v-if="item.shortcut"
-              class="ml-auto shrink-0 opacity-60 group-data-[collapsible=icon]:hidden"
+              class="ml-auto h-[18px] shrink-0 rounded-[5px] border border-sidebar-foreground/15 bg-transparent px-1.5 text-[10.5px] font-semibold text-subtle-foreground group-data-[collapsible=icon]:hidden"
             >
               {{ item.shortcut }}
             </Kbd>
@@ -240,25 +240,13 @@ const draggedItem = computed(() =>
 </template>
 
 <style scoped>
-:deep(a) {
-  text-decoration: none !important;
-  color: inherit !important;
-}
-
-:deep(a:hover) {
-  text-decoration: none !important;
-}
-
+/* only the browser's own link colours are overruled here, so the row colours
+   the sidebar sets on these links still apply, visited or not */
+:deep(a),
+:deep(a:hover),
 :deep(a:visited) {
-  color: inherit !important;
-}
-
-:deep([data-sidebar="menu-button"] > svg),
-:deep([data-sidebar="menu-button"] svg),
-:deep([data-sidebar="menu-button"] [class*="lucide"]) {
-  width: 1.2rem !important;
-  height: 1.2rem !important;
-  padding-right: 3px !important;
+  text-decoration: none;
+  color: inherit;
 }
 
 :deep([data-sidebar="menu-item"]) {
@@ -277,15 +265,17 @@ const draggedItem = computed(() =>
   opacity: 0.35;
 }
 
+/* the same rhythm and type as the links it stands in for */
 .nav-edit-row-inner {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.5rem;
   min-height: 2rem;
   margin-left: 0.5rem;
   padding: 0.125rem 0.25rem;
-  font-size: 0.875rem;
+  font-size: 0.84375rem;
   font-weight: 500;
+  color: var(--muted-foreground);
 }
 
 .nav-edit-row-off {
@@ -310,8 +300,8 @@ const draggedItem = computed(() =>
 }
 
 .nav-edit-row-icon {
-  width: 1.2rem;
-  height: 1.2rem;
+  width: 1.125rem;
+  height: 1.125rem;
   flex-shrink: 0;
 }
 
@@ -330,13 +320,16 @@ const draggedItem = computed(() =>
   z-index: 50;
   display: flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: 0.5rem;
   padding: 0.125rem 0.5rem;
-  font-size: 0.875rem;
+  font-size: 0.84375rem;
   font-weight: 500;
-  border-radius: 0.5rem;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
-  opacity: 0.95;
+  border-radius: 9px;
+  /* lifted off the rows it is dragged across */
+  box-shadow:
+    0 0 0 1px var(--sidebar-border),
+    0 10px 24px -10px rgba(0, 0, 0, 0.45);
+  opacity: 0.97;
   pointer-events: none;
   cursor: grabbing;
 }

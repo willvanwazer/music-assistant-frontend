@@ -1,5 +1,7 @@
 <template>
-  <div class="rounded-[6px] border bg-card/40 transition-colors hover:bg-card">
+  <div
+    class="rounded-xl border border-border bg-card/40 transition-colors duration-150 hover:bg-card"
+  >
     <div class="flex items-start gap-2 px-3 py-2 sm:items-center">
       <div class="flex shrink-0 flex-col">
         <Button

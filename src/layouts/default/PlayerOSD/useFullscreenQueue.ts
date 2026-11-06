@@ -141,20 +141,20 @@ export function useFullscreenQueue(showLyrics: Ref<boolean>) {
 
   // ---- responsive font sizes ----------------------------------------------
 
+  // Row title ~13.5px and artist ~12px on the desktop panel; a touch larger
+  // on phones (touch reading distance) and very large screens.
   const queueTitleFontSize = computed(() => {
     switch (name.value) {
       case "xs":
-        return "0.875rem";
       case "sm":
         return "0.875rem";
       case "md":
-        return "0.925rem";
       case "lg":
-        return "0.9rem";
+        return "0.84375rem";
       case "xl":
-        return "0.925rem";
+        return "0.875rem";
       case "xxl":
-        return "0.975rem";
+        return "0.9375rem";
       default:
         return "0.875rem";
     }
@@ -163,19 +163,17 @@ export function useFullscreenQueue(showLyrics: Ref<boolean>) {
   const queueSubtitleFontSize = computed(() => {
     switch (name.value) {
       case "xs":
-        return "0.775rem";
       case "sm":
-        return "0.775rem";
+        return "0.78125rem";
       case "md":
-        return "0.8rem";
       case "lg":
-        return "0.8rem";
+        return "0.75rem";
       case "xl":
-        return "0.8rem";
+        return "0.78125rem";
       case "xxl":
-        return "0.85rem";
+        return "0.8125rem";
       default:
-        return "0.775rem";
+        return "0.78125rem";
     }
   });
 

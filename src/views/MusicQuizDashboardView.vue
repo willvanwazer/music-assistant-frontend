@@ -28,7 +28,7 @@
     <section v-else class="flex flex-1 flex-col gap-4">
       <header class="flex items-center justify-between gap-3">
         <div class="min-w-0">
-          <h1 class="text-2xl font-bold">
+          <h1 class="ma-display pb-1 text-4xl leading-none sm:text-5xl">
             {{ $t("providers.music_quiz.title") }}
           </h1>
           <p v-if="!activeState" class="text-muted-foreground mt-1">
@@ -63,7 +63,7 @@
         class="flex flex-1 items-center justify-center"
       >
         <Empty
-          class="bg-card w-full max-w-xl rounded-xl border border-solid px-5 py-10 shadow-sm sm:px-8"
+          class="bg-card border-border w-full max-w-xl rounded-[14px] border border-solid px-5 py-10 sm:px-8"
         >
           <EmptyHeader>
             <EmptyMedia
@@ -72,7 +72,7 @@
             >
               <MicVocal class="size-7" />
             </EmptyMedia>
-            <EmptyTitle class="text-xl font-bold">
+            <EmptyTitle class="ma-display text-3xl leading-tight font-medium">
               {{ $t("providers.music_quiz.no_active_game") }}
             </EmptyTitle>
             <EmptyDescription class="text-base">
@@ -102,7 +102,7 @@
       <MusicQuizPreparingState
         v-else-if="isPreparing && activeState"
         :autofocus="starting"
-        class="rounded-xl border shadow-sm"
+        class="border-border rounded-[14px] border"
       />
 
       <div

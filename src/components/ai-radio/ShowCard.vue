@@ -373,26 +373,51 @@ function onDelete() {
   background: transparent;
   border: none;
   padding: var(--show-card-pad);
-  border-radius: var(--show-card-pad);
-  color: rgb(var(--v-theme-on-background));
-  transition: background 0.15s ease;
+  border-radius: 12px;
+  color: var(--foreground);
+  outline: none;
 }
-.show-card:hover {
-  background: rgba(var(--v-theme-on-surface), 0.08);
+.show-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
 }
 .ma-tap:active {
   transform: scale(0.97);
 }
 
+/* the cover: square and whole, a small radius and a soft shadow, lifting a
+   little on hover */
 .show-card__art {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border-radius: var(--show-card-pad);
+  border-radius: 4px;
   overflow: hidden;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.25),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  background: var(--secondary);
+  box-shadow: 0 14px 28px -14px rgba(0, 0, 0, 0.5);
+  transition:
+    transform 0.25s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.25s ease;
+}
+.show-card__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px
+    color-mix(in oklab, var(--foreground) 7%, transparent);
+  pointer-events: none;
+}
+.show-card:hover .show-card__art {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 36px -14px rgba(0, 0, 0, 0.55);
+}
+@media (prefers-reduced-motion: reduce) {
+  .show-card__art {
+    transition: none;
+  }
+  .show-card:hover .show-card__art {
+    transform: none;
+  }
 }
 .show-card__img {
   width: 100%;
@@ -408,11 +433,13 @@ function onDelete() {
 }
 /* mirrors .ed-card__initials on EditorialMediaCard */
 .show-card__initials {
+  font-family: var(--font-heading);
   font-size: 34cqw;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  /* sits on the banner artwork, so white is the art's own ink */
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
   user-select: none;
 }
 .show-card__onair {
@@ -431,26 +458,26 @@ function onDelete() {
 .show-card__meta {
   position: relative;
   width: 100%;
-  margin-top: 10px;
+  margin-top: 11px;
   padding-right: 44px;
 }
 .show-card__title {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .show-card__title--playing {
-  color: rgb(var(--v-theme-primary));
+  color: var(--primary);
 }
 .show-card__sub {
-  font-size: 12px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 12.5px;
+  color: var(--muted-foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 /* compact status pill overlaid on the artwork's bottom-left corner */
 .show-card__status-chip {
@@ -476,13 +503,20 @@ function onDelete() {
   width: 38px;
   height: 38px;
   border-radius: 999px;
-  background: rgb(var(--v-theme-primary));
-  color: #fff;
+  background: var(--primary);
+  color: var(--primary-foreground);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 18px -6px rgba(0, 0, 0, 0.45);
   z-index: 4;
+  transition:
+    opacity 0.18s,
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.15s;
+}
+.show-card__action:hover:not(:disabled) {
+  filter: brightness(1.08);
 }
 .show-card__action:disabled {
   opacity: 0.7;

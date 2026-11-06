@@ -1,7 +1,20 @@
 <template>
   <v-toolbar :color="color" class="header">
-    <template v-if="icon" #prepend>
+    <template v-if="showBack || icon" #prepend>
+      <!-- below a section's own page the leading slot steps back up, where it
+           would otherwise only show the section's icon -->
+      <Button
+        v-if="showBack"
+        variant="ghost"
+        size="icon"
+        :title="$t('back')"
+        :aria-label="$t('back')"
+        @click="router.back()"
+      >
+        <ArrowLeft class="size-5" />
+      </Button>
       <v-btn
+        v-else
         :icon="typeof icon === 'string' ? icon : undefined"
         size="small"
         :disabled="iconAction == null"
@@ -13,7 +26,7 @@
     </template>
 
     <template #title>
-      <div :class="{ 'toolbar-title-wrapper': subtitle }">
+      <div :class="['toolbar-title', { 'toolbar-title-wrapper': subtitle }]">
         <slot name="title">
           <button
             v-if="title || (store.mobileLayout && isDiscoverPage)"
@@ -127,9 +140,11 @@ import {
   menuItemLabel,
   type ContextMenuItem,
 } from "@/helpers/context_menu_item";
+import { canGoBack } from "@/helpers/navigation";
 import { eventbus } from "@/plugins/eventbus";
 import { store } from "@/plugins/store";
-import { Check, EllipsisVertical } from "@lucide/vue";
+import { ArrowLeft, Check, EllipsisVertical } from "@lucide/vue";
+import { useRoute, useRouter } from "vue-router";
 import { getBreakpointValue } from "../plugins/breakpoint";
 
 import type { Component } from "vue";
@@ -160,6 +175,28 @@ const props = withDefaults(defineProps<Props>(), {
 
 const ACTIVE_DOT_CLASS =
   "bg-primary absolute -top-0.5 -right-0.5 size-1.5 rounded-full";
+
+const route = useRoute();
+const router = useRouter();
+
+// A page below one of the main sections - a settings page, a folder inside
+// Browse - offers a way back whenever the app has somewhere to go back to.
+// Only a page's own toolbar qualifies: it leads with the section's icon and no
+// action of its own. A details header brings its own back button, and the
+// toolbars heading sections further down a page carry no icon at all.
+const showBack = computed(() => {
+  // the route is read first, so this re-evaluates on every navigation, by when
+  // the history state checked below has moved on as well
+  const browseFolder = route.query.path;
+  const nested =
+    route.path.split("/").filter(Boolean).length > 1 ||
+    (typeof browseFolder === "string" &&
+      browseFolder !== "" &&
+      browseFolder !== "root");
+  return (
+    nested && !!props.icon && props.iconAction == null && canGoBack(router)
+  );
+});
 
 const overflowMenuOpen = ref(false);
 
@@ -280,17 +317,47 @@ export interface ToolBarMenuItem extends ContextMenuItem {
   gap: 0.5rem;
 }
 
+/* the title names the page, or the section below it, in the display serif;
+   everything around it (subtitle, trail, controls) stays in Inter. It never
+   drops below the title size its host gives the toolbar, so a page that sets
+   its section headings larger keeps them that way. */
+.toolbar-title {
+  font-family: var(--font-heading);
+  font-size: max(1em, 1.375rem);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  font-optical-sizing: auto;
+}
+
+/* the default title is a button so it can be clicked, which must not fall back
+   to the browser's own button face */
+.toolbar-title button {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
 .toolbar-title-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
+  gap: 1px;
   line-height: 1.2;
 }
 
 .toolbar-subtitle {
-  font-size: 0.7rem;
+  font-family: var(--font-body);
+  font-size: 0.71875rem;
   font-weight: 400;
-  opacity: 0.6;
+  letter-spacing: 0;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 600px) {
+  .toolbar-title {
+    font-size: max(1em, 1.25rem);
+  }
 }
 </style>

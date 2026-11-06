@@ -10,6 +10,7 @@
     "
     :title="repeatTitle"
     :data-dynamic="isDynamic || undefined"
+    :data-toggled="repeatMode !== RepeatMode.OFF || undefined"
     variant="button"
     @click="cycleRepeatMode"
   >

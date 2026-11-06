@@ -1,7 +1,7 @@
 <template>
   <div class="bg-background flex h-dvh flex-col overflow-hidden">
     <header
-      class="guest-layout-header grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b"
+      class="guest-layout-header bg-background border-border grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b"
     >
       <MusicQuizHostControlsMenu
         v-if="showHostControls"
@@ -166,7 +166,7 @@ function returnToHostPanel(): void {
 
 <style scoped>
 .guest-layout-header {
-  height: calc(3rem + var(--device-inset-top));
+  height: calc(3.5rem + var(--device-inset-top));
   padding: var(--device-inset-top) calc(0.5rem + var(--device-inset-right)) 0
     calc(0.5rem + var(--device-inset-left));
 }

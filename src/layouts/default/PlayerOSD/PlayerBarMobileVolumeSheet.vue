@@ -4,7 +4,7 @@
       data-player-panel
       side="bottom"
       :show-close="false"
-      class="player-bar-popout mobile-group-volume-sheet z-[998] gap-0 overflow-hidden rounded-xl p-0"
+      class="player-bar-popout mobile-group-volume-sheet z-[998] gap-0 overflow-hidden rounded-2xl p-0"
       overlay-class="mobile-group-volume-overlay z-[997]"
       @open-auto-focus="preventAutoFocus"
     >

@@ -118,7 +118,7 @@
         </FieldGroup>
       </form>
       <DialogFooter>
-        <Button type="button" variant="outline" @click="handleClose">
+        <Button type="button" variant="secondary" @click="handleClose">
           {{ $t("cancel") }}
         </Button>
         <Button

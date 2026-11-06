@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'group flex min-w-0 flex-col gap-2 overflow-hidden rounded-md border bg-card/40 px-2 py-1.5 transition-colors hover:bg-card sm:flex-row sm:items-center',
+      'group flex min-w-0 flex-col gap-2 overflow-hidden rounded-[10px] border bg-card/40 px-2 py-1.5 transition-colors hover:bg-card sm:flex-row sm:items-center',
       invalid ? 'border-destructive ring-1 ring-destructive/40' : '',
     ]"
   >

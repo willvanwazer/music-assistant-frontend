@@ -8,12 +8,18 @@
         />
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2">
-            <h1 class="truncate text-lg font-bold">{{ playerName }}</h1>
-            <Badge v-if="rank" class="shrink-0">#{{ rank }}</Badge>
+            <h1 class="ma-display truncate pb-0.5 text-xl leading-tight">
+              {{ playerName }}
+            </h1>
+            <Badge v-if="rank" class="shrink-0 tabular-nums">#{{ rank }}</Badge>
           </div>
         </div>
-        <span class="flex shrink-0 items-center gap-1 tabular-nums">
-          <span class="text-xl leading-none font-bold">{{ score }}</span>
+        <span class="flex shrink-0 items-baseline gap-1.5 tabular-nums">
+          <span
+            class="font-display text-3xl leading-none font-medium lining-nums"
+          >
+            {{ score }}
+          </span>
           <span
             v-if="scoreDelta"
             class="text-primary text-sm leading-none font-semibold"
@@ -32,7 +38,7 @@
           v-for="result in roundResults"
           :key="result.key"
           data-testid="player-round-result"
-          class="flex items-center gap-1.5 rounded-md px-2 py-1 text-sm font-semibold"
+          class="flex h-7 items-center gap-1.5 rounded-full px-3 text-sm font-semibold tabular-nums"
           :class="
             result.correct
               ? 'bg-green-500/15 text-green-600 dark:text-green-400'

@@ -36,14 +36,20 @@ const props = withDefaults(defineProps<Props>(), {
 </script>
 
 <style>
+/* a soft accent micro tag */
 .now-playing-badge {
-  background: rgb(var(--v-theme-primary));
-  color: #fff;
-  padding: 2px 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: 0.55rem;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  white-space: nowrap;
+  color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 16%, transparent);
 }
 
 .is-playing {
@@ -62,7 +68,8 @@ const props = withDefaults(defineProps<Props>(), {
 .now-playing-icon .bar {
   width: 3px;
   height: 16px;
-  background: rgb(var(--v-theme-primary));
+  border-radius: 1px;
+  background: var(--primary);
   transform-origin: bottom;
   transform: scaleY(0.25);
   animation: eq 1s infinite ease-in-out;
@@ -80,6 +87,23 @@ const props = withDefaults(defineProps<Props>(), {
 }
 .now-playing-icon .bar:nth-child(4) {
   animation-delay: 0.6s;
+}
+
+/* without motion the bars hold still at staggered heights */
+@media (prefers-reduced-motion: reduce) {
+  .now-playing-icon .bar {
+    animation: none;
+    transform: scaleY(0.55);
+  }
+  .now-playing-icon .bar:nth-child(2) {
+    transform: scaleY(0.9);
+  }
+  .now-playing-icon .bar:nth-child(3) {
+    transform: scaleY(0.4);
+  }
+  .now-playing-icon .bar:nth-child(4) {
+    transform: scaleY(0.7);
+  }
 }
 
 @keyframes eq {

@@ -50,6 +50,9 @@
               :class="{
                 'ring-primary/30 ring-4 disabled:opacity-100':
                   boundary.selected,
+                // the outline pill sits on the timeline's rule, so it keeps an
+                // opaque fill rather than letting the line show through
+                'bg-background': hasSelectedBoundary && !boundary.selected,
               }"
               :disabled="disabled"
               :aria-label="boundary.label"

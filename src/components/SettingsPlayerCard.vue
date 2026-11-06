@@ -1,6 +1,7 @@
 <template>
   <v-card
-    class="flex-fill rounded-lg player-card"
+    class="flex-fill player-card"
+    variant="flat"
     :class="{
       'player-disabled': !playerConfig.enabled,
       'player-unavailable': !isAvailable,
@@ -42,7 +43,7 @@
           color="warning"
           variant="flat"
           block
-          class="mt-2"
+          class="player-setup-btn mt-2"
           @click.stop="handleSetup"
         >
           {{ $t("settings.start_setup") }}
@@ -149,16 +150,24 @@ const handleSetup = () => {
 </script>
 
 <style scoped>
+/* a flat tile in the players grid: hairline edge, no lift */
 .player-card {
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+  background: var(--card) !important;
+  border: 1px solid var(--border);
+  border-radius: 14px !important;
+  box-shadow: none !important;
   cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .player-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: color-mix(in oklab, var(--foreground) 16%, transparent);
+}
+
+.player-card :deep(.v-card__overlay) {
+  display: none;
 }
 
 .player-disabled {
@@ -170,14 +179,14 @@ const handleSetup = () => {
 }
 
 .player-needs-setup {
-  border-left: 3px solid rgb(var(--v-theme-warning));
+  box-shadow: inset 3px 0 0 rgb(var(--v-theme-warning)) !important;
 }
 
 .player-warning-card {
-  background: rgba(var(--v-theme-warning), 0.08);
-  border-radius: 8px;
-  margin: 8px 0 0 0;
-  padding: 8px 12px;
+  background: color-mix(in oklab, rgb(var(--v-theme-warning)) 9%, transparent);
+  border-radius: 10px;
+  margin: 10px 0 0 0;
+  padding: 10px 12px;
 }
 
 .player-warning-inline {
@@ -188,14 +197,21 @@ const handleSetup = () => {
 }
 
 .player-warning-text {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 500;
+}
+
+.player-setup-btn {
+  border-radius: 999px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
-  padding: 16px;
+  padding: 16px 16px 14px;
   height: 100%;
   min-height: 120px;
 }
@@ -210,10 +226,11 @@ const handleSetup = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(var(--v-theme-primary), 0.15);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--secondary);
+  color: var(--foreground);
   flex-shrink: 0;
 }
 
@@ -223,17 +240,18 @@ const handleSetup = () => {
 }
 
 .player-name {
-  font-size: 16px;
-  font-weight: 500;
+  font-size: 0.9375rem;
+  font-weight: 600;
   line-height: 1.3;
+  color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .provider-name {
-  font-size: 13px;
-  color: rgba(var(--v-theme-on-surface), 0.6);
+  font-size: 0.78125rem;
+  color: var(--muted-foreground);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -244,6 +262,7 @@ const handleSetup = () => {
   flex-shrink: 0;
   align-self: flex-start;
   margin: -4px -8px 0 0;
+  color: var(--muted-foreground);
 }
 
 .card-footer {

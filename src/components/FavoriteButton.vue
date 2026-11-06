@@ -20,7 +20,7 @@ const toggle = (e: Event) => {
   <Heart
     class="favorite-icon"
     :class="{ 'favorite-icon--on': item?.favorite }"
-    :size="22"
+    :size="18"
     :fill="item?.favorite ? 'currentColor' : 'none'"
     role="button"
     tabindex="0"
@@ -38,14 +38,20 @@ const toggle = (e: Event) => {
   opacity: 0.7;
   outline: none;
   -webkit-tap-highlight-color: transparent;
-  transition: opacity 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
 }
 .favorite-icon:hover,
 .favorite-icon--on {
   opacity: 1;
 }
+/* a favourite is marked in the accent */
+.favorite-icon--on {
+  color: var(--primary);
+}
 .favorite-icon:focus-visible {
-  outline: 2px solid rgb(var(--v-theme-primary));
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: 4px;
 }

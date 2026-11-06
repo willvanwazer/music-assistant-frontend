@@ -6,7 +6,7 @@
       </DialogHeader>
       <Input v-model="newAliasName" :placeholder="$t('add_alias')" />
       <DialogFooter>
-        <Button variant="outline" @click="model = false">
+        <Button variant="secondary" @click="model = false">
           {{ $t("cancel") }}
         </Button>
         <Button :disabled="!newAliasName || loading" @click="addAlias">

@@ -105,9 +105,12 @@ function normalizeCode(value: unknown): string {
 
 <template>
   <div class="flex w-full flex-col gap-2 py-1">
-    <span v-if="label" :id="labelId" class="text-muted-foreground text-sm">{{
-      label
-    }}</span>
+    <span
+      v-if="label"
+      :id="labelId"
+      class="text-foreground text-sm font-medium"
+      >{{ label }}</span
+    >
     <SegmentedCodeInput
       v-if="layout"
       ref="codeInput"

@@ -1,29 +1,30 @@
 <template>
   <section>
     <InfoHeader :item="itemDetails" />
-    <!-- dynamic station: content is generated on the fly, so show a sample instead of "other versions" -->
-    <DynamicItemSample
-      v-if="itemDetails && itemDetails.is_dynamic"
-      :item-details="itemDetails"
-      :provider="props.provider"
-    />
-    <ItemsListing
-      v-else-if="itemDetails"
-      itemtype="radioversions"
-      :parent-item="itemDetails"
-      :show-provider="true"
-      :show-favorites-only-filter="false"
-      :show-library="false"
-      :show-radio-number="false"
-      :show-duration="false"
-      :load-items="loadRadioVersions"
-      :sort-keys="['provider', 'sort_name']"
-      :title="$t('other_versions')"
-      :hide-on-empty="true"
-    />
-    <br />
-    <!-- provider mapping details -->
-    <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    <div class="item-details-body">
+      <!-- dynamic station: content is generated on the fly, so show a sample instead of "other versions" -->
+      <DynamicItemSample
+        v-if="itemDetails && itemDetails.is_dynamic"
+        :item-details="itemDetails"
+        :provider="props.provider"
+      />
+      <ItemsListing
+        v-else-if="itemDetails"
+        itemtype="radioversions"
+        :parent-item="itemDetails"
+        :show-provider="true"
+        :show-favorites-only-filter="false"
+        :show-library="false"
+        :show-radio-number="false"
+        :show-duration="false"
+        :load-items="loadRadioVersions"
+        :sort-keys="['provider', 'sort_name']"
+        :title="$t('other_versions')"
+        :hide-on-empty="true"
+      />
+      <!-- provider mapping details -->
+      <ProviderDetails v-if="itemDetails" :item-details="itemDetails" />
+    </div>
   </section>
 </template>
 

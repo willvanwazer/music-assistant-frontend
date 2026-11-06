@@ -419,7 +419,7 @@ const table = useVueTable({
     </div>
 
     <div class="relative overflow-auto px-4 lg:px-6">
-      <div class="overflow-hidden rounded-lg border">
+      <div class="overflow-hidden rounded-[14px] border">
         <div
           v-if="loading"
           class="absolute inset-0 z-10 flex items-center justify-center bg-background/60"
@@ -427,7 +427,7 @@ const table = useVueTable({
           <Spinner class="size-5" />
         </div>
         <Table class="border-separate border-spacing-0">
-          <TableHeader class="bg-muted">
+          <TableHeader class="bg-secondary/60">
             <TableRow
               v-for="headerGroup in table.getHeaderGroups()"
               :key="headerGroup.id"

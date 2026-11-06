@@ -74,7 +74,7 @@
       </div>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="uploading" @click="open = false">
+        <Button variant="secondary" :disabled="uploading" @click="open = false">
           {{ $t("close") }}
         </Button>
         <Button

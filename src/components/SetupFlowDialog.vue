@@ -155,11 +155,13 @@
             class="flex flex-col items-center justify-center gap-3 py-3 text-center"
           >
             <span
-              class="flex size-[72px] items-center justify-center rounded-full bg-green-500/15 text-green-600 dark:text-green-500"
+              class="bg-primary/15 text-primary flex size-[72px] items-center justify-center rounded-full"
             >
               <CircleCheck :size="40" />
             </span>
-            <h3 class="text-base font-semibold">
+            <h3
+              class="font-display text-[1.375rem] leading-tight font-medium tracking-[-0.01em]"
+            >
               {{ step.title ?? $t("settings.setup_flow.success_title") }}
             </h3>
             <MarkdownText
@@ -187,7 +189,9 @@
             >
               <TriangleAlert :size="40" />
             </span>
-            <h3 class="text-base font-semibold">
+            <h3
+              class="font-display text-[1.375rem] leading-tight font-medium tracking-[-0.01em]"
+            >
               {{
                 step.title ??
                 (isSessionEnded
@@ -214,7 +218,7 @@
         </div>
 
         <template v-if="step.type === FlowStepType.FORM">
-          <Button variant="ghost" :disabled="busy" @click="close()">
+          <Button variant="secondary" :disabled="busy" @click="close()">
             {{ $t("cancel") }}
           </Button>
           <!-- a step that submits on pick has nothing left to confirm -->
@@ -244,13 +248,15 @@
             step.type === FlowStepType.PROGRESS
           "
         >
-          <Button variant="ghost" @click="close()">{{ $t("cancel") }}</Button>
+          <Button variant="secondary" @click="close()">{{
+            $t("cancel")
+          }}</Button>
         </template>
 
         <template v-else-if="step.type === FlowStepType.FINISH">
           <Button
             v-if="canOpenInstanceSettings"
-            variant="ghost"
+            variant="secondary"
             @click="openInstanceSettings"
           >
             {{ $t("settings.setup_flow.open_settings") }}
@@ -280,7 +286,7 @@
       <DialogFooter>
         <Button
           v-if="helpEntry?.help_link"
-          variant="outline"
+          variant="secondary"
           @click="openLink(helpEntry!.help_link!)"
         >
           {{ $t("read_more") }}

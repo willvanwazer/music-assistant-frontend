@@ -11,13 +11,15 @@
 
     <!-- Global queue settings hint -->
     <div
-      class="border-primary/20 bg-primary/5 mb-4 flex flex-wrap items-center gap-4 rounded-xl border px-4 py-3"
+      class="bg-card mb-7 flex flex-wrap items-center gap-3.5 rounded-[14px] border px-5 py-3.5"
     >
-      <Info class="text-primary size-5 shrink-0" />
-      <p class="text-muted-foreground m-0 flex-1 text-sm">
+      <Info class="text-muted-foreground size-[18px] shrink-0" />
+      <p
+        class="text-muted-foreground m-0 flex-1 text-[0.8125rem] leading-relaxed"
+      >
         {{ $t("settings.queue_global_settings_hint") }}
       </p>
-      <Button as-child variant="outline" size="sm">
+      <Button as-child variant="secondary" size="sm">
         <RouterLink to="/settings/editcore/player_queues" class="no-underline">
           {{ $t("settings.queue_global_settings_link") }}
         </RouterLink>

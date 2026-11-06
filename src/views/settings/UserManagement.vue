@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 p-6">
+  <div class="space-y-5 p-6">
     <div class="flex items-center justify-between gap-4 flex-wrap">
       <div class="relative flex-1 min-w-[200px] max-w-[400px]">
         <Input v-model="searchQuery" :placeholder="$t('search')" class="w-full">
@@ -23,90 +23,75 @@
 
     <div
       v-else
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+      class="divide-y divide-border overflow-hidden rounded-[14px] border bg-card"
     >
-      <Card
+      <div
         v-for="user in filteredUsers"
         :key="user.user_id"
-        class="cursor-pointer hover:bg-accent/50 transition-colors"
+        class="flex min-h-14 cursor-pointer items-center gap-3.5 px-4 py-2.5 transition-colors hover:bg-foreground/[0.04]"
         @click="editUser(user)"
       >
-        <CardContent class="px-4 py-0">
-          <div class="flex items-center gap-4">
-            <Avatar class="size-12 shrink-0">
-              <AvatarImage v-if="user.avatar_url" :src="user.avatar_url" />
-              <AvatarFallback class="bg-muted">
-                <UserIcon :size="24" class="text-foreground" />
-              </AvatarFallback>
-            </Avatar>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between gap-2">
-                <div class="flex-1 min-w-0">
-                  <h3 class="font-semibold text-sm truncate">
-                    {{ user.display_name || user.username }}
-                  </h3>
-                  <p class="text-xs text-muted-foreground truncate">
-                    {{ user.username }} • {{ $t(`auth.${user.role}_role`) }}
-                  </p>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="size-8 shrink-0"
-                      :aria-label="$t('tooltip.user_options')"
-                      @click.stop
-                    >
-                      <MoreVertical :size="16" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem @click.stop="editUser(user)">
-                      <Pencil :size="16" />
-                      {{ $t("auth.edit_user") }}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem @click.stop="manageTokens(user)">
-                      <Key :size="16" />
-                      {{ $t("auth.manage_tokens") }}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      v-if="!isCurrentUser(user)"
-                      @click.stop="
-                        user.enabled
-                          ? confirmDisableUser(user)
-                          : enableUser(user)
-                      "
-                    >
-                      <component
-                        :is="user.enabled ? MonitorOff : Monitor"
-                        :size="16"
-                      />
-                      {{
-                        user.enabled
-                          ? $t("auth.disable_user")
-                          : $t("auth.enable_user")
-                      }}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator v-if="!isCurrentUser(user)" />
-                    <DropdownMenuItem
-                      v-if="!isCurrentUser(user)"
-                      class="text-destructive focus:text-destructive"
-                      @click.stop="confirmDeleteUser(user)"
-                    >
-                      <Trash2 :size="16" />
-                      {{ $t("auth.delete_user") }}
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <Badge v-if="!user.enabled" variant="destructive" class="mt-2">
-                {{ $t("auth.disabled") }}
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        <Avatar class="size-9 shrink-0">
+          <AvatarImage v-if="user.avatar_url" :src="user.avatar_url" />
+          <AvatarFallback class="bg-secondary">
+            <UserIcon :size="18" class="text-muted-foreground" />
+          </AvatarFallback>
+        </Avatar>
+        <div class="min-w-0 flex-1">
+          <h3 class="truncate text-sm font-semibold">
+            {{ user.display_name || user.username }}
+          </h3>
+          <p class="truncate text-[12.5px] text-muted-foreground">
+            {{ user.username }} • {{ $t(`auth.${user.role}_role`) }}
+          </p>
+        </div>
+        <Badge v-if="!user.enabled" variant="destructive" class="shrink-0">
+          {{ $t("auth.disabled") }}
+        </Badge>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="size-8 shrink-0 text-muted-foreground"
+              :aria-label="$t('tooltip.user_options')"
+              @click.stop
+            >
+              <MoreVertical :size="16" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click.stop="editUser(user)">
+              <Pencil :size="16" />
+              {{ $t("auth.edit_user") }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @click.stop="manageTokens(user)">
+              <Key :size="16" />
+              {{ $t("auth.manage_tokens") }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              v-if="!isCurrentUser(user)"
+              @click.stop="
+                user.enabled ? confirmDisableUser(user) : enableUser(user)
+              "
+            >
+              <component :is="user.enabled ? MonitorOff : Monitor" :size="16" />
+              {{
+                user.enabled ? $t("auth.disable_user") : $t("auth.enable_user")
+              }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator v-if="!isCurrentUser(user)" />
+            <DropdownMenuItem
+              v-if="!isCurrentUser(user)"
+              variant="destructive"
+              @click.stop="confirmDeleteUser(user)"
+            >
+              <Trash2 :size="16" />
+              {{ $t("auth.delete_user") }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
 
     <CreateUserDialog v-model="showCreateDialog" @created="loadUsers" />
@@ -160,7 +145,6 @@ import { toast } from "vue-sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
