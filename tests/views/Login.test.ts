@@ -8,6 +8,8 @@ import { user } from "../fixtures/user";
 const mocks = vi.hoisted(() => ({
   apiState: { value: "disconnected" as string },
   authenticateWithToken: vi.fn<MusicAssistantApi["authenticateWithToken"]>(),
+  authenticateWithTrustedNetwork:
+    vi.fn<MusicAssistantApi["authenticateWithTrustedNetwork"]>(),
   clearAuth: vi.fn(),
   clearGuestSession: vi.fn(),
   connectRemote: vi.fn(),
@@ -52,6 +54,7 @@ vi.mock("@/plugins/api", async () => {
     },
     api: {
       authenticateWithToken: mocks.authenticateWithToken,
+      authenticateWithTrustedNetwork: mocks.authenticateWithTrustedNetwork,
       disconnect: vi.fn<MusicAssistantApi["disconnect"]>(),
       getCurrentUserInfo: mocks.getCurrentUserInfo,
       sendCommand: mocks.sendCommand,
@@ -834,6 +837,17 @@ describe("ingress login", () => {
     });
     expect(mocks.authenticateWithToken).toHaveBeenCalledWith("admin-token");
     expect(mocks.getCurrentUserInfo).not.toHaveBeenCalled();
+  });
+
+  it("enters the hosted UI as a LAN admin without storing a token", async () => {
+    mockHostedFrontend();
+    const admin = user({ role: UserRole.ADMIN, username: "lan-admin" });
+    mocks.authenticateWithTrustedNetwork.mockResolvedValueOnce(admin);
+    const wrapper = mountLogin();
+    await flushPromises();
+    expect(wrapper.emitted("authenticated")?.[0]?.[0]).toEqual({ user: admin });
+    expect(mocks.setToken).not.toHaveBeenCalled();
+    expect(mocks.authenticateWithToken).not.toHaveBeenCalled();
   });
 
   it("shows the normal login for a standalone server behind ingress", async () => {

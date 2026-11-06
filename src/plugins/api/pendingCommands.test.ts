@@ -123,3 +123,24 @@ describe("commands in flight when the connection drops", () => {
     expect(api.state.value).not.toBe(ConnectionState.AUTH_REQUIRED);
   });
 });
+
+describe("trusted network authentication", () => {
+  it("leaves authentication state pending until the caller installs the returned user", async () => {
+    const { api } = connectedApi();
+    const login = api.authenticateWithTrustedNetwork();
+    const messageId = [...api["commands"].keys()][0];
+    api["handleResultMessage"]({
+      message_id: messageId,
+      result: { user: { role: "admin" } },
+    } as never);
+    expect(await login).toEqual({ role: "admin" });
+    expect(api.state.value).toBe(ConnectionState.CONNECTED);
+  });
+
+  it("preserves transport failures for reconnect handling", async () => {
+    const { api } = connectedApi();
+    const login = api.authenticateWithTrustedNetwork();
+    api.disconnect();
+    await expect(login).rejects.toBeInstanceOf(ConnectionLostError);
+  });
+});

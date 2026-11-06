@@ -365,6 +365,20 @@ export class MusicAssistantApi {
   /**
    * Authenticate with an existing token
    */
+  public async authenticateWithTrustedNetwork(): Promise<User | undefined> {
+    try {
+      const result = await this.sendCommand<{ user: User }>(
+        "auth",
+        { trusted_network: true },
+        { suppressGlobalError: true },
+      );
+      return result.user;
+    } catch (error) {
+      if (error instanceof ConnectionLostError) throw error;
+      return undefined;
+    }
+  }
+
   public async authenticateWithToken(
     token: string,
     deviceName?: string,

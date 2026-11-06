@@ -543,7 +543,17 @@ onMounted(async () => {
               }
             }
           } else {
-            api.requireAuthentication();
+            try {
+              const user = await api.authenticateWithTrustedNetwork();
+              if (user) {
+                authManager.setCurrentUser(user);
+                api.state.value = ConnectionState.AUTHENTICATED;
+              } else {
+                api.requireAuthentication();
+              }
+            } catch {
+              // A dropped transport is handled by the next reconnect attempt.
+            }
           }
         }
       }

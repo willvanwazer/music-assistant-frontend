@@ -40,7 +40,8 @@ function createProxyWebSocket(): Promise<WebSocket | null> {
 
     // In non-ingress mode, we need a token
     const token = authManager.getToken();
-    if (!isIngress && !token) {
+    const trustedNetwork = !token && store.currentUser?.role === "admin";
+    if (!isIngress && !token && !trustedNetwork) {
       console.error("[Sendspin] No auth token available for proxy connection");
       resolve(null);
       return;
@@ -70,7 +71,14 @@ function createProxyWebSocket(): Promise<WebSocket | null> {
         const clientId =
           window.localStorage.getItem("sendspin_webplayer_id") || "";
         console.debug("[Sendspin] Sending auth to proxy");
-        ws.send(JSON.stringify({ type: "auth", token, client_id: clientId }));
+        ws.send(
+          JSON.stringify({
+            type: "auth",
+            token,
+            trusted_network: trustedNetwork,
+            client_id: clientId,
+          }),
+        );
       }
     };
 

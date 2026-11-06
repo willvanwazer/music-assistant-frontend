@@ -1545,6 +1545,11 @@ const autoConnect = async () => {
           const storedTokenAuth = await tryStoredTokenAuth();
           if (storedTokenAuth !== "failed") return;
         }
+        const lanUser = await api.authenticateWithTrustedNetwork();
+        if (lanUser) {
+          emit("authenticated", { user: lanUser });
+          return;
+        }
       }
 
       // Show login form for this server

@@ -166,7 +166,8 @@ export class VisualizerRelayClient {
         this.startTimeSync(ws);
         return;
       }
-      ws.send(JSON.stringify({ type: "auth", token: authManager.getToken() }));
+      const token = authManager.getToken();
+      ws.send(JSON.stringify({ type: "auth", token, trusted_network: !token }));
     };
     ws.onmessage = (event) => this.handleMessage(event);
     ws.onclose = (event) => {
