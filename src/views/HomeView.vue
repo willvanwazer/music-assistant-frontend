@@ -90,7 +90,7 @@
       </Button>
     </Alert>
 
-    <ListeningHighlights />
+    <ListeningHighlights section="recent" />
     <HomeWidgetRows :edit-mode="editMode" />
 
     <!-- Floating exit button while editing the home screen -->

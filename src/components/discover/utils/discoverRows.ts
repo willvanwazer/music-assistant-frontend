@@ -5,6 +5,7 @@ import { store } from "@/plugins/store";
 // Server rows are keyed by their folder uri (e.g. library://folder/recently_played).
 export const PLAYERS_ROW_ID = "players";
 export const TOP_PICKS_ROW_ID = "top_picks";
+export const PODCASTS_ROW_ID = "podcasts";
 export const GENRES_ROW_ID = "genres";
 export const RECENTLY_PLAYED_ROW_ID = "library://folder/recently_played";
 export const IN_PROGRESS_ROW_ID = "library://folder/in_progress";
@@ -14,6 +15,7 @@ export const IN_PROGRESS_ROW_ID = "library://folder/in_progress";
 export const DEFAULT_PRIORITY_ROWS = [
   PLAYERS_ROW_ID,
   TOP_PICKS_ROW_ID,
+  PODCASTS_ROW_ID,
   IN_PROGRESS_ROW_ID,
   RECENTLY_PLAYED_ROW_ID,
 ];

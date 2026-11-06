@@ -50,8 +50,9 @@ beforeEach(() => {
   apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([]);
   apiMock.browse.mockResolvedValue([]);
 });
-const render = () =>
+const render = (section: "all" | "recent" | "podcasts" = "all") =>
   mount(ListeningHighlights, {
+    props: { section },
     global: {
       mocks: { $t: (key: string) => key },
       stubs: { Button: { template: "<button><slot /></button>" } },
@@ -59,6 +60,19 @@ const render = () =>
   });
 
 describe("permanent listening highlights", () => {
+  it("loads each separately positioned section without duplicate requests", async () => {
+    const recent = render("recent");
+    await flushPromises();
+    expect(recent.text()).not.toContain("listening_home.up_next");
+    expect(apiMock.browse).not.toHaveBeenCalled();
+    const podcasts = render("podcasts");
+    await flushPromises();
+    expect(podcasts.text()).not.toContain("listening_home.recent_title");
+    expect(apiMock.getRecentlyPlayedAlbumsAndPlaylists).toHaveBeenCalledTimes(
+      1,
+    );
+    expect(apiMock.browse).toHaveBeenCalledTimes(2);
+  });
   it("keeps recent listening above Podcasts and both podcast shelves visible when empty", async () => {
     const wrapper = render();
     await flushPromises();

@@ -1,6 +1,7 @@
 <template>
   <div class="listening-highlights">
     <EditorialShelf
+      v-if="section !== 'podcasts'"
       :title="$t('listening_home.recent_title')"
       :tiles-per-view="tilesPerView"
     >
@@ -37,6 +38,7 @@
     </EditorialShelf>
 
     <section
+      v-if="section !== 'recent'"
       aria-labelledby="listening-podcasts-title"
       class="listening-podcasts"
     >
@@ -45,6 +47,7 @@
           <h2 id="listening-podcasts-title">{{ $t("podcasts") }}</h2>
           <p>{{ $t("listening_home.podcasts_subtitle") }}</p>
         </div>
+        <slot name="actions"></slot>
         <Button
           variant="ghost"
           size="sm"
@@ -155,6 +158,12 @@ import EditorialCardSkeleton from "./EditorialCardSkeleton.vue";
 import { podcastEpisodes } from "./utils/listeningHighlights";
 
 const router = useRouter();
+const props = withDefaults(
+  defineProps<{ section?: "all" | "recent" | "podcasts" }>(),
+  {
+    section: "all",
+  },
+);
 const loading = ref(true);
 const refreshing = ref(false);
 const recent = ref<ItemMapping[]>([]);
@@ -184,9 +193,13 @@ let refreshTimer: ReturnType<typeof setTimeout> | undefined;
 async function refresh() {
   const current = ++generation;
   refreshing.value = true;
-  const sources = podcastProviders.value;
+  const sources = props.section === "recent" ? [] : podcastProviders.value;
   const [history, queue, progress] = await Promise.all([
-    Promise.allSettled([api.getRecentlyPlayedAlbumsAndPlaylists()]),
+    Promise.allSettled(
+      props.section === "podcasts"
+        ? []
+        : [api.getRecentlyPlayedAlbumsAndPlaylists()],
+    ),
     Promise.allSettled(
       sources.map((provider) =>
         api.browse(`${provider.instance_id}://up_next`),
@@ -199,8 +212,8 @@ async function refresh() {
     ),
   ]);
   if (current !== generation) return;
-  recentError.value = history[0].status === "rejected";
-  if (history[0].status === "fulfilled") recent.value = history[0].value;
+  recentError.value = history[0]?.status === "rejected";
+  if (history[0]?.status === "fulfilled") recent.value = history[0].value;
   queueError.value = queue.some((result) => result.status === "rejected");
   progressError.value = progress.some((result) => result.status === "rejected");
   upNext.value = podcastEpisodes(
@@ -240,6 +253,7 @@ const unsubscribeConnected = api.subscribe(
 );
 watch(
   () => [
+    props.section,
     store.currentUser?.user_id,
     ...podcastProviders.value.map((p) => p.instance_id),
   ],
@@ -313,11 +327,26 @@ onBeforeUnmount(() => {
   font-variant-numeric: tabular-nums;
 }
 .episode-progress progress {
+  appearance: none;
+  border: none;
   display: block;
   width: 100%;
   height: 4px;
   margin-top: 5px;
-  accent-color: var(--primary);
+  background: rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 2px;
+}
+.episode-progress progress::-webkit-progress-bar {
+  background: rgba(var(--v-theme-on-surface), 0.12);
+  border-radius: 2px;
+}
+.episode-progress progress::-webkit-progress-value {
+  background: rgb(var(--v-theme-primary));
+  border-radius: 2px;
+}
+.episode-progress progress::-moz-progress-bar {
+  background: rgb(var(--v-theme-primary));
+  border-radius: 2px;
 }
 @media (max-width: 600px) {
   .listening-podcasts__heading {

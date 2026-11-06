@@ -22,6 +22,21 @@
               : undefined
           "
         >
+          <ListeningHighlights
+            v-if="row.kind === 'podcasts'"
+            section="podcasts"
+          >
+            <template v-if="editMode" #actions>
+              <button
+                class="ed-drag-handle"
+                :aria-label="$t('queue_reorder')"
+                @pointerdown.stop.prevent="startItemDrag($event, idx)"
+                @click.stop
+              >
+                <GripVertical />
+              </button>
+            </template>
+          </ListeningHighlights>
           <!-- Players row -->
           <EditorialShelf
             v-if="row.kind === 'players'"
@@ -361,6 +376,7 @@ let prevState: DiscoverSnapshot | undefined;
 </script>
 
 <script setup lang="ts">
+import ListeningHighlights from "@/components/discover/ListeningHighlights.vue";
 import EditorialCardSkeleton from "@/components/discover/EditorialCardSkeleton.vue";
 import EditorialGenreTile from "@/components/discover/EditorialGenreTile.vue";
 import EditorialHeroCard from "@/components/discover/EditorialHeroCard.vue";
@@ -378,6 +394,7 @@ import {
   GENRES_ROW_ID,
   IN_PROGRESS_ROW_ID,
   PLAYERS_ROW_ID,
+  PODCASTS_ROW_ID,
   TOP_PICKS_ROW_ID,
   resolveDiscoverRowsConfig,
   setDiscoverRowHidden,
@@ -692,7 +709,12 @@ const refreshTopPicks = async () => {
 };
 
 // --- Unified row list: visibility + ordering via the discover.rows pref ---
-type DiscoverRowKind = "players" | "top_picks" | "recommendation" | "genres";
+type DiscoverRowKind =
+  | "players"
+  | "top_picks"
+  | "podcasts"
+  | "recommendation"
+  | "genres";
 
 interface DiscoverRow {
   id: string;
@@ -719,6 +741,8 @@ const availableRowIds = computed<string[]>(() => {
       if (players.value.length > 0) ids.push(id);
     } else if (id === TOP_PICKS_ROW_ID) {
       if (heroEntries.value.length > 0) ids.push(id);
+    } else if (id === PODCASTS_ROW_ID) {
+      ids.push(id);
     } else if (recSet.has(id)) {
       ids.push(id);
     }
@@ -752,6 +776,8 @@ const allRows = computed<DiscoverRow[]>(() => {
         title: $t("top_picks_for_you"),
         hidden: hidden.has(id),
       });
+    } else if (id === PODCASTS_ROW_ID) {
+      rows.push({ id, kind: "podcasts", title: $t("podcasts"), hidden: false });
     } else if (id === GENRES_ROW_ID) {
       rows.push({
         id,
