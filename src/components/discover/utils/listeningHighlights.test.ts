@@ -4,7 +4,7 @@ import {
   type MediaItemType,
   type PodcastEpisode,
 } from "@/plugins/api/interfaces";
-import { activePodcastShows, podcastEpisodes } from "./listeningHighlights";
+import { podcastEpisodes } from "./listeningHighlights";
 
 const episode = (id: string, show: string, fully_played = false) =>
   ({
@@ -41,13 +41,16 @@ describe("podcast listening shelves", () => {
       ]),
     ).toEqual([first, second]);
   });
-  it("shows each active podcast once with artwork from its in-progress episode", () => {
-    const shows = activePodcastShows([
+  it("keeps separate episodes from the same show", () => {
+    const episodes = podcastEpisodes([
       episode("first", "A"),
       episode("second", "A"),
       episode("third", "B"),
     ]);
-    expect(shows.map((show) => show.name)).toEqual(["A", "B"]);
-    expect("image" in shows[0] && shows[0].image?.path).toBe("A.jpg");
+    expect(episodes.map((item) => item.name)).toEqual([
+      "first",
+      "second",
+      "third",
+    ]);
   });
 });

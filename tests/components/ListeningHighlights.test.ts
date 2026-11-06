@@ -21,7 +21,10 @@ vi.mock("@/plugins/store", () => ({
   store: { currentUser: { user_id: "will", provider_filter: [] } },
 }));
 vi.mock("vue-router", () => ({ useRouter: () => ({ push: vi.fn() }) }));
-vi.mock("@/helpers/utils", () => ({ panelViewItemResponsive: () => 5 }));
+vi.mock("@/helpers/utils", () => ({
+  panelViewItemResponsive: () => 5,
+  formatDuration: (seconds: number) => `${seconds}s`,
+}));
 vi.mock("@/plugins/breakpoint", () => ({ getBreakpointValue: () => false }));
 vi.mock("@/components/discover/EditorialShelf.vue", () => ({
   default: {
@@ -64,10 +67,35 @@ describe("permanent listening highlights", () => {
       text.indexOf("podcasts"),
     );
     expect(text).toContain("listening_home.up_next");
-    expect(text).toContain("listening_home.active_podcasts");
+    expect(text).toContain("listening_home.continue_listening");
     expect(text).toContain("listening_home.queue_empty");
     expect(apiMock.browse).toHaveBeenCalledWith("pocketcasts://up_next");
     expect(apiMock.browse).toHaveBeenCalledWith("pocketcasts://in_progress");
+  });
+  it("shows started episodes separately with their saved playback progress", async () => {
+    apiMock.browse.mockImplementation((path: string) =>
+      Promise.resolve(
+        path.endsWith("in_progress")
+          ? ["First episode", "Second episode"].map((name, i) => ({
+              uri: `pocketcasts://podcast_episode/${i}`,
+              name,
+              media_type: "podcast_episode",
+              podcast: { name: "Same show", uri: "pocketcasts://podcast/show" },
+              resume_position_ms: 120000,
+              duration: 600,
+            }))
+          : [],
+      ),
+    );
+    const wrapper = render();
+    await flushPromises();
+    expect(wrapper.findAll(".media-card").map((card) => card.text())).toEqual([
+      expect.stringContaining("First episodeSame show"),
+      expect.stringContaining("Second episodeSame show"),
+    ]);
+    expect(wrapper.findAll("progress")).toHaveLength(2);
+    expect(wrapper.find("progress").attributes("value")).toBe("120");
+    expect(wrapper.find("progress").attributes("max")).toBe("600");
   });
   it("keeps listening history usable when the podcast service fails", async () => {
     apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([

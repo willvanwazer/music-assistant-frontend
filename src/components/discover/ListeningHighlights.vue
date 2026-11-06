@@ -80,8 +80,8 @@
         </template>
       </EditorialShelf>
       <EditorialShelf
-        :title="$t('listening_home.active_podcasts')"
-        :subtitle="$t('listening_home.active_subtitle')"
+        :title="$t('listening_home.continue_listening')"
+        :subtitle="$t('listening_home.continue_subtitle')"
         :tiles-per-view="tilesPerView"
       >
         <template v-if="loading"
@@ -89,11 +89,27 @@
         /></template>
         <template v-else>
           <EditorialMediaCard
-            v-for="podcast in activeShows"
-            :key="podcast.uri"
-            :item="podcast"
-          />
-          <p v-if="!activeShows.length" class="listening-empty" role="status">
+            v-for="episode in inProgress"
+            :key="episode.uri"
+            :item="episode"
+          >
+            <template #subtitle>
+              {{ episode.podcast.name }}
+              <span v-if="episode.resume_position_ms" class="episode-progress">
+                {{ formatDuration(episode.resume_position_ms / 1000) }}
+                <template v-if="episode.duration">
+                  / {{ formatDuration(episode.duration) }}</template
+                >
+                <progress
+                  v-if="episode.duration"
+                  :value="episode.resume_position_ms / 1000"
+                  :max="episode.duration"
+                  :aria-label="$t('item_in_progress')"
+                ></progress>
+              </span>
+            </template>
+          </EditorialMediaCard>
+          <p v-if="!inProgress.length" class="listening-empty" role="status">
             {{
               $t(
                 progressError
@@ -108,7 +124,7 @@
         v-if="
           !loading &&
           (queueError || progressError) &&
-          (upNext.length || activeShows.length)
+          (upNext.length || inProgress.length)
         "
         class="listening-warning"
         role="status"
@@ -130,16 +146,13 @@ import {
   type ItemMapping,
   type PodcastEpisode,
 } from "@/plugins/api/interfaces";
-import { panelViewItemResponsive } from "@/helpers/utils";
+import { formatDuration, panelViewItemResponsive } from "@/helpers/utils";
 import { getBreakpointValue } from "@/plugins/breakpoint";
 import { Button } from "@/components/ui/button";
 import EditorialShelf from "./EditorialShelf.vue";
 import EditorialMediaCard from "./EditorialMediaCard.vue";
 import EditorialCardSkeleton from "./EditorialCardSkeleton.vue";
-import {
-  activePodcastShows,
-  podcastEpisodes,
-} from "./utils/listeningHighlights";
+import { podcastEpisodes } from "./utils/listeningHighlights";
 
 const router = useRouter();
 const loading = ref(true);
@@ -150,7 +163,6 @@ const inProgress = ref<PodcastEpisode[]>([]);
 const recentError = ref(false);
 const queueError = ref(false);
 const progressError = ref(false);
-const activeShows = computed(() => activePodcastShows(inProgress.value));
 const tilesPerView = computed(() =>
   getBreakpointValue({ breakpoint: "bp1", condition: "lt" })
     ? 2.2
@@ -294,6 +306,18 @@ onBeforeUnmount(() => {
   margin: 0 28px;
   color: var(--muted-foreground);
   font-size: 0.875rem;
+}
+.episode-progress {
+  display: block;
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.episode-progress progress {
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: 5px;
+  accent-color: var(--primary);
 }
 @media (max-width: 600px) {
   .listening-podcasts__heading {
