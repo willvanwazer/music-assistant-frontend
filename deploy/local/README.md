@@ -1,8 +1,8 @@
 # Deploy the frontend beside an existing Music Assistant server
 
-`codex/web-ui-stable` starts at frontend `2.17.297.post1`, the exact version
+The fork's `main` starts at frontend `2.17.297.post1`, the exact version
 bundled with Music Assistant Server `2.10.9` (API schema 65). Keep layout work
-for that server on this branch. Upstream `main` and `codex/web-ui-layout` require
+for that server on `main`. Upstream `main` and `codex/web-ui-layout` require
 a newer development server and must not be deployed against schema 65.
 
 This deployment runs only an nginx frontend container. It serves our compiled
@@ -26,7 +26,7 @@ does not configure a public hostname, tunnel or Home Assistant ingress.
 
 ## Deploy
 
-From a checkout of `codex/web-ui-stable`, with Node and pnpm available:
+For a manual standalone deployment, from a checkout of `main`, with Node and pnpm available:
 
 ```sh
 MA_SSH_HOST=YOUR_SSH_HOST \
@@ -53,5 +53,8 @@ mv -Tf site/current.next site/current
 
 Hashed assets are retained across deployments so open tabs can still load the
 previous build's chunks. Runtime assets and host configuration stay outside git.
-Codex cloud can build this branch; deploying from it additionally requires SSH
-connectivity to the host. No automatic cloud-to-home deployment is configured.
+Normal deployments are automatic: `NAS CI` checks pushes to `main`, and the
+private `willvanwazer/nas-stacks` deployment workflow picks up passing commits.
+See `music-assistant/README.md` in that repository for endpoints and rollback.
+The manual script above is retained for standalone installations; do not run it
+against the NAS once the managed deployment owns port 8097.

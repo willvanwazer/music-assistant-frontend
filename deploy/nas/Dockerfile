@@ -2,7 +2,7 @@
 FROM node:26-bookworm-slim AS build
 RUN npm install --global pnpm@11.8.0
 WORKDIR /src
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
 RUN pnpm build
