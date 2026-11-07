@@ -102,7 +102,7 @@ onUnmounted(() => {
         </template>
         <template v-else>
           <label for="playlist-folder-name" class="text-sm">{{
-            $t("name")
+            $t("playlist_folders.name")
           }}</label>
           <Input
             id="playlist-folder-name"

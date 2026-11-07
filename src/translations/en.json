@@ -2437,6 +2437,7 @@
     },
     "playlist_folders": {
         "title": "Playlist folders",
+        "name": "Folder name",
         "retry": "Retry",
         "all": "All playlists",
         "unfiled": "Unfiled",

@@ -47,6 +47,7 @@ function createCurrentItemFavorite() {
   api.subscribe(EventType.MEDIA_ITEM_UPDATED, (evt: EventMessage) => {
     const updatedItem = evt.data as MediaItemType;
     if (
+      updatedItem &&
       "favorite" in updatedItem &&
       currentItem.value?.uri === updatedItem.uri
     ) {
