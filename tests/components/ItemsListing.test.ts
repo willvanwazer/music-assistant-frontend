@@ -476,3 +476,57 @@ describe("ItemsListing per-page search", () => {
     ).toBe("");
   });
 });
+
+describe("ItemsListing result restoration", () => {
+  beforeEach(() => {
+    store.prevState = undefined;
+    mockGetLibraryGenres.mockResolvedValue([]);
+    mockSubscribeMulti.mockImplementation(events.subscribeMulti);
+  });
+
+  it("loads a different folder even when it shares listing preferences", async () => {
+    const allItems = [track({ item_id: "1" }), track({ item_id: "2" })];
+    const all = mountListingRaw({
+      restoreState: true,
+      restoreStateKey: "librarytracks:all",
+      loadPagedData: vi.fn().mockResolvedValue(allItems),
+    });
+    await flushPromises();
+    all.unmount();
+
+    const loadFolder = vi.fn().mockResolvedValue([allItems[1]]);
+    const folder = mountListingRaw({
+      restoreState: true,
+      restoreStateKey: "librarytracks:folder",
+      loadPagedData: loadFolder,
+    });
+    await flushPromises();
+
+    expect(loadFolder).toHaveBeenCalledTimes(1);
+    folder.unmount();
+    expect(store.prevState?.pagedItems.map((item) => item.item_id)).toEqual([
+      "2",
+    ]);
+    expect(store.prevState?.path).toBe("librarytracks:folder");
+  });
+
+  it("restores cached results when returning to the same folder", async () => {
+    const props = {
+      restoreState: true,
+      restoreStateKey: "librarytracks:folder",
+      loadPagedData: vi.fn().mockResolvedValue([track({ item_id: "2" })]),
+    };
+    const original = mountListingRaw(props);
+    await flushPromises();
+    original.unmount();
+    props.loadPagedData.mockClear();
+
+    const restored = mountListingRaw(props);
+    await flushPromises();
+    expect(props.loadPagedData).not.toHaveBeenCalled();
+    restored.unmount();
+    expect(store.prevState?.pagedItems.map((item) => item.item_id)).toEqual([
+      "2",
+    ]);
+  });
+});

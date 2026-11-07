@@ -19,6 +19,7 @@
     :extra-menu-items="extraMenuItems"
     :icon="ListMusic"
     :restore-state="true"
+    :restore-state-key="`libraryplaylists:${folderView}`"
     :total="total"
     :show-provider-filter="true"
   >

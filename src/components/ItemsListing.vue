@@ -607,6 +607,8 @@ export interface Props {
   path?: string;
   icon?: string | Component;
   restoreState?: boolean;
+  // Separate cached results for views that share the same filter preferences.
+  restoreStateKey?: string;
   onTitleClick?: () => void;
   refreshOnParentUpdate?: boolean;
   forcedViewMode?: "list" | "panel" | "panel_compact";
@@ -650,6 +652,7 @@ const props = withDefaults(defineProps<Props>(), {
   path: undefined,
   icon: undefined,
   restoreState: false,
+  restoreStateKey: undefined,
   onTitleClick: undefined,
   refreshOnParentUpdate: false,
   forcedViewMode: undefined,
@@ -2043,7 +2046,7 @@ if (props.allowKeyHooks) {
 if (props.restoreState) {
   // handle restore state
   onBeforeUnmount(() => {
-    const key = props.path || props.itemtype;
+    const key = props.restoreStateKey || props.path || props.itemtype;
     const el = document.querySelector(".content-section");
 
     store.prevState = {
@@ -2201,7 +2204,7 @@ onBeforeUnmount(() => {
 onMounted(async () => {
   // for the main listings (e.g. artists, albums etc.) we remember the scroll position
   // so we can jump back there on back navigation
-  const key = props.path || props.itemtype;
+  const key = props.restoreStateKey || props.path || props.itemtype;
   if (props.restoreState && store.prevState?.path == key) {
     restoredFromPrevState = true;
     params.value = store.prevState.params;
