@@ -51,6 +51,7 @@ async function move(event: DragEvent, folderId: string) {
         >
           <SidebarMenuButton
             as-child
+            class="nav-row nav-link no-underline"
             :is-active="
               route.name === 'playlists' &&
               route.query.folder === folder.folder_id

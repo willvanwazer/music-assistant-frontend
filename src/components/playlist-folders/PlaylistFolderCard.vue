@@ -135,6 +135,8 @@ function remove() {
   outline: 2px solid var(--primary);
 }
 .folder-card__link {
+  color: var(--foreground);
+  text-decoration: none;
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -159,6 +161,14 @@ function remove() {
   grid-template-rows: 1fr;
   grid-template-columns: 1fr;
   place-items: center;
+}
+.folder-card__art :deep(.v-img__img) {
+  object-fit: cover;
+}
+.folder-card__link:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: inherit;
 }
 .folder-card__menu {
   position: absolute;
