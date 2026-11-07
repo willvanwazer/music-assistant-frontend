@@ -124,3 +124,12 @@ If you wish to assist in translating Music Assistant into a language that it cur
 ---
 
 [![A project from the Open Home Foundation](https://www.openhomefoundation.org/badges/ohf-project.png)](https://www.openhomefoundation.org/)
+
+## Playlist folders
+
+The Playlists page supports personal folders, sidebar pins, drag-and-drop, and a
+**Move to folder** menu. Folder organization syncs through the backend account.
+Deleting a folder returns its playlists to Unfiled without deleting the playlists.
+
+See the [playlist folders API reference](https://github.com/willvanwazer/music-assistant-server/blob/main/docs/api/playlist-folders.md)
+for the HTTP and WebSocket commands used by this UI.

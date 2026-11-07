@@ -237,6 +237,8 @@
       </Tabs>
     </div>
 
+    <slot name="before-items"></slot>
+
     <Container
       v-if="expanded"
       :variant="viewMode == 'list' ? 'default' : 'panel'"
@@ -285,6 +287,7 @@
           <PanelviewItem
             v-for="item in pagedItems"
             :key="item.uri"
+            :draggable="playlistFolderDrag && item.provider === 'library'"
             :item="item"
             :is-selected="isSelected(item)"
             :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
@@ -299,6 +302,7 @@
             :disable-play-button="isPlayActionInProgress"
             :parent-item="parentItem"
             :sort-by="params.sortBy"
+            @dragstart="playlistFolderDrag && startPlaylistDrag($event, item)"
             @select="onSelect"
           />
         </div>
@@ -311,6 +315,7 @@
           <PanelviewItemCompact
             v-for="item in pagedItems"
             :key="item.uri"
+            :draggable="playlistFolderDrag && item.provider === 'library'"
             :item="item"
             :is-selected="isSelected(item)"
             :show-checkboxes="showCheckboxes && !isParentDirItem(item)"
@@ -319,6 +324,7 @@
             :disable-play-button="isPlayActionInProgress"
             :parent-item="parentItem"
             :sort-by="params.sortBy"
+            @dragstart="playlistFolderDrag && startPlaylistDrag($event, item)"
             @select="onSelect"
           />
         </div>
@@ -337,6 +343,7 @@
             </div>
             <ListviewItem
               v-else
+              :draggable="playlistFolderDrag && item.provider === 'library'"
               :item="item"
               :album-track-view="itemtype === 'albumtracks'"
               :show-track-number="showTrackNumber"
@@ -354,6 +361,7 @@
               :disable-play-button="isPlayActionInProgress"
               :parent-item="parentItem"
               :sort-by="params.sortBy"
+              @dragstart="playlistFolderDrag && startPlaylistDrag($event, item)"
               @select="onSelect"
             />
           </template>
@@ -518,6 +526,7 @@ import {
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { toast } from "vue-sonner";
+import { startPlaylistDrag } from "@/helpers/playlistFolderDrag";
 import ListviewItem from "./ListviewItem.vue";
 import PanelviewItem from "./PanelviewItem.vue";
 import PanelviewItemCompact from "./PanelviewItemCompact.vue";
@@ -587,6 +596,7 @@ export interface Props {
   allowCollapse?: boolean;
   allowKeyHooks?: boolean;
   extraMenuItems?: ToolBarMenuItem[];
+  playlistFolderDrag?: boolean;
   // loadPagedData callback is provided for serverside paging/sorting
   loadPagedData?: LoadPagedDataFn;
   // loadItems callback is provided for flat non-paged listings
@@ -634,6 +644,7 @@ const props = withDefaults(defineProps<Props>(), {
   showHideEmptyFilter: false,
   showHideFullyPlayedFilter: false,
   extraMenuItems: undefined,
+  playlistFolderDrag: false,
   loadPagedData: undefined,
   loadItems: undefined,
   path: undefined,

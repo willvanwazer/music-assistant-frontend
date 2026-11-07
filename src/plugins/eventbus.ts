@@ -1,3 +1,4 @@
+import type { PlaylistFolder } from "@/composables/usePlaylistFolders";
 // Global, simple eventbus
 
 import type { ContextMenuItem } from "@/helpers/context_menu_item";
@@ -10,6 +11,12 @@ import {
   Radio,
   Track,
 } from "./api/interfaces";
+
+export type PlaylistFolderDialogEvent = {
+  mode: "create" | "rename" | "move";
+  folder?: PlaylistFolder;
+  playlistIds?: string[];
+};
 
 export type PlaylistDialogEvent = {
   items: MediaItemType[];
@@ -104,6 +111,7 @@ export type Events = {
   createPlaylist: CreatePlaylistEvent;
   mergeGenreDialog: MergeGenreDialogEvent;
   deleteGenreDialog: DeleteGenreDialogEvent;
+  playlistFolderDialog: PlaylistFolderDialogEvent;
   deleteConfirmationDialog: DeleteConfirmationDialogEvent;
   playerGroupPlaybackDialog: PlayerGroupPlaybackDialogEvent;
   linkGenreDialog: LinkGenreDialogEvent;

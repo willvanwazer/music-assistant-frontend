@@ -166,7 +166,7 @@ import { getLucideIcon, PLAYER_ICON_FALLBACK } from "@/helpers/icon";
 import api from "@/plugins/api";
 import { ContextMenuDialogEvent, eventbus } from "@/plugins/eventbus";
 import { store } from "@/plugins/store";
-import { Check } from "@lucide/vue";
+import { Check, FolderInput } from "@lucide/vue";
 import { computed, h, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
 import { VIcon } from "vuetify/components";
 
@@ -510,6 +510,24 @@ export const getContextMenuItems = async function (
   }
 
   const firstItem = items[0];
+  if (
+    store.currentUser &&
+    store.currentUser.role !== "guest" &&
+    items.every(
+      (item) =>
+        item.media_type === MediaType.PLAYLIST && item.provider === "library",
+    )
+  ) {
+    contextMenuItems.push({
+      label: "playlist_folders.move",
+      icon: FolderInput,
+      action: () =>
+        eventbus.emit("playlistFolderDialog", {
+          mode: "move",
+          playlistIds: items.map((item) => item.item_id),
+        }),
+    });
+  }
 
   // show info
   if (

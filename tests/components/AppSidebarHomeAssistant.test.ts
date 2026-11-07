@@ -49,6 +49,9 @@ vi.mock("@/components/navigation/NavMain.vue", () => ({
 vi.mock("@/components/navigation/NavShortcuts.vue", () => ({
   default: { template: "<div />" },
 }));
+vi.mock("@/components/navigation/NavPlaylistFolders.vue", () => ({
+  default: { template: "<div />" },
+}));
 vi.mock("@/components/navigation/NavMobile.vue", () => ({
   default: { template: "<div />" },
 }));

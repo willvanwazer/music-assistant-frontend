@@ -1,6 +1,8 @@
 <template>
   <ItemsListing
     ref="listingRef"
+    :key="folderView"
+    :playlist-folder-drag="canEdit"
     itemtype="playlists"
     path="libraryplaylists"
     :show-duration="false"
@@ -10,7 +12,7 @@
     :show-library="true"
     :sort-keys="sortKeys"
     :update-available="updateAvailable"
-    :title="$t('playlists')"
+    :title="folderTitle"
     :allow-key-hooks="true"
     :show-search-button="true"
     :show-genre-filter="true"
@@ -19,10 +21,16 @@
     :restore-state="true"
     :total="total"
     :show-provider-filter="true"
-  />
+  >
+    <template #before-items><PlaylistFoldersBrowser /></template>
+  </ItemsListing>
 </template>
 
 <script setup lang="ts">
+import PlaylistFoldersBrowser from "@/components/playlist-folders/PlaylistFoldersBrowser.vue";
+import { usePlaylistFolders } from "@/composables/usePlaylistFolders";
+import { useRoute } from "vue-router";
+import type { Playlist } from "@/plugins/api/interfaces";
 import ItemsListing, { LoadDataParams } from "@/components/ItemsListing.vue";
 import { SMART_PLAYLIST_PROVIDER_DOMAIN } from "@/components/smart_playlist/constants";
 import { ToolBarMenuItem } from "@/components/Toolbar.vue";
@@ -38,7 +46,7 @@ import { eventbus } from "@/plugins/eventbus";
 import { $t } from "@/plugins/i18n";
 import { store } from "@/plugins/store";
 import { Import, ListMusic, ListPlus, WandSparkles } from "@lucide/vue";
-import { onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { toast } from "vue-sonner";
 
 defineOptions({
@@ -49,6 +57,18 @@ const updateAvailable = ref(false);
 const total = ref(store.libraryPlaylistsCount);
 const extraMenuItems = ref<ToolBarMenuItem[]>([]);
 const listingRef = ref<InstanceType<typeof ItemsListing>>();
+const route = useRoute();
+const { folders, revision, canEdit } = usePlaylistFolders();
+const folderView = computed(() =>
+  typeof route.query.folder === "string" ? route.query.folder : "",
+);
+const folderTitle = computed(() =>
+  folderView.value === "unfiled"
+    ? $t("playlist_folders.unfiled")
+    : folders.value.find((folder) => folder.folder_id === folderView.value)
+        ?.name || $t("playlists"),
+);
+watch(revision, () => listingRef.value?.reload());
 
 const sortKeys = [
   "name",
@@ -67,6 +87,20 @@ const sortKeys = [
 
 const loadItems = async function (params: LoadDataParams) {
   updateAvailable.value = false;
+  if (folderView.value) {
+    total.value = undefined;
+    return api.sendCommand<Playlist[]>("music/playlist_folders/items", {
+      folder_id: folderView.value === "unfiled" ? undefined : folderView.value,
+      unfiled: folderView.value === "unfiled",
+      favorite: params.favoritesOnly || undefined,
+      search: params.search,
+      limit: params.limit,
+      offset: params.offset,
+      order_by: params.sortBy,
+      provider: params.provider?.length ? params.provider : undefined,
+      genre: params.genreIds,
+    });
+  }
   setTotals(params);
   return await api.getLibraryPlaylists(
     params.favoritesOnly || undefined,

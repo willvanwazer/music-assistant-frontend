@@ -20,6 +20,7 @@
           <add-to-playlist-dialog />
           <audio-overlay-dialog />
           <create-playlist-dialog />
+          <PlaylistFolderDialog />
           <create-smart-playlist-dialog />
           <import-playlist-dialog />
           <play-announcement-dialog />
@@ -47,6 +48,7 @@
 </template>
 
 <script lang="ts" setup>
+import PlaylistFolderDialog from "@/components/playlist-folders/PlaylistFolderDialog.vue";
 import AddManualLink from "@/components/AddManualLink.vue";
 import CommandCenter from "@/components/CommandCenter.vue";
 import DialogDeleteConfirmation from "@/components/DialogDeleteConfirmation.vue";

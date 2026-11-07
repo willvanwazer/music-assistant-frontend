@@ -2434,5 +2434,31 @@
         "greeting_evening": "Good evening, {name}",
         "genre_albums": "{count} album | {count} albums",
         "genre_tracks": "{count} track | {count} tracks"
+    },
+    "playlist_folders": {
+        "title": "Playlist folders",
+        "retry": "Retry",
+        "all": "All playlists",
+        "unfiled": "Unfiled",
+        "create": "New folder",
+        "rename": "Rename folder",
+        "move": "Move to folder",
+        "delete": "Delete folder",
+        "pin": "Pin to sidebar",
+        "unpin": "Unpin from sidebar",
+        "destination": "Destination",
+        "choose": "Choose a folder",
+        "personal_description": "Organize your playlists across your devices.",
+        "count": "{count} playlist | {count} playlists",
+        "actions": "Folder actions for {name}",
+        "delete_description": "The folder will be deleted. Its playlists will return to Unfiled.",
+        "empty": "Create a folder to organize your playlists. Drag playlists into folders or use Move to folder.",
+        "not_found": "This folder no longer exists. Choose All playlists to continue.",
+        "load_error": "Playlist folders could not be loaded.",
+        "save_error": "Could not save playlist folders.",
+        "create_success": "Folder created",
+        "update_success": "Folder updated",
+        "delete_success": "Folder deleted",
+        "move_success": "Playlists moved"
     }
 }

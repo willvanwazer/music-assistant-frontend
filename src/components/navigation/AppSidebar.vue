@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import NavMain from "@/components/navigation/NavMain.vue";
+import NavPlaylistFolders from "@/components/navigation/NavPlaylistFolders.vue";
 import NavShortcuts from "@/components/navigation/NavShortcuts.vue";
 import { Button } from "@/components/ui/button";
 import {
@@ -194,6 +195,7 @@ onUnmounted(() => {
         :edit-mode="editMode"
       />
       <NavShortcuts :edit-mode="editMode" />
+      <NavPlaylistFolders />
     </SidebarContent>
     <!-- a hairline sets the account and the collapse control apart from the
          menu that scrolls above them -->
