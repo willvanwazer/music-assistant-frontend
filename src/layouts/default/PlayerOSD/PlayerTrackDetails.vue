@@ -429,10 +429,13 @@ function onTitleClick() {
   opacity: 1;
 }
 
+/* No cap of its own: the line is only as wide as what is on it, so a share of
+   it cut the name short beside a lone source icon. Where the line runs out,
+   the room and the track details shrink together, the room at half the rate,
+   as it is what says which speakers the card controls. */
 .player-track-room {
-  flex: 0 1 auto;
+  flex: 0 0.5 auto;
   min-width: 0;
-  max-width: 60%;
   overflow: hidden;
   color: var(--primary);
   font-size: 12px;

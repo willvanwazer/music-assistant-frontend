@@ -176,14 +176,39 @@ describe("isPhoneSizedScreen", () => {
     expect(await isPhoneSized(PHONE_LANDSCAPE)).toBe(true);
   });
 
+  // a phone with its display scaled down: wide enough, and just too tall, for
+  // either size rule to catch it on its side
+  const SCALED_PHONE_LANDSCAPE = { width: 1000, height: 560 };
+
   // Android reports only "mobile" — no browser there still names the model the
   // phone check wants — so taking the device at its word has to mean that too
   it.each([{ IS_PHONE_UA: true }, { IS_MOBILE_UA: true }])(
-    "takes the device at its word whatever the screen measures (%o)",
+    "takes a phone-sized device at its word whatever its width (%o)",
     async (flags) => {
-      expect(await isPhoneSized(DESKTOP, flags)).toBe(true);
+      expect(await isPhoneSized(SCALED_PHONE_LANDSCAPE)).toBe(false);
+      expect(await isPhoneSized(SCALED_PHONE_LANDSCAPE, flags)).toBe(true);
     },
   );
+
+  // an iPhone Duo opened out: the inner screen has a tablet's short side, so
+  // on its side it gets the desktop layout, while the outer screen and the
+  // inner one upright are still laid out as a phone
+  it.each([
+    ["the inner screen on its side", { width: 890, height: 626 }, false],
+    ["the inner screen upright", { width: 626, height: 890 }, true],
+    ["the outer screen", { width: 466, height: 678 }, true],
+  ])("measures a foldable's %s", async (_, screen, expected) => {
+    expect(await isPhoneSized(screen, { IS_PHONE_UA: true })).toBe(expected);
+  });
+
+  it("takes a phone at its word up to a short side of 600", async () => {
+    expect(
+      await isPhoneSized({ width: 1000, height: 599 }, { IS_PHONE_UA: true }),
+    ).toBe(true);
+    expect(
+      await isPhoneSized({ width: 1000, height: 600 }, { IS_PHONE_UA: true }),
+    ).toBe(false);
+  });
 
   // A tablet is only taken at its word where the layout is decided; here it is
   // measured like anything else, so a narrow one in portrait reads as

@@ -66,14 +66,26 @@ const PHONE_LANDSCAPE_HEIGHT = 500;
 const PHONE_LANDSCAPE_WIDTH = 1100;
 
 /**
- * Whether the screen is phone-sized: a phone by its own account, too narrow to
- * lay out for a desktop, or the short wide screen a phone on its side presents.
+ * The short side up to which a phone is taken at its word, Android's line
+ * between a phone and a tablet. A slab phone falls well short of it (the
+ * largest are about 440 across), while a foldable opened out passes it: an
+ * iPhone Duo's inner screen is 626 across, and on its side it has the room for
+ * the sidebar and the one-row player bar that the phone layout would spend on
+ * a tab bar and a two-row player.
+ */
+const PHONE_SHORT_SIDE = 600;
+
+/**
+ * Whether the screen is phone-sized: a phone by its own account (unless it has
+ * opened out into a tablet-sized screen), too narrow to lay out for a desktop,
+ * or the short wide screen a phone on its side presents.
  *
  * Reactive: reading this inside a computed re-runs it as the screen resizes or
  * turns.
  */
 export const isPhoneSizedScreen = () =>
-  DEVICE_TYPE === "phone" ||
+  (DEVICE_TYPE === "phone" &&
+    Math.min(state.width, state.height) < PHONE_SHORT_SIDE) ||
   state.width < PHONE_LAYOUT_WIDTH ||
   (state.height < PHONE_LANDSCAPE_HEIGHT &&
     state.width < PHONE_LANDSCAPE_WIDTH);

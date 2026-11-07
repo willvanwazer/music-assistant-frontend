@@ -41,6 +41,8 @@
       </SidebarInset>
       <PlayerSelect />
     </SidebarProvider>
+    <!-- keeps the clock legible over what scrolls under it (see the style) -->
+    <div class="inset-corner-scrim" aria-hidden="true"></div>
   </v-main>
 </template>
 
@@ -121,5 +123,66 @@ onMounted(() => {
 
 .content-section--frameless {
   padding-bottom: 0;
+}
+
+/* Where the system only draws into one top corner (an iPhone Duo opened out on
+   its side, see insetCorner), the page runs to the top and to that side of the
+   screen instead of losing a band and a strip to it. The content starts below
+   the corner and scrolls up under it, as it would in a native app. */
+:root[data-inset-corner] .main-layout {
+  padding-top: 0 !important;
+}
+
+:root[data-inset-corner="top-right"] .main-layout {
+  padding-right: 0 !important;
+}
+
+:root[data-inset-corner="top-left"] .main-layout {
+  padding-left: 0 !important;
+}
+
+:root[data-inset-corner] .content-section {
+  padding-top: var(--device-inset-top);
+}
+
+/* A frosted patch under the clock, which fades out into the page. At rest the
+   page behind it is bare, so it only shows once something scrolls under it. */
+.inset-corner-scrim {
+  display: none;
+}
+
+:root[data-inset-corner] .inset-corner-scrim {
+  display: block;
+  position: fixed;
+  top: 0;
+  z-index: 20;
+  width: calc(
+    1.75 * (var(--device-inset-right) + var(--device-inset-left)) + 24px
+  );
+  height: calc(1.25 * var(--device-inset-top));
+  /* it only softens what is behind it, so it never takes a tap */
+  pointer-events: none;
+  background: color-mix(in oklab, var(--background) 72%, transparent);
+  /* must stay unprefixed: the minifier keeps only the last of a hand-written
+     pair, and -webkit-backdrop-filter alone is dead in Chromium */
+  backdrop-filter: blur(14px);
+}
+
+:root[data-inset-corner="top-right"] .inset-corner-scrim {
+  right: 0;
+  mask-image: radial-gradient(
+    farthest-side at top right,
+    #000 55%,
+    transparent 100%
+  );
+}
+
+:root[data-inset-corner="top-left"] .inset-corner-scrim {
+  left: 0;
+  mask-image: radial-gradient(
+    farthest-side at top left,
+    #000 55%,
+    transparent 100%
+  );
 }
 </style>

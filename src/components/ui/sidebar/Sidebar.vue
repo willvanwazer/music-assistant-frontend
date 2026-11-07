@@ -115,6 +115,16 @@ const mobileSheetSide = useMobileSidebarSide();
 </template>
 
 <style>
+/* The desktop sidebar runs the full height of the screen. Where the system
+   draws into the top corner on the sidebar's side (a turned iPhone Duo, see
+   insetCorner), its contents start below that corner. */
+:root[data-inset-corner="top-left"] [data-side="left"] [data-sidebar="sidebar"],
+:root[data-inset-corner="top-right"]
+  [data-side="right"]
+  [data-sidebar="sidebar"] {
+  padding-top: var(--device-inset-top);
+}
+
 /* :root lifts these above the equally-!important size, padding and radius
    utilities the sheet carries */
 :root .sidebar-mobile-sheet {

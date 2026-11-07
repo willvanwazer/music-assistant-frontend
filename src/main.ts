@@ -42,6 +42,7 @@ import App from "./App.vue";
 import { createApp } from "vue";
 
 // Plugins
+import { watchInsetCorner } from "@/helpers/device";
 import { isEmbedded } from "@/helpers/embedded";
 import { registerPlugins } from "@/plugins";
 
@@ -58,6 +59,9 @@ installSendspinInterceptor();
 if (isEmbedded()) {
   document.documentElement.setAttribute("data-embedded-layout", "");
 }
+
+// Read after the embedded marker, which zeroes the insets it measures.
+watchInsetCorner();
 
 const app = createApp(App);
 

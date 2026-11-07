@@ -117,6 +117,16 @@ function clearOverlay() {
   padding-left: var(--device-inset-left) !important;
 }
 
+/* a side inset that only clears a corner at the top (see insetCorner) leaves
+   the bottom of that side free for the bar */
+:root[data-inset-corner="top-right"] .v-footer.mediacontrols-player-default {
+  padding-right: 0 !important;
+}
+
+:root[data-inset-corner="top-left"] .v-footer.mediacontrols-player-default {
+  padding-left: 0 !important;
+}
+
 .v-footer.mediacontrols-player-float {
   z-index: 2001 !important;
   /* the footer only positions the player; its own surface would otherwise show
