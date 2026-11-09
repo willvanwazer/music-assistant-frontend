@@ -4,21 +4,99 @@ import { store } from "@/plugins/store";
 // Frontend-rendered rows that are not recommendation folders from the server.
 // Server rows are keyed by their folder uri (e.g. library://folder/recently_played).
 export const PLAYERS_ROW_ID = "players";
+export const PINNED_ROW_ID = "pinned";
 export const TOP_PICKS_ROW_ID = "top_picks";
 export const PODCASTS_ROW_ID = "podcasts";
 export const GENRES_ROW_ID = "genres";
 export const RECENTLY_PLAYED_ROW_ID = "library://folder/recently_played";
 export const IN_PROGRESS_ROW_ID = "library://folder/in_progress";
 
-// Default position of the well-known rows; every other (server) row follows
-// in the order the server returns it, with the genres grid pinned last.
-export const DEFAULT_PRIORITY_ROWS = [
-  PLAYERS_ROW_ID,
-  TOP_PICKS_ROW_ID,
-  PODCASTS_ROW_ID,
-  IN_PROGRESS_ROW_ID,
-  RECENTLY_PLAYED_ROW_ID,
-];
+// Provider domains whose recommendation rows are spoken word (audiobooks and
+// podcasts). These rows sink below the music rows by default.
+export const SPOKEN_WORD_PROVIDER_DOMAINS: ReadonlySet<string> = new Set([
+  "audible",
+  "audiobookshelf",
+  "bbc_sounds",
+  "gpodder",
+  "itunes_podcasts",
+  "overcast",
+  "overcast_mac",
+  "pocketcasts",
+  "podcast_index",
+  "podcastfeed",
+  "storytel",
+]);
+
+// Audiobookshelf emits one row per personalized shelf (recently added,
+// discover, listen again, continue series, newest authors...). Only the
+// in-progress shelf is shown by default; the rest can be enabled in edit mode.
+const AUDIOBOOKSHELF_DEFAULT_SHOWN_SHELVES = new Set(["continue-listening"]);
+
+export interface DiscoverFolderRef {
+  uri: string;
+  item_id: string;
+  provider: string;
+}
+
+/** Domain for a provider instance id, falling back to the id's domain prefix. */
+export type ProviderDomainLookup = (instanceId: string) => string | undefined;
+
+const providerDomain = (
+  folder: DiscoverFolderRef,
+  domainOf: ProviderDomainLookup,
+): string => domainOf(folder.provider) ?? folder.provider.split("--")[0];
+
+/** Whether a recommendation row holds audiobooks or podcasts. */
+export function isSpokenWordRow(
+  folder: DiscoverFolderRef,
+  domainOf: ProviderDomainLookup,
+): boolean {
+  // the library "in progress" row only fills with audiobooks and episodes:
+  // tracks and albums have no resume position
+  if (folder.uri === IN_PROGRESS_ROW_ID) return true;
+  return SPOKEN_WORD_PROVIDER_DOMAINS.has(providerDomain(folder, domainOf));
+}
+
+/** Spoken-word rows that start hidden, on top of server default-off rows. */
+export function isDefaultHiddenSpokenRow(
+  folder: DiscoverFolderRef,
+  domainOf: ProviderDomainLookup,
+): boolean {
+  return (
+    providerDomain(folder, domainOf) === "audiobookshelf" &&
+    !AUDIOBOOKSHELF_DEFAULT_SHOWN_SHELVES.has(folder.item_id)
+  );
+}
+
+export interface DefaultRowOrderInput {
+  hasPlayers: boolean;
+  hasPinned: boolean;
+  hasTopPicks: boolean;
+  hasGenres: boolean;
+  // recommendation rows in server order
+  folders: Array<{ uri: string; spokenWord: boolean }>;
+}
+
+/**
+ * Default order of every candidate row: players, pinned items and top picks
+ * first, then recently played and the music rows in server order, the genre
+ * grid, and finally podcasts and audiobook rows.
+ */
+export function defaultDiscoverRowOrder(input: DefaultRowOrderInput): string[] {
+  const ids: string[] = [];
+  if (input.hasPlayers) ids.push(PLAYERS_ROW_ID);
+  if (input.hasPinned) ids.push(PINNED_ROW_ID);
+  if (input.hasTopPicks) ids.push(TOP_PICKS_ROW_ID);
+  const music = input.folders.filter((f) => !f.spokenWord).map((f) => f.uri);
+  const spoken = input.folders.filter((f) => f.spokenWord).map((f) => f.uri);
+  if (music.includes(RECENTLY_PLAYED_ROW_ID)) ids.push(RECENTLY_PLAYED_ROW_ID);
+  ids.push(...music.filter((uri) => uri !== RECENTLY_PLAYED_ROW_ID));
+  if (input.hasGenres) ids.push(GENRES_ROW_ID);
+  ids.push(PODCASTS_ROW_ID);
+  if (spoken.includes(IN_PROGRESS_ROW_ID)) ids.push(IN_PROGRESS_ROW_ID);
+  ids.push(...spoken.filter((uri) => uri !== IN_PROGRESS_ROW_ID));
+  return ids;
+}
 
 // Per-user discover page customization, stored as a single preference object.
 // Visibility is hybrid: normal rows are visible by default and can be opted out
@@ -27,6 +105,9 @@ export const DEFAULT_PRIORITY_ROWS = [
 // a freshly added provider) still show up automatically. An id is in at most one
 // of `hidden`/`shown`; the resolver treats `hidden` as authoritative if both.
 export interface DiscoverRowsConfig {
+  // Layout revision the saved order was made against. A saved order from an
+  // older revision is dropped once, so a changed default order takes effect.
+  version?: number;
   hidden?: string[];
   shown?: string[];
   order?: string[];
@@ -39,6 +120,8 @@ export interface ResolvedDiscoverRowsConfig {
 }
 
 export const DISCOVER_ROWS_PREFERENCE_KEY = "discover.rows";
+// 2: music before podcasts and audiobooks, pinned row added
+export const DISCOVER_ROWS_LAYOUT_VERSION = 2;
 
 // Legacy per-key preferences, written by older frontends. Read-only fallback:
 // the first edit through this module snapshots them into the new format.
@@ -50,7 +133,6 @@ const LEGACY_ENABLED_KEYS: Array<[key: string, rowId: string]> = [
 ];
 
 interface LegacyRowSetting {
-  position: number;
   enabled: boolean;
 }
 
@@ -134,16 +216,18 @@ function effectiveConfig(): DiscoverRowsConfig {
   const pref = store.currentUser?.preferences?.[DISCOVER_ROWS_PREFERENCE_KEY];
   if (pref && typeof pref === "object") {
     const cfg = pref as DiscoverRowsConfig;
+    const current = cfg.version === DISCOVER_ROWS_LAYOUT_VERSION;
     return {
       hidden: Array.isArray(cfg.hidden) ? cfg.hidden : [],
       shown: Array.isArray(cfg.shown) ? cfg.shown : [],
-      order: Array.isArray(cfg.order) ? cfg.order : [],
+      order: current && Array.isArray(cfg.order) ? cfg.order : [],
     };
   }
+  // legacy layouts predate the current default order: keep their visibility
   return legacyConfig();
 }
 
-/** Equivalent config assembled from the legacy per-key preferences. */
+/** Visibility assembled from the legacy per-key preferences. */
 function legacyConfig(): DiscoverRowsConfig {
   const prefs = store.currentUser?.preferences;
   if (!prefs) return {};
@@ -151,32 +235,20 @@ function legacyConfig(): DiscoverRowsConfig {
   for (const [key, rowId] of LEGACY_ENABLED_KEYS) {
     if (prefs[key] === false) hidden.push(rowId);
   }
-  const order: string[] = [];
   const rowSettings = prefs[LEGACY_ROW_SETTINGS_KEY] as
     | Record<string, LegacyRowSetting>
     | undefined;
   if (rowSettings && typeof rowSettings === "object") {
-    const entries = Object.entries(rowSettings).filter(
-      ([, setting]) => typeof setting?.position === "number",
-    );
-    entries.sort((a, b) => a[1].position - b[1].position);
-    for (const [uri, setting] of entries) {
-      order.push(uri);
-      if (setting.enabled === false) hidden.push(uri);
+    for (const [uri, setting] of Object.entries(rowSettings)) {
+      if (setting?.enabled === false) hidden.push(uri);
     }
   }
-  if (order.length > 0) {
-    // The legacy layout only ordered the recommendation rows; express the
-    // full layout the user actually saw so the special rows keep their
-    // fixed legacy spots (players/top picks first, genres last).
-    order.unshift(PLAYERS_ROW_ID, TOP_PICKS_ROW_ID);
-    order.push(GENRES_ROW_ID);
-  }
-  return { hidden, order };
+  return { hidden };
 }
 
 async function writeConfig(cfg: DiscoverRowsConfig): Promise<void> {
   const pref: DiscoverRowsConfig = {
+    version: DISCOVER_ROWS_LAYOUT_VERSION,
     hidden: cfg.hidden ?? [],
     shown: cfg.shown ?? [],
     order: cfg.order ?? [],

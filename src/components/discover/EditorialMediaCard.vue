@@ -138,6 +138,8 @@ interface Props {
   disabled?: boolean;
   parentItem?: MediaItemType;
   sortBy?: string;
+  // opened from the home pinned row: the menu offers move earlier/later
+  homePinContext?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   showProviderOnCover: false,
@@ -150,6 +152,7 @@ const props = withDefaults(defineProps<Props>(), {
   disabled: false,
   parentItem: undefined,
   sortBy: undefined,
+  homePinContext: false,
 });
 
 const emit = defineEmits<{
@@ -251,6 +254,7 @@ const onHold = (e: TouchEvent) => {
     props.parentItem,
     true,
     props.sortBy,
+    props.homePinContext ? { homePinContext: true } : undefined,
   );
 };
 const onPlay = (e: MouseEvent) => {
@@ -273,6 +277,7 @@ const onMenu = (e: MouseEvent) => {
     props.parentItem,
     true,
     props.sortBy,
+    props.homePinContext ? { homePinContext: true } : undefined,
   );
 };
 </script>

@@ -16,10 +16,18 @@ vi.mock("@/composables/userPreferences", () => ({
 }));
 
 import {
+  DISCOVER_ROWS_LAYOUT_VERSION,
   DISCOVER_ROWS_PREFERENCE_KEY,
   GENRES_ROW_ID,
+  IN_PROGRESS_ROW_ID,
+  PINNED_ROW_ID,
   PLAYERS_ROW_ID,
+  PODCASTS_ROW_ID,
+  RECENTLY_PLAYED_ROW_ID,
   TOP_PICKS_ROW_ID,
+  defaultDiscoverRowOrder,
+  isDefaultHiddenSpokenRow,
+  isSpokenWordRow,
   resolveDiscoverRowsConfig,
   setDiscoverRowHidden,
   setDiscoverRowsOrder,
@@ -89,6 +97,7 @@ describe("discoverRows (discover.rows preference)", () => {
       ];
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: [PLAYERS_ROW_ID, ROW_C],
           order: saved,
         },
@@ -101,6 +110,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("slots rows the user never ordered after their preceding default sibling", () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           // user moved genres to the top, never saw ROW_D
           order: [
             GENRES_ROW_ID,
@@ -128,6 +138,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("drops unavailable rows from the resolved order and hidden set", () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: ["offline://folder/gone"],
           order: ["offline://folder/gone", ROW_B, ROW_A],
         },
@@ -136,6 +147,23 @@ describe("discoverRows (discover.rows preference)", () => {
       expect(order).not.toContain("offline://folder/gone");
       expect(order).toContain(ROW_A);
       expect(hidden.size).toBe(0);
+    });
+
+    it("drops a saved order from an older layout but keeps visibility", () => {
+      setPreferences({
+        [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          hidden: [ROW_C],
+          order: [GENRES_ROW_ID, ROW_D, ROW_C],
+        },
+      });
+      const { order, hidden } = resolveDiscoverRowsConfig(AVAILABLE);
+      expect(order).toEqual(AVAILABLE);
+      expect(hidden).toEqual(new Set([ROW_C]));
+    });
+
+    it("writes the current layout version", async () => {
+      await setDiscoverRowHidden(ROW_A, true);
+      expect(lastWrittenConfig().version).toBe(DISCOVER_ROWS_LAYOUT_VERSION);
     });
 
     it("prefers the unified preference over legacy keys", () => {
@@ -158,7 +186,7 @@ describe("discoverRows (discover.rows preference)", () => {
       expect(hidden).toEqual(new Set([PLAYERS_ROW_ID, GENRES_ROW_ID]));
     });
 
-    it("maps legacy row settings to order and visibility", () => {
+    it("maps legacy row settings to visibility and keeps the default order", () => {
       setPreferences({
         discoverRowSettings: {
           [ROW_C]: { position: 0, enabled: true },
@@ -166,18 +194,7 @@ describe("discoverRows (discover.rows preference)", () => {
         },
       });
       const { order, hidden } = resolveDiscoverRowsConfig(AVAILABLE);
-      // players/top picks keep their legacy spots at the top and genres at
-      // the bottom; ROW_D (never seen by the legacy settings) slots in right
-      // after its default sibling ROW_C.
-      expect(order).toEqual([
-        PLAYERS_ROW_ID,
-        TOP_PICKS_ROW_ID,
-        ROW_C,
-        ROW_D,
-        ROW_A,
-        ROW_B,
-        GENRES_ROW_ID,
-      ]);
+      expect(order).toEqual(AVAILABLE);
       expect(hidden).toEqual(new Set([ROW_A]));
     });
 
@@ -200,6 +217,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("keeps hidden entries of currently unavailable rows", async () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: ["offline://folder/gone"],
           order: [],
         },
@@ -230,6 +248,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("keeps unavailable rows in their saved slots", async () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: [],
           // an offline provider's row sits between two available rows
           order: [ROW_A, "offline://folder/gone", ROW_B],
@@ -260,6 +279,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("shows a default-off row once the user opted it in (shown)", () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: [],
           shown: ["b"],
           order: [],
@@ -272,6 +292,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("hides a normal row the user explicitly hid", () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: ["a"],
           shown: [],
           order: [],
@@ -289,6 +310,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("treats hidden as authoritative when a row is in both hidden and shown", () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: ["a"],
           shown: ["a"],
           order: [],
@@ -303,6 +325,7 @@ describe("discoverRows (discover.rows preference)", () => {
     it("hiding adds to hidden and clears shown; showing does the reverse", async () => {
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: [],
           shown: ["b"],
           order: [],
@@ -315,6 +338,7 @@ describe("discoverRows (discover.rows preference)", () => {
       );
       setPreferences({
         [DISCOVER_ROWS_PREFERENCE_KEY]: {
+          version: DISCOVER_ROWS_LAYOUT_VERSION,
           hidden: ["b"],
           shown: [],
           order: [],
@@ -326,5 +350,82 @@ describe("discoverRows (discover.rows preference)", () => {
         expect.objectContaining({ hidden: [], shown: ["b"] }),
       );
     });
+  });
+});
+
+describe("spoken-word rows", () => {
+  const domains: Record<string, string> = {
+    "abs--1": "audiobookshelf",
+    "podcastfeed--2": "podcastfeed",
+    "spotify--abc": "spotify",
+  };
+  const domainOf = (id: string) => domains[id];
+  const folder = (provider: string, item_id: string) => ({
+    provider,
+    item_id,
+    uri: `${provider}://folder/${item_id}`,
+  });
+
+  it("classifies audiobook and podcast providers and the in-progress row", () => {
+    expect(isSpokenWordRow(folder("abs--1", "recently-added"), domainOf)).toBe(
+      true,
+    );
+    expect(isSpokenWordRow(folder("podcastfeed--2", "x"), domainOf)).toBe(true);
+    expect(isSpokenWordRow(folder("spotify--abc", "x"), domainOf)).toBe(false);
+    expect(isSpokenWordRow(folder("library", "in_progress"), domainOf)).toBe(
+      true,
+    );
+    expect(
+      isSpokenWordRow(folder("library", "recently_played"), domainOf),
+    ).toBe(false);
+    // unknown instance: falls back to the id's domain prefix
+    expect(isSpokenWordRow(folder("audible--z", "x"), domainOf)).toBe(true);
+  });
+
+  it("hides every Audiobookshelf shelf but continue listening by default", () => {
+    expect(
+      isDefaultHiddenSpokenRow(
+        folder("abs--1", "continue-listening"),
+        domainOf,
+      ),
+    ).toBe(false);
+    for (const shelf of [
+      "recently-added",
+      "discover",
+      "listen-again",
+      "browse",
+    ])
+      expect(isDefaultHiddenSpokenRow(folder("abs--1", shelf), domainOf)).toBe(
+        true,
+      );
+    expect(
+      isDefaultHiddenSpokenRow(folder("podcastfeed--2", "x"), domainOf),
+    ).toBe(false);
+  });
+
+  it("orders music above podcasts and audiobooks", () => {
+    const order = defaultDiscoverRowOrder({
+      hasPlayers: true,
+      hasPinned: true,
+      hasTopPicks: true,
+      hasGenres: true,
+      folders: [
+        { uri: IN_PROGRESS_ROW_ID, spokenWord: true },
+        { uri: "abs--1://folder/continue-listening", spokenWord: true },
+        { uri: RECENTLY_PLAYED_ROW_ID, spokenWord: false },
+        { uri: ROW_C, spokenWord: false },
+      ],
+    });
+    expect(order).toEqual([
+      PLAYERS_ROW_ID,
+      PINNED_ROW_ID,
+      TOP_PICKS_ROW_ID,
+      RECENTLY_PLAYED_ROW_ID,
+      ROW_C,
+      GENRES_ROW_ID,
+      PODCASTS_ROW_ID,
+      IN_PROGRESS_ROW_ID,
+      "abs--1://folder/continue-listening",
+    ]);
   });
 });

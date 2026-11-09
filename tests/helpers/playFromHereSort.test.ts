@@ -185,6 +185,7 @@ describe("handleMenuBtnClick with sortBy", () => {
       true,
       true,
       "duration",
+      undefined,
     );
   });
 
@@ -201,6 +202,7 @@ describe("handleMenuBtnClick with sortBy", () => {
       200,
       true,
       true,
+      undefined,
       undefined,
     );
   });

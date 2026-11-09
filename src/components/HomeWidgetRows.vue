@@ -93,6 +93,40 @@
             </div>
           </EditorialShelf>
 
+          <!-- Pinned row: items the user pinned via "Pin to Home" -->
+          <EditorialShelf
+            v-else-if="row.kind === 'pinned'"
+            :title="$t('home_pins.title')"
+            :dimmed="editMode && row.hidden"
+            :tiles-per-view="tilesPerView"
+          >
+            <template v-if="editMode" #actions>
+              <button
+                class="ed-drag-handle"
+                :aria-label="$t('queue_reorder')"
+                @pointerdown.stop.prevent="startItemDrag($event, idx)"
+                @click.stop
+              >
+                <GripVertical />
+              </button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                :aria-label="$t('tooltip.toggle_row')"
+                @click="toggleRow(row)"
+              >
+                <Eye v-if="!row.hidden" />
+                <EyeOff v-else />
+              </Button>
+            </template>
+            <EditorialMediaCard
+              v-for="item in pinnedItems"
+              :key="item.uri"
+              :item="item"
+              home-pin-context
+            />
+          </EditorialShelf>
+
           <!-- Top picks row: an accent-derived band of whole covers, the
                lead pick larger with its text beside it -->
           <section
@@ -398,12 +432,15 @@ import {
   topPickItems,
 } from "@/components/discover/utils/topPicks";
 import {
-  DEFAULT_PRIORITY_ROWS,
   GENRES_ROW_ID,
   IN_PROGRESS_ROW_ID,
+  PINNED_ROW_ID,
   PLAYERS_ROW_ID,
   PODCASTS_ROW_ID,
   TOP_PICKS_ROW_ID,
+  defaultDiscoverRowOrder,
+  isDefaultHiddenSpokenRow,
+  isSpokenWordRow,
   resolveDiscoverRowsConfig,
   setDiscoverRowHidden,
   setDiscoverRowsOrder,
@@ -422,12 +459,14 @@ import {
 import FacetedFilter from "@/components/FacetedFilter.vue";
 import PlayerCard from "@/components/PlayerCard.vue";
 import { Button } from "@/components/ui/button";
+import { useHomePins } from "@/composables/useHomePins";
 import { useListDragReorder } from "@/composables/useListDragReorder";
 import { useOrderedPlayers } from "@/composables/useOrderedPlayers";
 import { shelfTilesPerView } from "@/helpers/utils";
 import api from "@/plugins/api";
 import {
   EventType,
+  MediaType,
   PlaybackState,
   RecommendationFolderType,
   type EventMessage,
@@ -481,6 +520,18 @@ const skeletonTileCount = computed(() =>
 );
 
 const players = useOrderedPlayers();
+const { items: pinnedItems } = useHomePins();
+
+const providerDomainOf = (instanceId: string): string | undefined =>
+  api.providers[instanceId]?.domain;
+
+const SPOKEN_WORD_MEDIA_TYPES = new Set<string>([
+  MediaType.AUDIOBOOK,
+  MediaType.PODCAST,
+  MediaType.PODCAST_EPISODE,
+]);
+const isSpokenWordItem = (item: MediaItemTypeOrItemMapping) =>
+  SPOKEN_WORD_MEDIA_TYPES.has(item.media_type);
 
 const activeCount = computed(
   () =>
@@ -600,13 +651,20 @@ const buildHeroEntries = (randomize = false): HeroEntry[] => {
   // own tag, so an opted-out row never feeds the hero. `randomize` (explicit
   // refresh) reshuffles the row order and the items within a row; the resolve
   // path stays deterministic so repeated builds are content-equal.
+  // Audiobook and podcast rows have their own shelves; top picks stay music.
   const rows = recommendations.value
-    .filter((f) => shownRecRowIds.value.has(f.uri))
+    .filter(
+      (f) =>
+        shownRecRowIds.value.has(f.uri) &&
+        !isSpokenWordRow(f, providerDomainOf),
+    )
     .map((f) => ({
       tag: isImportRecommendation(f)
         ? $t("listening_home.new_release")
         : f.name,
-      items: topPickItems(f, rowItemsMap.value.get(f.uri) ?? []),
+      items: topPickItems(f, rowItemsMap.value.get(f.uri) ?? []).filter(
+        (item) => !isSpokenWordItem(item),
+      ),
     }))
     .filter((r) => r.items.length > 0)
     .map((r) => ({
@@ -631,7 +689,9 @@ const buildHeroEntries = (randomize = false): HeroEntry[] => {
   }
 
   // Fill any shortfall from recently played.
-  for (const item of recentlyPlayed.value) push(item, $t("recently_played"));
+  for (const item of recentlyPlayed.value) {
+    if (!isSpokenWordItem(item)) push(item, $t("recently_played"));
+  }
 
   return out;
 };
@@ -710,6 +770,7 @@ const refreshTopPicks = async () => {
 // --- Unified row list: visibility + ordering via the discover.rows pref ---
 type DiscoverRowKind =
   | "players"
+  | "pinned"
   | "top_picks"
   | "podcasts"
   | "recommendation"
@@ -724,34 +785,31 @@ interface DiscoverRow {
 }
 
 // The catalog is always complete (server always returns every row, `items`
-// aside), so every recommendation folder is a candidate row.
+// aside), so every recommendation folder is a candidate row. Server default-off
+// rows start hidden, as do the secondary Audiobookshelf shelves.
 const defaultHiddenIds = computed(() =>
-  recommendations.value.filter((f) => !f.enabled_by_default).map((f) => f.uri),
+  recommendations.value
+    .filter(
+      (f) =>
+        !f.enabled_by_default || isDefaultHiddenSpokenRow(f, providerDomainOf),
+    )
+    .map((f) => f.uri),
 );
 
-// Default order of every candidate row, well-known rows first, remaining
-// server rows as returned, genres last.
-const availableRowIds = computed<string[]>(() => {
-  const recUris = recommendations.value.map((d) => d.uri);
-  const recSet = new Set(recUris);
-  const ids: string[] = [];
-  for (const id of DEFAULT_PRIORITY_ROWS) {
-    if (id === PLAYERS_ROW_ID) {
-      if (players.value.length > 0) ids.push(id);
-    } else if (id === TOP_PICKS_ROW_ID) {
-      if (heroEntries.value.length > 0) ids.push(id);
-    } else if (id === PODCASTS_ROW_ID) {
-      ids.push(id);
-    } else if (recSet.has(id)) {
-      ids.push(id);
-    }
-  }
-  for (const uri of recUris) {
-    if (!ids.includes(uri)) ids.push(uri);
-  }
-  if (genres.value.length > 0) ids.push(GENRES_ROW_ID);
-  return ids;
-});
+// Default order of every candidate row: music first, podcasts and audiobooks
+// below it.
+const availableRowIds = computed<string[]>(() =>
+  defaultDiscoverRowOrder({
+    hasPlayers: players.value.length > 0,
+    hasPinned: pinnedItems.value.length > 0,
+    hasTopPicks: heroEntries.value.length > 0,
+    hasGenres: genres.value.length > 0,
+    folders: recommendations.value.map((f) => ({
+      uri: f.uri,
+      spokenWord: isSpokenWordRow(f, providerDomainOf),
+    })),
+  }),
+);
 
 const allRows = computed<DiscoverRow[]>(() => {
   const { order, hidden } = resolveDiscoverRowsConfig(
@@ -766,6 +824,13 @@ const allRows = computed<DiscoverRow[]>(() => {
         id,
         kind: "players",
         title: $t("players"),
+        hidden: hidden.has(id),
+      });
+    } else if (id === PINNED_ROW_ID) {
+      rows.push({
+        id,
+        kind: "pinned",
+        title: $t("home_pins.title"),
         hidden: hidden.has(id),
       });
     } else if (id === TOP_PICKS_ROW_ID) {

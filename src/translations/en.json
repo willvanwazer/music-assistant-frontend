@@ -2414,6 +2414,13 @@
     "command_center_open": "open",
     "command_center_keep_typing": "Keep typing to search...",
     "screens": "Screens",
+    "home_pins": {
+        "title": "Pinned",
+        "pin": "Pin to Home",
+        "unpin": "Unpin from Home",
+        "move_earlier": "Move earlier on Home",
+        "move_later": "Move later on Home"
+    },
     "listening_home": {
         "recent_title": "Recently played albums & playlists",
         "recent_empty": "Albums and playlists you play will appear here.",

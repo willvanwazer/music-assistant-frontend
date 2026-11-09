@@ -79,7 +79,7 @@ export function getShortcutUri(item: ShortcutItem | ItemMapping): string {
 
 // When right is a ShortcutItem, also matches by constructed MA URI so items
 // whose uri is a non-MA URL (e.g. a podcast RSS <link> website) still match.
-function isSameShortcutUri(
+export function isSameShortcutUri(
   left: string,
   right: string | ShortcutItem,
 ): boolean {
@@ -156,7 +156,7 @@ function hasShortcutIdentityMatch(
   );
 }
 
-function isUriMatchingItem(
+export function isUriMatchingItem(
   uri: string,
   item: ShortcutItem | ItemMapping,
 ): boolean {
