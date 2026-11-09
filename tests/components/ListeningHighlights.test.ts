@@ -5,9 +5,14 @@ import ListeningHighlights from "@/components/discover/ListeningHighlights.vue";
 const { apiMock } = vi.hoisted(() => ({
   apiMock: {
     providers: {
+      overcast_mac: {
+        domain: "overcast_mac",
+        available: true,
+        instance_id: "overcast_mac",
+      },
       pocketcasts: {
         domain: "pocketcasts",
-        available: true,
+        available: false,
         instance_id: "pocketcasts",
       },
     },
@@ -84,8 +89,9 @@ describe("permanent listening highlights", () => {
     expect(text).toContain("listening_home.up_next");
     expect(text).toContain("listening_home.continue_listening");
     expect(text).toContain("listening_home.queue_empty");
-    expect(apiMock.browse).toHaveBeenCalledWith("pocketcasts://up_next");
-    expect(apiMock.browse).toHaveBeenCalledWith("pocketcasts://in_progress");
+    expect(apiMock.browse).toHaveBeenCalledWith("overcast_mac://up_next");
+    expect(apiMock.browse).toHaveBeenCalledWith("overcast_mac://in_progress");
+    expect(apiMock.browse).not.toHaveBeenCalledWith("pocketcasts://up_next");
   });
   it("shows started episodes separately with their saved playback progress", async () => {
     apiMock.browse.mockImplementation((path: string) =>

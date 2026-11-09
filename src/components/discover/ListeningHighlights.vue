@@ -158,6 +158,8 @@ import EditorialMediaCard from "./EditorialMediaCard.vue";
 import EditorialCardSkeleton from "./EditorialCardSkeleton.vue";
 import { podcastEpisodes } from "./utils/listeningHighlights";
 
+// podcast providers exposing up_next and in_progress browse folders
+const PODCAST_QUEUE_DOMAINS = ["overcast_mac", "pocketcasts"];
 const router = useRouter();
 const props = withDefaults(
   defineProps<{ section?: "all" | "recent" | "podcasts" }>(),
@@ -177,7 +179,7 @@ const tilesPerView = computed(() => shelfTilesPerView());
 const podcastProviders = computed(() =>
   Object.values(api.providers).filter(
     (provider) =>
-      provider.domain === "pocketcasts" &&
+      PODCAST_QUEUE_DOMAINS.includes(provider.domain) &&
       provider.available &&
       (!store.currentUser?.provider_filter?.length ||
         store.currentUser.provider_filter.includes(provider.instance_id)),
