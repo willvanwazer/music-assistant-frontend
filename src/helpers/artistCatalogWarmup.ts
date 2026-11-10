@@ -52,7 +52,8 @@ export function artistCatalogRequests(
       continue;
     if (
       artist.provider !== "library" &&
-      provider.instance_id !== artist.provider
+      provider.instance_id !== artist.provider &&
+      provider.domain !== "lastfm_recommendations"
     )
       continue;
     if (
@@ -71,7 +72,10 @@ export function artistCatalogRequests(
       add(command, {
         ...base,
         provider_filter:
-          artist.provider === "library" ? provider.instance_id : undefined,
+          artist.provider === "library" ||
+          provider.domain === "lastfm_recommendations"
+            ? provider.instance_id
+            : undefined,
         ...(command === "similar_artists" ? { limit: 25 } : {}),
       });
     }

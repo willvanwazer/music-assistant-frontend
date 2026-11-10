@@ -486,18 +486,13 @@ const aggregatedProviderIdsForFeature = (feature: ProviderFeature) =>
         ids.add(mapping.provider_instance);
       }
     }
-    if (itemDetails.value.provider === "library") {
-      for (const provider of Object.values(api.providers)) {
-        if (!providerAllowed(provider.instance_id)) continue;
-        const isMetadataOrPlugin =
-          provider.type === ProviderType.METADATA ||
-          provider.type === ProviderType.PLUGIN;
-        if (
-          isMetadataOrPlugin &&
-          provider.supported_features.includes(feature)
-        ) {
-          ids.add(provider.instance_id);
-        }
+    for (const provider of Object.values(api.providers)) {
+      if (!providerAllowed(provider.instance_id)) continue;
+      const isMetadataOrPlugin =
+        provider.type === ProviderType.METADATA ||
+        provider.type === ProviderType.PLUGIN;
+      if (isMetadataOrPlugin && provider.supported_features.includes(feature)) {
+        ids.add(provider.instance_id);
       }
     }
     // sort by provider name so the default (first) matches the selector order.
@@ -605,8 +600,7 @@ const loadArtistTracks = async function (params: LoadDataParams) {
 // option is itself).
 const loadArtistTopAlbums = async function (params: LoadDataParams) {
   if (!itemDetails.value) return [];
-  const providerFilter =
-    itemDetails.value.provider === "library" ? params.provider?.[0] : undefined;
+  const providerFilter = params.provider?.[0];
   return await api.getArtistTopAlbums(
     itemDetails.value.item_id,
     itemDetails.value.provider,
@@ -616,8 +610,7 @@ const loadArtistTopAlbums = async function (params: LoadDataParams) {
 
 const loadArtistTopTracks = async function (params: LoadDataParams) {
   if (!itemDetails.value) return [];
-  const providerFilter =
-    itemDetails.value.provider === "library" ? params.provider?.[0] : undefined;
+  const providerFilter = params.provider?.[0];
   return await api.getArtistTopTracks(
     itemDetails.value.item_id,
     itemDetails.value.provider,
@@ -627,8 +620,7 @@ const loadArtistTopTracks = async function (params: LoadDataParams) {
 
 const loadSimilarArtists = async function (params: LoadDataParams) {
   if (!itemDetails.value) return [];
-  const providerFilter =
-    itemDetails.value.provider === "library" ? params.provider?.[0] : undefined;
+  const providerFilter = params.provider?.[0];
   return await api.getSimilarArtists(
     itemDetails.value.item_id,
     itemDetails.value.provider,

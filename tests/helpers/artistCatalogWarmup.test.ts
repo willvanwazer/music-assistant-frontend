@@ -85,12 +85,19 @@ describe("artist catalog preloading", () => {
     ).toHaveLength(2);
   });
 
-  it("does not request a metadata provider for an artist outside the library", () => {
+  it("warms Last.fm for artists opened directly from Spotify too", () => {
     const requests = artistCatalogRequests(
       { ...artist, item_id: "spotify-id", provider: "spotify--one" },
       providers,
     );
-    expect(JSON.stringify(requests)).not.toContain("lastfm");
-    expect(requests).toHaveLength(2);
+    expect(requests[0]).toEqual({
+      command: "music/artists/top_tracks",
+      args: {
+        item_id: "spotify-id",
+        provider_instance_id_or_domain: "spotify--one",
+        provider_filter: "lastfm--one",
+      },
+    });
+    expect(requests).toHaveLength(4);
   });
 });
