@@ -26,6 +26,7 @@ import {
   RECENTLY_PLAYED_ROW_ID,
   TOP_PICKS_ROW_ID,
   defaultDiscoverRowOrder,
+  discoverRowItems,
   isDefaultHiddenSpokenRow,
   isSpokenWordRow,
   resolveDiscoverRowsConfig,
@@ -33,6 +34,10 @@ import {
   setDiscoverRowsOrder,
   type DiscoverRowsConfig,
 } from "@/components/discover/utils/discoverRows";
+import {
+  MediaType,
+  type MediaItemTypeOrItemMapping,
+} from "@/plugins/api/interfaces";
 
 const ROW_A = "library://folder/in_progress";
 const ROW_B = "library://folder/recently_played";
@@ -382,13 +387,13 @@ describe("spoken-word rows", () => {
     expect(isSpokenWordRow(folder("audible--z", "x"), domainOf)).toBe(true);
   });
 
-  it("hides every Audiobookshelf shelf but continue listening by default", () => {
+  it("hides all audiobook shelves, including continue listening, by default", () => {
     expect(
       isDefaultHiddenSpokenRow(
         folder("abs--1", "continue-listening"),
         domainOf,
       ),
-    ).toBe(false);
+    ).toBe(true);
     for (const shelf of [
       "recently-added",
       "discover",
@@ -401,6 +406,66 @@ describe("spoken-word rows", () => {
     expect(
       isDefaultHiddenSpokenRow(folder("podcastfeed--2", "x"), domainOf),
     ).toBe(false);
+    for (const provider of ["audible--1", "storytel--1"]) {
+      expect(
+        isDefaultHiddenSpokenRow(
+          folder(provider, "continue-listening"),
+          domainOf,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("keeps books and podcasts out of shared music recommendations", () => {
+    const items = [
+      MediaType.ALBUM,
+      MediaType.AUDIOBOOK,
+      MediaType.PODCAST_EPISODE,
+      MediaType.PLAYLIST,
+      MediaType.PODCAST,
+      MediaType.TRACK,
+    ].map((media_type) => ({ media_type }) as MediaItemTypeOrItemMapping);
+    for (const provider of ["library", "spotify--abc"]) {
+      expect(
+        discoverRowItems(folder(provider, "recently_played"), items, domainOf),
+      ).toEqual([items[0], items[3], items[5]]);
+    }
+  });
+
+  it("retains podcast progress below music without audiobook progress", () => {
+    const book = {
+      media_type: MediaType.AUDIOBOOK,
+    } as MediaItemTypeOrItemMapping;
+    const episode = {
+      media_type: MediaType.PODCAST_EPISODE,
+    } as MediaItemTypeOrItemMapping;
+    for (const row of [
+      folder("library", "in_progress"),
+      folder("podcastfeed--2", "up_next"),
+    ]) {
+      expect(discoverRowItems(row, [book, episode], domainOf)).toEqual([
+        episode,
+      ]);
+    }
+  });
+
+  it("preserves audiobook content only on explicitly enabled audiobook shelves", () => {
+    const book = {
+      media_type: MediaType.AUDIOBOOK,
+    } as MediaItemTypeOrItemMapping;
+    const row = folder("abs--1", "continue-listening");
+    setPreferences({});
+    const defaultHidden = isDefaultHiddenSpokenRow(row, domainOf)
+      ? [row.uri]
+      : [];
+    expect(
+      resolveDiscoverRowsConfig([row.uri], defaultHidden).hidden.has(row.uri),
+    ).toBe(true);
+    setPreferences({ [DISCOVER_ROWS_PREFERENCE_KEY]: { shown: [row.uri] } });
+    expect(
+      resolveDiscoverRowsConfig([row.uri], defaultHidden).hidden.has(row.uri),
+    ).toBe(false);
+    expect(discoverRowItems(row, [book], domainOf)).toEqual([book]);
   });
 
   it("orders music above podcasts and audiobooks", () => {

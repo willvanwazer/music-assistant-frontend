@@ -439,6 +439,7 @@ import {
   PODCASTS_ROW_ID,
   TOP_PICKS_ROW_ID,
   defaultDiscoverRowOrder,
+  discoverRowItems,
   isDefaultHiddenSpokenRow,
   isSpokenWordRow,
   resolveDiscoverRowsConfig,
@@ -786,7 +787,7 @@ interface DiscoverRow {
 
 // The catalog is always complete (server always returns every row, `items`
 // aside), so every recommendation folder is a candidate row. Server default-off
-// rows start hidden, as do the secondary Audiobookshelf shelves.
+// rows start hidden, as do all audiobook-provider shelves.
 const defaultHiddenIds = computed(() =>
   recommendations.value
     .filter(
@@ -967,7 +968,10 @@ const fetchRowItems = async (ids: string[]): Promise<void> => {
         });
       if (rowFetchGeneration.get(id) !== generation) return;
       if (items !== undefined) {
-        rowItemsMap.value.set(id, items);
+        rowItemsMap.value.set(
+          id,
+          discoverRowItems(folder, items, providerDomainOf),
+        );
       } else if (!rowItemsMap.value.has(id)) {
         // first load failed: mark the row empty so it does not spin forever;
         // on a refresh failure keep the previously shown items instead
