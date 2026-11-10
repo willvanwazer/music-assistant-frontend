@@ -1,4 +1,8 @@
 import { setUserPreference } from "@/composables/userPreferences";
+import {
+  MediaType,
+  type MediaItemTypeOrItemMapping,
+} from "@/plugins/api/interfaces";
 import { store } from "@/plugins/store";
 
 // Frontend-rendered rows that are not recommendation folders from the server.
@@ -13,9 +17,14 @@ export const IN_PROGRESS_ROW_ID = "library://folder/in_progress";
 
 // Provider domains whose recommendation rows are spoken word (audiobooks and
 // podcasts). These rows sink below the music rows by default.
-export const SPOKEN_WORD_PROVIDER_DOMAINS: ReadonlySet<string> = new Set([
+const AUDIOBOOK_PROVIDER_DOMAINS: ReadonlySet<string> = new Set([
   "audible",
   "audiobookshelf",
+  "storytel",
+]);
+
+export const SPOKEN_WORD_PROVIDER_DOMAINS: ReadonlySet<string> = new Set([
+  ...AUDIOBOOK_PROVIDER_DOMAINS,
   "bbc_sounds",
   "gpodder",
   "itunes_podcasts",
@@ -24,13 +33,7 @@ export const SPOKEN_WORD_PROVIDER_DOMAINS: ReadonlySet<string> = new Set([
   "pocketcasts",
   "podcast_index",
   "podcastfeed",
-  "storytel",
 ]);
-
-// Audiobookshelf emits one row per personalized shelf (recently added,
-// discover, listen again, continue series, newest authors...). Only the
-// in-progress shelf is shown by default; the rest can be enabled in edit mode.
-const AUDIOBOOKSHELF_DEFAULT_SHOWN_SHELVES = new Set(["continue-listening"]);
 
 export interface DiscoverFolderRef {
   uri: string;
@@ -62,9 +65,25 @@ export function isDefaultHiddenSpokenRow(
   folder: DiscoverFolderRef,
   domainOf: ProviderDomainLookup,
 ): boolean {
-  return (
-    providerDomain(folder, domainOf) === "audiobookshelf" &&
-    !AUDIOBOOKSHELF_DEFAULT_SHOWN_SHELVES.has(folder.item_id)
+  return AUDIOBOOK_PROVIDER_DOMAINS.has(providerDomain(folder, domainOf));
+}
+
+/** Keep shared music shelves free of spoken word, and podcast shelves free of books. */
+export function discoverRowItems(
+  folder: DiscoverFolderRef,
+  items: MediaItemTypeOrItemMapping[],
+  domainOf: ProviderDomainLookup,
+): MediaItemTypeOrItemMapping[] {
+  // Dedicated audiobook shelves are opt-in, so respect an explicit choice
+  // to show one. Shared history and in-progress shelves never promote books.
+  if (isDefaultHiddenSpokenRow(folder, domainOf)) return items;
+  const spokenWord = isSpokenWordRow(folder, domainOf);
+  return items.filter(
+    (item) =>
+      item.media_type !== MediaType.AUDIOBOOK &&
+      (spokenWord ||
+        (item.media_type !== MediaType.PODCAST &&
+          item.media_type !== MediaType.PODCAST_EPISODE)),
   );
 }
 
