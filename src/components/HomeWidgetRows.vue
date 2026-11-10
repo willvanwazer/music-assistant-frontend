@@ -807,6 +807,7 @@ const availableRowIds = computed<string[]>(() =>
     folders: recommendations.value.map((f) => ({
       uri: f.uri,
       spokenWord: isSpokenWordRow(f, providerDomainOf),
+      recentlyPlayed: f.item_id === "recently_played",
     })),
   }),
 );

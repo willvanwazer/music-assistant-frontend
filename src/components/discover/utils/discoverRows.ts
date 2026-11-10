@@ -73,13 +73,19 @@ export interface DefaultRowOrderInput {
   hasPinned: boolean;
   hasTopPicks: boolean;
   hasGenres: boolean;
-  // recommendation rows in server order
-  folders: Array<{ uri: string; spokenWord: boolean }>;
+  // recommendation rows in server order; `recentlyPlayed` marks any
+  // provider's recently played row (e.g. Spotify's), kept with the library's
+  folders: Array<{
+    uri: string;
+    spokenWord: boolean;
+    recentlyPlayed?: boolean;
+  }>;
 }
 
 /**
  * Default order of every candidate row: players, pinned items and top picks
- * first, then recently played and the music rows in server order, the genre
+ * first, then the recently played rows (library first) and the other music
+ * rows in server order, the genre
  * grid, and finally podcasts and audiobook rows.
  */
 export function defaultDiscoverRowOrder(input: DefaultRowOrderInput): string[] {
@@ -87,10 +93,20 @@ export function defaultDiscoverRowOrder(input: DefaultRowOrderInput): string[] {
   if (input.hasPlayers) ids.push(PLAYERS_ROW_ID);
   if (input.hasPinned) ids.push(PINNED_ROW_ID);
   if (input.hasTopPicks) ids.push(TOP_PICKS_ROW_ID);
-  const music = input.folders.filter((f) => !f.spokenWord).map((f) => f.uri);
+  const musicFolders = input.folders.filter((f) => !f.spokenWord);
   const spoken = input.folders.filter((f) => f.spokenWord).map((f) => f.uri);
-  if (music.includes(RECENTLY_PLAYED_ROW_ID)) ids.push(RECENTLY_PLAYED_ROW_ID);
-  ids.push(...music.filter((uri) => uri !== RECENTLY_PLAYED_ROW_ID));
+  const recent = musicFolders
+    .filter((f) => f.recentlyPlayed || f.uri === RECENTLY_PLAYED_ROW_ID)
+    .map((f) => f.uri)
+    .sort(
+      (a, b) =>
+        Number(b === RECENTLY_PLAYED_ROW_ID) -
+        Number(a === RECENTLY_PLAYED_ROW_ID),
+    );
+  ids.push(...recent);
+  ids.push(
+    ...musicFolders.map((f) => f.uri).filter((uri) => !recent.includes(uri)),
+  );
   if (input.hasGenres) ids.push(GENRES_ROW_ID);
   ids.push(PODCASTS_ROW_ID);
   if (spoken.includes(IN_PROGRESS_ROW_ID)) ids.push(IN_PROGRESS_ROW_ID);

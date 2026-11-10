@@ -412,8 +412,17 @@ describe("spoken-word rows", () => {
       folders: [
         { uri: IN_PROGRESS_ROW_ID, spokenWord: true },
         { uri: "abs--1://folder/continue-listening", spokenWord: true },
-        { uri: RECENTLY_PLAYED_ROW_ID, spokenWord: false },
         { uri: ROW_C, spokenWord: false },
+        {
+          uri: "spotify--abc://folder/recently_played",
+          spokenWord: false,
+          recentlyPlayed: true,
+        },
+        {
+          uri: RECENTLY_PLAYED_ROW_ID,
+          spokenWord: false,
+          recentlyPlayed: true,
+        },
       ],
     });
     expect(order).toEqual([
@@ -421,6 +430,7 @@ describe("spoken-word rows", () => {
       PINNED_ROW_ID,
       TOP_PICKS_ROW_ID,
       RECENTLY_PLAYED_ROW_ID,
+      "spotify--abc://folder/recently_played",
       ROW_C,
       GENRES_ROW_ID,
       PODCASTS_ROW_ID,
