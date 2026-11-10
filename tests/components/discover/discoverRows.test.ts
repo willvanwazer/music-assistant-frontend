@@ -488,6 +488,16 @@ describe("spoken-word rows", () => {
           spokenWord: false,
           recentlyPlayed: true,
         },
+        {
+          uri: "library://folder/recent_artists",
+          spokenWord: false,
+          recentlyPlayed: true,
+        },
+        {
+          uri: "library://folder/recent_tracks",
+          spokenWord: false,
+          recentlyPlayed: true,
+        },
       ],
     });
     expect(order).toEqual([
