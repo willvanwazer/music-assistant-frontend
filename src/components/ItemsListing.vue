@@ -1817,6 +1817,7 @@ const loadData = async function (
   }
   loading.value = true;
   loadingTabId = currentTabId;
+  if (refresh) api.clearCatalogCache();
 
   if (FilterParamsChanged && loadPagedData != null) {
     // on paged server listings, we need to clear the list on filter params change

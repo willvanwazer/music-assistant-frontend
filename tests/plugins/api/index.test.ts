@@ -1,6 +1,8 @@
 import {
   type CommandMessage,
   CoreState,
+  EventType,
+  type EventMessage,
   type DSPConfig,
   type ErrorResultMessage,
   type Player,
@@ -82,7 +84,11 @@ class TestTransport extends BaseTransport {
   }
 
   receive(
-    message: ServerInfoMessage | SuccessResultMessage | ErrorResultMessage,
+    message:
+      | ServerInfoMessage
+      | SuccessResultMessage
+      | ErrorResultMessage
+      | EventMessage,
   ): void {
     this.emit("message", JSON.stringify(message));
   }
@@ -110,6 +116,54 @@ describe("MusicAssistantApi error handling", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("reuses catalog responses and invalidates them when media changes", async () => {
+    api.state.value = ConnectionState.INITIALIZED;
+    const args = {
+      item_id: "album",
+      provider_instance_id_or_domain: "spotify--one",
+    };
+    const first = api.sendCommand("music/albums/album_tracks", args);
+    const request = transport.lastCommand;
+    transport.receive({
+      message_id: request.message_id,
+      result: [{ name: "Track" }],
+    } as SuccessResultMessage);
+    await first;
+    const sent = transport.sentCommands.length;
+    expect(await api.sendCommand("music/albums/album_tracks", args)).toEqual([
+      { name: "Track" },
+    ]);
+    expect(transport.sentCommands).toHaveLength(sent);
+    transport.receive({
+      event: EventType.MEDIA_ITEM_UPDATED,
+      object_id: "album",
+      data: {},
+    });
+    const refreshed = api.sendCommand("music/albums/album_tracks", args);
+    expect(transport.sentCommands).toHaveLength(sent + 1);
+    transport.receive({
+      message_id: transport.lastCommand.message_id,
+      result: [{ name: "Updated" }],
+    } as SuccessResultMessage);
+    expect(await refreshed).toEqual([{ name: "Updated" }]);
+  });
+
+  it("never serves a cached catalog response after disconnect", async () => {
+    api.state.value = ConnectionState.INITIALIZED;
+    const first = api.sendCommand("music/albums/get_album", {
+      item_id: "album",
+    });
+    transport.receive({
+      message_id: transport.lastCommand.message_id,
+      result: { name: "Album" },
+    } as SuccessResultMessage);
+    await first;
+    api.disconnect();
+    await expect(
+      api.sendCommand("music/albums/get_album", { item_id: "album" }),
+    ).rejects.toBeInstanceOf(ConnectionLostError);
   });
 
   it("rejects suppressed errors without global logging or a toast", async () => {
