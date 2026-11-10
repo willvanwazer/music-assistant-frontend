@@ -13,6 +13,7 @@ import { $t, i18n } from "../i18n";
 import type { ITransport } from "../remote/transport";
 import { WebSocketTransport } from "../remote/websocket-transport";
 import { ApiCommandError } from "./errors";
+import { CatalogCache, invalidatesCatalog } from "./catalog-cache";
 import { getDeviceName, itemSupportsPlayLog } from "./helpers";
 import {
   type Album,
@@ -155,6 +156,7 @@ export class MusicAssistantApi {
   // and when the full state is (re)fetched, so a change made from another client is
   // picked up on the next (re)connect.
   private _coreConfigValues = new Map<string, Promise<ConfigValueType>>();
+  private _catalogCache = new CatalogCache();
   public hasStreamingProviders = computed(() => {
     return Object.values(this.providers).some((p) => p.is_streaming_provider);
   });
@@ -421,6 +423,7 @@ export class MusicAssistantApi {
    * Disconnect from the server
    */
   public disconnect(): void {
+    this._catalogCache.clear();
     if (this.transport) {
       this.transport.disconnect();
       this.transport = undefined;
@@ -2774,6 +2777,17 @@ export class MusicAssistantApi {
   }
 
   private handleEventMessage(msg: EventMessage) {
+    if (
+      [
+        EventType.MEDIA_ITEM_ADDED,
+        EventType.MEDIA_ITEM_UPDATED,
+        EventType.MEDIA_ITEM_DELETED,
+        EventType.MEDIA_ITEM_PLAYED,
+        EventType.PROVIDERS_UPDATED,
+      ].includes(msg.event)
+    ) {
+      this._catalogCache.clear();
+    }
     // Handle incoming MA event message
     if (msg.event == EventType.QUEUE_ADDED) {
       const queue = msg.data as PlayerQueue;
@@ -2956,6 +2970,7 @@ export class MusicAssistantApi {
   }
 
   private handleServerInfoMessage(msg: ServerInfoMessage) {
+    this._catalogCache.clear();
     // Handle ServerInfo message which is sent as first message on connect
     if (DEBUG) {
       console.log("[serverInfo]", msg);
@@ -3434,6 +3449,33 @@ export class MusicAssistantApi {
   }
 
   public sendCommand<Result>(
+    command: string,
+    args?: Record<string, unknown>,
+    options?: CommandOptions,
+  ): Promise<Result> {
+    if (invalidatesCatalog(command)) {
+      this._catalogCache.clear();
+      return this._requestCommand<Result>(command, args, options).finally(() =>
+        this._catalogCache.clear(),
+      );
+    }
+    if (this.state.value !== ConnectionState.INITIALIZED) {
+      return this._requestCommand<Result>(command, args, options);
+    }
+    return this._catalogCache.read(command, args, (background) =>
+      this._requestCommand<Result>(
+        command,
+        args,
+        background ? { suppressGlobalError: true } : options,
+      ),
+    );
+  }
+
+  public clearCatalogCache(): void {
+    this._catalogCache.clear();
+  }
+
+  private _requestCommand<Result>(
     command: string,
     args?: Record<string, unknown>,
     options?: CommandOptions,
