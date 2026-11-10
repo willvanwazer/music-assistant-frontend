@@ -37,6 +37,10 @@ const providers = {
 describe("artist catalog preloading", () => {
   it("uses exact Spotify discography and library Last.fm panel parameters", () => {
     const requests = artistCatalogRequests(artist, providers);
+    expect(requests[0]).toMatchObject({
+      command: "music/artists/top_tracks",
+      args: { provider_filter: "lastfm--one" },
+    });
     expect(requests).toContainEqual({
       command: "music/artists/artist_albums",
       args: {

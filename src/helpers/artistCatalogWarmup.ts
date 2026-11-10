@@ -76,5 +76,15 @@ export function artistCatalogRequests(
       });
     }
   }
-  return requests;
+  // The leading artist section should be warm before the larger discography calls.
+  const priority = (request: CatalogWarmRequest) => {
+    const id = request.args.provider_filter;
+    if (
+      typeof id !== "string" ||
+      providers[id]?.domain !== "lastfm_recommendations"
+    )
+      return 2;
+    return request.command === "music/artists/top_tracks" ? 0 : 1;
+  };
+  return requests.sort((a, b) => priority(a) - priority(b));
 }

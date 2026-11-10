@@ -4,7 +4,7 @@ import { MediaType } from "./interfaces";
 
 describe("recent listening containers", () => {
   afterEach(() => vi.restoreAllMocks());
-  it("requests started albums and playlists, excluding individual tracks and passive queue items", async () => {
+  it("requests started albums and playlists, including albums reached through individual tracks", async () => {
     const spy = vi.spyOn(api, "sendCommand").mockResolvedValue([]);
     await api.getRecentlyPlayedAlbumsAndPlaylists();
     expect(spy).toHaveBeenCalledWith(
@@ -13,7 +13,7 @@ describe("recent listening containers", () => {
         limit: 20,
         media_types: [MediaType.ALBUM, MediaType.PLAYLIST],
         fully_played_only: false,
-        user_initiated_only: true,
+        user_initiated_only: false,
       },
       { suppressGlobalError: true },
     );

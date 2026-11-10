@@ -26,6 +26,13 @@ export async function setUserPreference(
   key: string,
   value: unknown,
 ): Promise<void> {
+  await setUserPreferences({ [key]: value });
+}
+
+/** Persist related preference changes together, including legacy pin migration. */
+export async function setUserPreferences(
+  updates: Record<string, unknown>,
+): Promise<void> {
   if (!store.currentUser) {
     console.warn("Cannot set preference: no user logged in");
     return;
@@ -35,11 +42,11 @@ export async function setUserPreference(
     store.currentUser.preferences = {};
   }
 
-  const plainValue = JSON.parse(JSON.stringify(value));
+  const plainValue = JSON.parse(JSON.stringify(updates));
 
   const updatedPreferences = {
     ...store.currentUser.preferences,
-    [key]: plainValue,
+    ...plainValue,
   };
 
   store.currentUser.preferences = updatedPreferences;

@@ -2,7 +2,7 @@
   <div class="listening-highlights">
     <EditorialShelf
       v-if="section !== 'podcasts'"
-      :title="$t('listening_home.recent_title')"
+      :title="$t('recently_played')"
       :tiles-per-view="tilesPerView"
     >
       <template #actions>
@@ -148,7 +148,8 @@ import api from "@/plugins/api";
 import { store } from "@/plugins/store";
 import {
   EventType,
-  type ItemMapping,
+  type EventMessage,
+  type MediaItemTypeOrItemMapping,
   type PodcastEpisode,
 } from "@/plugins/api/interfaces";
 import { formatDuration, shelfTilesPerView } from "@/helpers/utils";
@@ -156,7 +157,7 @@ import { Button } from "@/components/ui/button";
 import EditorialShelf from "./EditorialShelf.vue";
 import EditorialMediaCard from "./EditorialMediaCard.vue";
 import EditorialCardSkeleton from "./EditorialCardSkeleton.vue";
-import { podcastEpisodes } from "./utils/listeningHighlights";
+import { podcastEpisodes, recentContainers } from "./utils/listeningHighlights";
 
 // podcast providers exposing up_next and in_progress browse folders
 const PODCAST_QUEUE_DOMAINS = ["overcast_mac", "pocketcasts"];
@@ -169,8 +170,11 @@ const props = withDefaults(
 );
 const loading = ref(true);
 const refreshing = ref(false);
-const recent = ref<ItemMapping[]>([]);
-const emit = defineEmits<{ catalogItems: [items: ItemMapping[]] }>();
+const recent = ref<MediaItemTypeOrItemMapping[]>([]);
+const recentSources = new Map<string, MediaItemTypeOrItemMapping[]>();
+const emit = defineEmits<{
+  catalogItems: [items: MediaItemTypeOrItemMapping[]];
+}>();
 watch(
   () => (loading.value || props.section === "podcasts" ? [] : recent.value),
   (items) => emit("catalogItems", items),
@@ -191,6 +195,15 @@ const podcastProviders = computed(() =>
         store.currentUser.provider_filter.includes(provider.instance_id)),
   ),
 );
+const historyProviders = computed(() =>
+  Object.values(api.providers).filter(
+    (provider) =>
+      provider.domain === "spotify" &&
+      provider.available &&
+      (!store.currentUser?.provider_filter?.length ||
+        store.currentUser.provider_filter.includes(provider.instance_id)),
+  ),
+);
 let generation = 0;
 let timer: ReturnType<typeof setInterval> | undefined;
 let refreshTimer: ReturnType<typeof setTimeout> | undefined;
@@ -199,11 +212,38 @@ async function refresh() {
   const current = ++generation;
   refreshing.value = true;
   const sources = props.section === "recent" ? [] : podcastProviders.value;
+  const historyRequests: Array<
+    [string, () => Promise<MediaItemTypeOrItemMapping[]>]
+  > =
+    props.section === "podcasts"
+      ? []
+      : [
+          ["local", () => api.getRecentlyPlayedAlbumsAndPlaylists()],
+          ...historyProviders.value.map(
+            (
+              provider,
+            ): [string, () => Promise<MediaItemTypeOrItemMapping[]>] => [
+              provider.instance_id,
+              () =>
+                api.getRecommendationItems(
+                  provider.instance_id,
+                  "recently_played",
+                ),
+            ],
+          ),
+        ];
   const [history, queue, progress] = await Promise.all([
     Promise.allSettled(
-      props.section === "podcasts"
-        ? []
-        : [api.getRecentlyPlayedAlbumsAndPlaylists()],
+      historyRequests.map(async ([id, request]) => {
+        const items = await request();
+        if (current !== generation) return;
+        recentSources.set(id, items);
+        recent.value = recentContainers(
+          historyRequests.map(([source]) => recentSources.get(source) ?? []),
+        );
+        // A slow or unavailable provider must not hold the local shelf behind a spinner.
+        if (props.section === "recent") loading.value = false;
+      }),
     ),
     Promise.allSettled(
       sources.map((provider) =>
@@ -217,8 +257,9 @@ async function refresh() {
     ),
   ]);
   if (current !== generation) return;
-  recentError.value = history[0]?.status === "rejected";
-  if (history[0]?.status === "fulfilled") recent.value = history[0].value;
+  recentError.value =
+    history.length > 0 &&
+    history.every((result) => result.status === "rejected");
   queueError.value = queue.some((result) => result.status === "rejected");
   progressError.value = progress.some((result) => result.status === "rejected");
   upNext.value = podcastEpisodes(
@@ -252,6 +293,19 @@ const unsubscribePlaylog = api.subscribe(
   EventType.PLAYLOG_UPDATED,
   scheduleRefresh,
 );
+const unsubscribeProvider = api.subscribe(
+  EventType.PROVIDER_EVENT,
+  (event: EventMessage) => {
+    if (
+      event.data &&
+      typeof event.data === "object" &&
+      "event" in event.data &&
+      event.data.event === "recommendations_updated"
+    ) {
+      scheduleRefresh();
+    }
+  },
+);
 const unsubscribeConnected = api.subscribe(
   EventType.CONNECTED,
   scheduleRefresh,
@@ -260,9 +314,11 @@ watch(
   () => [
     props.section,
     store.currentUser?.user_id,
+    ...historyProviders.value.map((p) => p.instance_id),
     ...podcastProviders.value.map((p) => p.instance_id),
   ],
   () => {
+    recentSources.clear();
     recent.value = [];
     upNext.value = [];
     inProgress.value = [];
@@ -283,6 +339,7 @@ onBeforeUnmount(() => {
   clearTimeout(refreshTimer);
   unsubscribePlaylog();
   unsubscribeConnected();
+  unsubscribeProvider();
   window.removeEventListener("focus", refreshVisible);
   document.removeEventListener("visibilitychange", refreshVisible);
 });

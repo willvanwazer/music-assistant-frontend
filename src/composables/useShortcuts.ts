@@ -15,7 +15,7 @@ import type {
 } from "@/plugins/api/interfaces";
 import { EventType, MediaType } from "@/plugins/api/interfaces";
 import {
-  useUserPreferences,
+  setUserPreferences,
   setUserPreference,
 } from "@/composables/userPreferences";
 import { store } from "@/plugins/store";
@@ -193,24 +193,47 @@ export function isShortcutItem(
 // Standalone helpers — usable outside Vue component setup (e.g. context menus)
 // ---------------------------------------------------------------------------
 
-function _getPinnedUris(): string[] {
-  return (store.currentUser?.preferences?.[PREF_KEY] as string[]) ?? [];
+export function getPinnedUris(): string[] {
+  const preferences = store.currentUser?.preferences ?? {};
+  const merged: string[] = [];
+  for (const value of [preferences["home.pins"], preferences[PREF_KEY]]) {
+    if (!Array.isArray(value)) continue;
+    for (const uri of value) {
+      if (
+        typeof uri === "string" &&
+        !merged.some((known) => isSameShortcutUri(known, uri))
+      ) {
+        merged.push(uri);
+      }
+    }
+  }
+  return merged;
+}
+
+async function setPinnedUris(uris: string[]): Promise<void> {
+  if (
+    Array.isArray(store.currentUser?.preferences?.["home.pins"]) &&
+    (store.currentUser.preferences["home.pins"] as unknown[]).length
+  ) {
+    // Write the union and retire the legacy list in one update, so removals never resurrect.
+    await setUserPreferences({ [PREF_KEY]: uris, "home.pins": [] });
+  } else {
+    await setUserPreference(PREF_KEY, uris);
+  }
 }
 
 export function isShortcutPinned(uri: string): boolean {
-  return _getPinnedUris().some((pinnedUri) =>
-    isSameShortcutUri(pinnedUri, uri),
-  );
+  return getPinnedUris().some((pinnedUri) => isSameShortcutUri(pinnedUri, uri));
 }
 
 export function isShortcutCapReached(): boolean {
-  return _getPinnedUris().length >= MAX_SHORTCUTS;
+  return getPinnedUris().length >= MAX_SHORTCUTS;
 }
 
 export function isShortcutPinnedItem(
   item: ShortcutItem | ItemMapping,
 ): boolean {
-  return _getPinnedUris().some((pinnedUri) =>
+  return getPinnedUris().some((pinnedUri) =>
     isUriMatchingItem(pinnedUri, item),
   );
 }
@@ -218,9 +241,8 @@ export function isShortcutPinnedItem(
 export async function unpinShortcutStandaloneItem(
   item: ShortcutItem | ItemMapping,
 ): Promise<void> {
-  await setUserPreference(
-    PREF_KEY,
-    _getPinnedUris().filter((pinnedUri) => !isUriMatchingItem(pinnedUri, item)),
+  await setPinnedUris(
+    getPinnedUris().filter((pinnedUri) => !isUriMatchingItem(pinnedUri, item)),
   );
 }
 
@@ -228,20 +250,20 @@ export async function pinShortcutStandalone(
   item: ShortcutItem | ItemMapping,
 ): Promise<void> {
   if (!isShortcutItem(item)) return;
-  const uris = _getPinnedUris();
+  const uris = getPinnedUris();
   if (uris.length >= MAX_SHORTCUTS) return;
   if (uris.some((pinnedUri) => isUriMatchingItem(pinnedUri, item))) return;
   const maUri = getShortcutUri(item);
-  await setUserPreference(PREF_KEY, [...uris, maUri]);
+  await setPinnedUris([...uris, maUri]);
 }
 
 let _globalShortcutsSyncInitialized = false;
 
 async function removePinnedUriIfPresent(uri: string): Promise<void> {
-  const currentUris = _getPinnedUris();
+  const currentUris = getPinnedUris();
   const nextUris = currentUris.filter((u) => !isSameShortcutUri(u, uri));
   if (nextUris.length !== currentUris.length) {
-    await setUserPreference(PREF_KEY, nextUris);
+    await setPinnedUris(nextUris);
   }
 }
 
@@ -275,24 +297,24 @@ export async function reorderShortcutStandalone(
   sourceUri: string,
   targetUri: string,
 ): Promise<void> {
-  const currentUris = _getPinnedUris();
+  const currentUris = getPinnedUris();
   const nextUris = reorderShortcutUris(currentUris, sourceUri, targetUri);
   if (!nextUris) return;
-  await setUserPreference(PREF_KEY, nextUris);
+  await setPinnedUris(nextUris);
 }
 
 export function findPinnedUriForItem(
   item: ShortcutItem | ItemMapping,
 ): string | null {
   const identities = getShortcutIdentities(item);
-  return findPinnedUriByIdentities(identities, _getPinnedUris());
+  return findPinnedUriByIdentities(identities, getPinnedUris());
 }
 
 export function getShortcutMoveAvailability(item: ShortcutItem | ItemMapping): {
   canMoveUp: boolean;
   canMoveDown: boolean;
 } {
-  const uris = _getPinnedUris();
+  const uris = getPinnedUris();
   const uri = findPinnedUriForItem(item);
   if (!uri) return { canMoveUp: false, canMoveDown: false };
   const index = uris.findIndex((pinnedUri) =>
@@ -309,7 +331,7 @@ export async function moveShortcutStandaloneItem(
   item: ShortcutItem | ItemMapping,
   direction: "up" | "down",
 ): Promise<void> {
-  const uris = _getPinnedUris();
+  const uris = getPinnedUris();
   const uri = findPinnedUriForItem(item);
   if (!uri) return;
 
@@ -325,9 +347,7 @@ export async function moveShortcutStandaloneItem(
 }
 
 export function useShortcuts() {
-  const { getPreference, setPreference } = useUserPreferences();
-
-  const pinnedUris = getPreference<string[]>(PREF_KEY, []);
+  const pinnedUris = computed(getPinnedUris);
   const resolvedItems = ref<ShortcutItem[]>([]);
   // true whenever pinnedUris is non-empty but resolvedItems hasn't been populated yet
   const isLoading = ref(pinnedUris.value.length > 0);
@@ -366,8 +386,7 @@ export function useShortcuts() {
     // Prune stale URIs from preferences using the current reactive value so that
     // any items pinned during the async fetch are not lost.
     if (prunedUris.length > 0) {
-      await setPreference(
-        PREF_KEY,
+      await setPinnedUris(
         pinnedUris.value.filter((u) => !prunedUris.includes(u)),
       );
     }
@@ -388,15 +407,14 @@ export function useShortcuts() {
     if (pinnedUris.value.length >= MAX_SHORTCUTS) return;
     // Add immediately for instant sidebar feedback; watch won't re-add (already present)
     resolvedItems.value = [...resolvedItems.value, item];
-    await setPreference(PREF_KEY, [...pinnedUris.value, maUri]);
+    await setPinnedUris([...pinnedUris.value, maUri]);
   }
 
   async function unpinItem(uri: string) {
     resolvedItems.value = resolvedItems.value.filter(
       (item) => !isUriMatchingItem(uri, item),
     );
-    await setPreference(
-      PREF_KEY,
+    await setPinnedUris(
       pinnedUris.value.filter((u) => !isSameShortcutUri(u, uri)),
     );
   }

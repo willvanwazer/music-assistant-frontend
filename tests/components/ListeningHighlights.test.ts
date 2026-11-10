@@ -5,6 +5,11 @@ import ListeningHighlights from "@/components/discover/ListeningHighlights.vue";
 const { apiMock } = vi.hoisted(() => ({
   apiMock: {
     providers: {
+      spotify: {
+        domain: "spotify",
+        available: true,
+        instance_id: "spotify--test",
+      },
       overcast_mac: {
         domain: "overcast_mac",
         available: true,
@@ -16,6 +21,7 @@ const { apiMock } = vi.hoisted(() => ({
         instance_id: "pocketcasts",
       },
     },
+    getRecommendationItems: vi.fn(),
     getRecentlyPlayedAlbumsAndPlaylists: vi.fn(),
     browse: vi.fn(),
     subscribe: vi.fn(() => vi.fn()),
@@ -55,6 +61,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([]);
   apiMock.browse.mockResolvedValue([]);
+  apiMock.getRecommendationItems.mockResolvedValue([]);
 });
 const render = (section: "all" | "recent" | "podcasts" = "all") =>
   mount(ListeningHighlights, {
@@ -66,6 +73,51 @@ const render = (section: "all" | "recent" | "podcasts" = "all") =>
   });
 
 describe("permanent listening highlights", () => {
+  it("merges Spotify containers into one shelf and removes duplicate local albums", async () => {
+    const album = {
+      uri: "library://album/1",
+      name: "Same album",
+      media_type: "album",
+    };
+    apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([album]);
+    apiMock.getRecommendationItems.mockResolvedValue([
+      album,
+      {
+        uri: "spotify://playlist/2",
+        name: "Spotify mix",
+        media_type: "playlist",
+      },
+      { uri: "spotify://track/3", name: "Hidden track", media_type: "track" },
+    ]);
+    const wrapper = render("recent");
+    await flushPromises();
+    expect(wrapper.findAll("h2")).toHaveLength(1);
+    expect(wrapper.findAll(".media-card").map((card) => card.text())).toEqual([
+      "Same album",
+      "Spotify mix",
+    ]);
+    expect(apiMock.getRecommendationItems).toHaveBeenCalledWith(
+      "spotify--test",
+      "recently_played",
+    );
+  });
+  it("renders local history while Spotify is still loading", async () => {
+    let resolveSpotify!: (items: unknown[]) => void;
+    apiMock.getRecommendationItems.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveSpotify = resolve;
+        }),
+    );
+    apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([
+      { uri: "library://album/1", name: "Local album", media_type: "album" },
+    ]);
+    const wrapper = render("recent");
+    await flushPromises();
+    expect(wrapper.text()).toContain("Local album");
+    resolveSpotify([]);
+    await flushPromises();
+  });
   it("loads each separately positioned section without duplicate requests", async () => {
     const recent = render("recent");
     await flushPromises();
@@ -73,7 +125,7 @@ describe("permanent listening highlights", () => {
     expect(apiMock.browse).not.toHaveBeenCalled();
     const podcasts = render("podcasts");
     await flushPromises();
-    expect(podcasts.text()).not.toContain("listening_home.recent_title");
+    expect(podcasts.text()).not.toContain("recently_played");
     expect(apiMock.getRecentlyPlayedAlbumsAndPlaylists).toHaveBeenCalledTimes(
       1,
     );
@@ -83,7 +135,7 @@ describe("permanent listening highlights", () => {
     const wrapper = render();
     await flushPromises();
     const text = wrapper.text();
-    expect(text.indexOf("listening_home.recent_title")).toBeLessThan(
+    expect(text.indexOf("recently_played")).toBeLessThan(
       text.indexOf("podcasts"),
     );
     expect(text).toContain("listening_home.up_next");
@@ -120,14 +172,24 @@ describe("permanent listening highlights", () => {
   });
   it("keeps listening history usable when the podcast service fails", async () => {
     apiMock.getRecentlyPlayedAlbumsAndPlaylists.mockResolvedValue([
-      { uri: "library://album/1", name: "A favorite album" },
+      {
+        uri: "library://album/1",
+        name: "A favorite album",
+        media_type: "album",
+      },
     ]);
     apiMock.browse.mockRejectedValue(new Error("Offline"));
     const wrapper = render();
     await flushPromises();
     expect(wrapper.text()).toContain("A favorite album");
     expect(wrapper.emitted("catalogItems")?.at(-1)).toEqual([
-      [{ uri: "library://album/1", name: "A favorite album" }],
+      [
+        {
+          uri: "library://album/1",
+          name: "A favorite album",
+          media_type: "album",
+        },
+      ],
     ]);
     expect(wrapper.text()).toContain("listening_home.queue_error");
     expect(wrapper.text()).toContain("listening_home.progress_error");

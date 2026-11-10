@@ -494,8 +494,6 @@ describe("spoken-word rows", () => {
       PLAYERS_ROW_ID,
       PINNED_ROW_ID,
       TOP_PICKS_ROW_ID,
-      RECENTLY_PLAYED_ROW_ID,
-      "spotify--abc://folder/recently_played",
       ROW_C,
       GENRES_ROW_ID,
       PODCASTS_ROW_ID,

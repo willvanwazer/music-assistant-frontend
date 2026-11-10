@@ -58,7 +58,7 @@ const { pinnedItems, isLoading, pinnedCount } = useShortcuts();
 
 const sectionConfig = computed(() => getMenuSectionConfig("shortcuts"));
 const sectionLabel = computed(
-  () => sectionConfig.value.label || t("shortcuts"),
+  () => sectionConfig.value.label || t("home_pins.title"),
 );
 
 const isActive = (url: string) =>
@@ -186,7 +186,7 @@ const draggedItem = computed(() =>
       <NavSectionHeader
         section-id="shortcuts"
         :label="sectionLabel"
-        :default-label="t('shortcuts')"
+        :default-label="t('home_pins.title')"
         :label-hidden="sectionConfig.hide_label"
         :edit-mode="editMode"
       />

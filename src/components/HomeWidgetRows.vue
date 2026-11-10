@@ -1038,28 +1038,6 @@ const loadGenres = async () => {
 
 let unmounted = false;
 let refreshRecommendationsTimer: ReturnType<typeof setTimeout> | undefined;
-let historyTimer: ReturnType<typeof setInterval> | undefined;
-let historyRefreshing = false;
-
-const refreshVisibleHistory = async () => {
-  if (unmounted || document.hidden || loading.value || historyRefreshing)
-    return;
-  historyRefreshing = true;
-  try {
-    await fetchRowItems(
-      recommendations.value
-        .filter(
-          (folder) =>
-            folder.item_id === "recently_played" &&
-            shownRecRowIds.value.has(folder.uri),
-        )
-        .map((folder) => folder.uri),
-    );
-  } finally {
-    historyRefreshing = false;
-  }
-};
-
 const cancelScheduledRecommendationRefresh = () => {
   if (refreshRecommendationsTimer) {
     clearTimeout(refreshRecommendationsTimer);
@@ -1130,7 +1108,8 @@ const unsubscribeProviderEvents = api.subscribe(
       evt.data &&
       typeof evt.data === "object" &&
       "event" in evt.data &&
-      evt.data.event === "recommendations_updated"
+      evt.data.event === "recommendations_updated" &&
+      (!("item_id" in evt.data) || evt.data.item_id !== "recently_played")
     ) {
       scheduleRecommendationRefresh();
     }
@@ -1142,9 +1121,6 @@ onMounted(async () => {
   // doesn't gate the page spinner.
   loadGenres();
   window.addEventListener("resize", updateHeroNav);
-  // Spotify playback outside this app produces no local playlog event.
-  historyTimer = setInterval(refreshVisibleHistory, 60_000);
-  document.addEventListener("visibilitychange", refreshVisibleHistory);
 
   // A history back/forward traversal sets `forward` on the entry we're
   // returning to; a fresh navigation leaves it null.
@@ -1192,8 +1168,6 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   unmounted = true;
   window.removeEventListener("resize", updateHeroNav);
-  clearInterval(historyTimer);
-  document.removeEventListener("visibilitychange", refreshVisibleHistory);
   unsubscribeRecommendations();
   unsubscribeProviderEvents();
   unsubscribePlaylog();

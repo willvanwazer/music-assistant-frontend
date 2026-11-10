@@ -282,13 +282,8 @@ const onSelect = function (evt: Event, menuItem: ContextMenuItem) {
 import router from "@/plugins/router";
 
 import {
-  canPinToHome,
   getHomePinMoveAvailability,
-  isHomePinCapReached,
-  isPinnedToHome,
   moveHomePin,
-  pinToHome,
-  unpinFromHome,
 } from "@/composables/useHomePins";
 import {
   getShortcutMoveAvailability,
@@ -346,8 +341,6 @@ import {
   Folder,
   Heart,
   History,
-  House,
-  HousePlus,
   Image,
   Info,
   LibraryBig,
@@ -1060,54 +1053,34 @@ export const getContextMenuItems = async function (
       icon: Download,
     });
   }
-  // pin / unpin on the home page, Apple Music style
+  // pin / unpin shortcut in sidebar (playlist, artist, album, track, radio, podcast, audiobook, genre)
   if (
     items.length === 1 &&
-    canPinToHome(items[0]) &&
+    isShortcutItem(items[0]) &&
     !!items[0].uri &&
     store.currentUser &&
     store.currentUser.role !== "guest"
   ) {
-    const homeItem = items[0];
-    if (isPinnedToHome(homeItem)) {
+    const shortcutItem = items[0];
+    if (isShortcutPinnedItem(shortcutItem)) {
       if (options?.homePinContext) {
         const { canMoveLeft, canMoveRight } =
-          getHomePinMoveAvailability(homeItem);
+          getHomePinMoveAvailability(shortcutItem);
         contextMenuItems.push({
           label: "home_pins.move_earlier",
           labelArgs: [],
-          action: () => moveHomePin(homeItem, "left"),
+          action: () => moveHomePin(shortcutItem, "left"),
           icon: ArrowLeft,
           disabled: !canMoveLeft,
         });
         contextMenuItems.push({
           label: "home_pins.move_later",
           labelArgs: [],
-          action: () => moveHomePin(homeItem, "right"),
+          action: () => moveHomePin(shortcutItem, "right"),
           icon: ArrowRight,
           disabled: !canMoveRight,
         });
       }
-      contextMenuItems.push({
-        label: "home_pins.unpin",
-        labelArgs: [],
-        action: () => unpinFromHome(homeItem),
-        icon: House,
-      });
-    } else {
-      contextMenuItems.push({
-        label: "home_pins.pin",
-        labelArgs: [],
-        action: () => pinToHome(homeItem),
-        icon: HousePlus,
-        disabled: isHomePinCapReached(),
-      });
-    }
-  }
-  // pin / unpin shortcut in sidebar (playlist, artist, album, track, radio, podcast, audiobook, genre)
-  if (items.length === 1 && isShortcutItem(items[0]) && !!items[0].uri) {
-    const shortcutItem = items[0];
-    if (isShortcutPinnedItem(shortcutItem)) {
       // move up/down only make sense when the menu is opened on the
       // sidebar shortcuts list itself
       if (options?.shortcutContext) {
@@ -1129,14 +1102,14 @@ export const getContextMenuItems = async function (
         });
       }
       contextMenuItems.push({
-        label: "shortcut.remove_from",
+        label: "home_pins.unpin",
         labelArgs: [],
         action: () => unpinShortcutStandaloneItem(shortcutItem),
         icon: PinOff,
       });
     } else {
       contextMenuItems.push({
-        label: "shortcut.add_to",
+        label: "home_pins.pin",
         labelArgs: [],
         action: () => pinShortcutStandalone(shortcutItem),
         icon: Pin,

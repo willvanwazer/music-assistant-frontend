@@ -4,6 +4,24 @@
     <div class="item-details-body">
       <!-- music listings: any artist that is not an author/narrator -->
       <div v-if="itemDetails && !isAudiobookArtist" class="contents">
+        <!-- top tracks (per provider) -->
+        <ItemsListing
+          v-if="itemDetails && !loading && hasTopTracksProvider"
+          itemtype="artisttracks"
+          path="artisttoptracks"
+          :parent-item="itemDetails"
+          :show-provider="false"
+          :show-favorites-only-filter="false"
+          :require-provider-selection="true"
+          :provider-filter-options="topTrackProviderIds"
+          :show-refresh-button="false"
+          :show-track-number="false"
+          :load-items="loadArtistTopTracks"
+          :sort-keys="['original', 'name', 'duration', 'duration_desc']"
+          :title="$t('artist_toptracks')"
+          :subtitle="$t('on_provider', [activeTopTrackProvider])"
+          :allow-collapse="true"
+        />
         <!-- albums in library (library artists only) -->
         <ItemsListing
           v-if="itemDetails && !loading && itemDetails.provider == 'library'"
@@ -65,6 +83,7 @@
           v-if="itemDetails && !loading && albumSourceProviderIds.length > 0"
           itemtype="artistalbums"
           path="artistallalbums"
+          :show-album-type-filter="true"
           :parent-item="itemDetails"
           :show-provider="false"
           :show-favorites-only-filter="false"
@@ -117,6 +136,7 @@
           v-if="itemDetails && !loading && hasTopAlbumsProvider"
           itemtype="artistalbums"
           path="artisttopalbums"
+          :show-album-type-filter="true"
           :parent-item="itemDetails"
           :show-provider="false"
           :show-favorites-only-filter="false"
@@ -127,24 +147,6 @@
           :sort-keys="['original', 'name', 'year', 'year_desc']"
           :title="$t('artist_topalbums')"
           :subtitle="$t('on_provider', [activeTopAlbumProvider])"
-          :allow-collapse="true"
-        />
-        <!-- top tracks (per provider) -->
-        <ItemsListing
-          v-if="itemDetails && !loading && hasTopTracksProvider"
-          itemtype="artisttracks"
-          path="artisttoptracks"
-          :parent-item="itemDetails"
-          :show-provider="false"
-          :show-favorites-only-filter="false"
-          :require-provider-selection="true"
-          :provider-filter-options="topTrackProviderIds"
-          :show-refresh-button="false"
-          :show-track-number="false"
-          :load-items="loadArtistTopTracks"
-          :sort-keys="['original', 'name', 'duration', 'duration_desc']"
-          :title="$t('artist_toptracks')"
-          :subtitle="$t('on_provider', [activeTopTrackProvider])"
           :allow-collapse="true"
         />
         <!-- similar artists (per provider) -->
@@ -509,9 +511,15 @@ const aggregatedProviderIdsForFeature = (feature: ProviderFeature) =>
 const topAlbumProviderIds = aggregatedProviderIdsForFeature(
   ProviderFeature.ARTIST_TOPALBUMS,
 );
-const topTrackProviderIds = aggregatedProviderIdsForFeature(
+const availableTopTrackProviderIds = aggregatedProviderIdsForFeature(
   ProviderFeature.ARTIST_TOPTRACKS,
 );
+const topTrackProviderIds = computed(() => {
+  const lastfm = availableTopTrackProviderIds.value.filter(
+    (id) => api.providers[id]?.domain === "lastfm_recommendations",
+  );
+  return lastfm.length ? lastfm : availableTopTrackProviderIds.value;
+});
 
 const topAlbumListingPrefs = getItemsListingPreferences(
   "artisttopalbums",
