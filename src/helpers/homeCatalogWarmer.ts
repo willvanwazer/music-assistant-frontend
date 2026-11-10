@@ -27,7 +27,6 @@ interface Dependencies {
 }
 
 const REVISIT_MS = 5 * 60_000;
-const MAX_ITEMS = 100;
 
 /** Warm the detail-page cache for the current home selection, one request at a time. */
 export class HomeCatalogWarmer {
@@ -56,7 +55,6 @@ export class HomeCatalogWarmer {
           this.jobs.get(key) ?? { item, phase: "details", retryAt: 0 },
         );
       }
-      if (next.size >= MAX_ITEMS) break;
     }
     this.jobs = next;
     this.schedule(1000);
@@ -111,9 +109,13 @@ export class HomeCatalogWarmer {
       this.schedule(1000);
       return;
     }
-    const entry = [...this.jobs.entries()].find(
+    const eligible = [...this.jobs.entries()].filter(
       ([, job]) => job.retryAt <= Date.now(),
     );
+    // Finish the initial pass before refreshing completed cards. Slow provider
+    // requests must not leave later home items permanently cold.
+    const entry =
+      eligible.find(([, job]) => job.phase !== "done") ?? eligible[0];
     if (!entry) {
       this.schedule(60_000);
       return;

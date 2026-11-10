@@ -46,6 +46,49 @@ afterEach(() => {
 const tick = () => vi.advanceTimersByTimeAsync(1000);
 
 describe("home catalog warming", () => {
+  it("warms every home card even when the selection exceeds one hundred items", async () => {
+    const items = Array.from({ length: 120 }, (_, i) => mapping(String(i)));
+    const request = vi.fn(async (command, args) =>
+      command.endsWith("get_album") ? details(mapping(args.item_id)) : [],
+    );
+    warmer = new HomeCatalogWarmer({
+      request,
+      isSpotify: () => true,
+      isIdle: () => true,
+    });
+    warmer.update(items, "user");
+    await vi.advanceTimersByTimeAsync(240_000);
+    expect(request).toHaveBeenCalledTimes(240);
+    expect(request).toHaveBeenLastCalledWith("music/albums/album_tracks", {
+      item_id: "119",
+      provider_instance_id_or_domain: "spotify--one",
+      in_library_only: false,
+    });
+  });
+
+  it("warms later cards before refreshing completed cards after a slow response", async () => {
+    const slow = deferred<Album | Playlist>();
+    const request = vi
+      .fn()
+      .mockResolvedValueOnce(details(mapping("a")))
+      .mockResolvedValueOnce([])
+      .mockReturnValueOnce(slow.promise)
+      .mockResolvedValue(details(mapping("c")));
+    warmer = new HomeCatalogWarmer({
+      request,
+      isSpotify: () => true,
+      isIdle: () => true,
+    });
+    warmer.update([mapping("a"), mapping("b"), mapping("c")], "user");
+    await vi.advanceTimersByTimeAsync(310_000);
+    expect(request).toHaveBeenCalledTimes(3);
+    slow.resolve(details(mapping("b")));
+    await vi.advanceTimersByTimeAsync(2000);
+    expect(request.mock.calls.slice(3).map(([, args]) => args.item_id)).toEqual(
+      ["b", "c"],
+    );
+  });
+
   it("preloads artist panels for direct cards and artists attached to home tracks", async () => {
     const artist = mapping("artist", MediaType.ARTIST);
     const track = { ...mapping("track", MediaType.TRACK), artists: [artist] };
