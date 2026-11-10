@@ -105,8 +105,16 @@
       </Button>
     </Alert>
 
-    <ListeningHighlights class="ed-layer" section="recent" />
-    <HomeWidgetRows class="ed-layer" :edit-mode="editMode" />
+    <ListeningHighlights
+      class="ed-layer"
+      section="recent"
+      @catalog-items="recentCatalogItems = $event"
+    />
+    <HomeWidgetRows
+      class="ed-layer"
+      :edit-mode="editMode"
+      @catalog-items="rowCatalogItems = $event"
+    />
 
     <!-- Floating exit button while editing the home screen -->
     <Button
@@ -126,8 +134,10 @@ import ListeningHighlights from "@/components/discover/ListeningHighlights.vue";
 import Toolbar from "@/components/Toolbar.vue";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useHomeCatalogWarmup } from "@/composables/useHomeCatalogWarmup";
 import { paletteFromServer, rgbToHex } from "@/helpers/utils";
 import { api } from "@/plugins/api";
+import type { MediaItemTypeOrItemMapping } from "@/plugins/api/interfaces";
 import { authManager } from "@/plugins/auth";
 import { $t } from "@/plugins/i18n";
 import { store } from "@/plugins/store";
@@ -144,6 +154,12 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
+const recentCatalogItems = ref<MediaItemTypeOrItemMapping[]>([]);
+const rowCatalogItems = ref<MediaItemTypeOrItemMapping[]>([]);
+// All shelves share one queue; prioritize the first shelf and stop on navigation.
+useHomeCatalogWarmup(
+  computed(() => [...recentCatalogItems.value, ...rowCatalogItems.value]),
+);
 
 // --- Greeting: first name of the signed-in user and the time of day. Kept to
 // two short lines; it is left out when no name is known. ---

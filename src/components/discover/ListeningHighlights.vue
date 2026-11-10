@@ -170,6 +170,12 @@ const props = withDefaults(
 const loading = ref(true);
 const refreshing = ref(false);
 const recent = ref<ItemMapping[]>([]);
+const emit = defineEmits<{ catalogItems: [items: ItemMapping[]] }>();
+watch(
+  () => (loading.value || props.section === "podcasts" ? [] : recent.value),
+  (items) => emit("catalogItems", items),
+  { immediate: true },
+);
 const upNext = ref<PodcastEpisode[]>([]);
 const inProgress = ref<PodcastEpisode[]>([]);
 const recentError = ref(false);

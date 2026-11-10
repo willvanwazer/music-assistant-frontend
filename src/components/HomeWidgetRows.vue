@@ -498,6 +498,9 @@ import { useRouter } from "vue-router";
 const props = withDefaults(defineProps<{ editMode?: boolean }>(), {
   editMode: false,
 });
+const emit = defineEmits<{
+  catalogItems: [items: MediaItemTypeOrItemMapping[]];
+}>();
 
 const router = useRouter();
 
@@ -879,6 +882,22 @@ const displayedRows = computed(() =>
   ),
 );
 
+watch(
+  computed(() =>
+    displayedRows.value.flatMap((row) => {
+      if (row.hidden || loading.value) return [];
+      if (row.kind === "pinned") return pinnedItems.value;
+      if (row.kind === "top_picks")
+        return heroEntries.value.map((entry) => entry.item);
+      if (row.kind === "recommendation")
+        return rowItemsMap.value.get(row.id) ?? [];
+      return [];
+    }),
+  ),
+  (items) => emit("catalogItems", items),
+  { immediate: true },
+);
+
 // The recommendation rows currently visible to the user (not hidden). The Top
 // Picks hero draws only from these, so an opted-out row never feeds it.
 const shownRecRowIds = computed(
@@ -1019,6 +1038,27 @@ const loadGenres = async () => {
 
 let unmounted = false;
 let refreshRecommendationsTimer: ReturnType<typeof setTimeout> | undefined;
+let historyTimer: ReturnType<typeof setInterval> | undefined;
+let historyRefreshing = false;
+
+const refreshVisibleHistory = async () => {
+  if (unmounted || document.hidden || loading.value || historyRefreshing)
+    return;
+  historyRefreshing = true;
+  try {
+    await fetchRowItems(
+      recommendations.value
+        .filter(
+          (folder) =>
+            folder.item_id === "recently_played" &&
+            shownRecRowIds.value.has(folder.uri),
+        )
+        .map((folder) => folder.uri),
+    );
+  } finally {
+    historyRefreshing = false;
+  }
+};
 
 const cancelScheduledRecommendationRefresh = () => {
   if (refreshRecommendationsTimer) {
@@ -1102,6 +1142,9 @@ onMounted(async () => {
   // doesn't gate the page spinner.
   loadGenres();
   window.addEventListener("resize", updateHeroNav);
+  // Spotify playback outside this app produces no local playlog event.
+  historyTimer = setInterval(refreshVisibleHistory, 60_000);
+  document.addEventListener("visibilitychange", refreshVisibleHistory);
 
   // A history back/forward traversal sets `forward` on the entry we're
   // returning to; a fresh navigation leaves it null.
@@ -1149,6 +1192,8 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   unmounted = true;
   window.removeEventListener("resize", updateHeroNav);
+  clearInterval(historyTimer);
+  document.removeEventListener("visibilitychange", refreshVisibleHistory);
   unsubscribeRecommendations();
   unsubscribeProviderEvents();
   unsubscribePlaylog();

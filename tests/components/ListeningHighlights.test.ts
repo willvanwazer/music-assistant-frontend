@@ -126,6 +126,9 @@ describe("permanent listening highlights", () => {
     const wrapper = render();
     await flushPromises();
     expect(wrapper.text()).toContain("A favorite album");
+    expect(wrapper.emitted("catalogItems")?.at(-1)).toEqual([
+      [{ uri: "library://album/1", name: "A favorite album" }],
+    ]);
     expect(wrapper.text()).toContain("listening_home.queue_error");
     expect(wrapper.text()).toContain("listening_home.progress_error");
   });
