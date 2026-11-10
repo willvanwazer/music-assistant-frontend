@@ -2416,10 +2416,10 @@
     "screens": "Screens",
     "home_pins": {
         "title": "Pinned",
-        "pin": "Pin to Home",
-        "unpin": "Unpin from Home",
-        "move_earlier": "Move earlier on Home",
-        "move_later": "Move later on Home"
+        "pin": "Pin",
+        "unpin": "Unpin",
+        "move_earlier": "Move earlier",
+        "move_later": "Move later"
     },
     "listening_home": {
         "recent_title": "Recently played albums & playlists",

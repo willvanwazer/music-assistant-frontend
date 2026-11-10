@@ -498,6 +498,9 @@ import { useRouter } from "vue-router";
 const props = withDefaults(defineProps<{ editMode?: boolean }>(), {
   editMode: false,
 });
+const emit = defineEmits<{
+  catalogItems: [items: MediaItemTypeOrItemMapping[]];
+}>();
 
 const router = useRouter();
 
@@ -808,7 +811,11 @@ const availableRowIds = computed<string[]>(() =>
     folders: recommendations.value.map((f) => ({
       uri: f.uri,
       spokenWord: isSpokenWordRow(f, providerDomainOf),
-      recentlyPlayed: f.item_id === "recently_played",
+      recentlyPlayed: [
+        "recently_played",
+        "recent_artists",
+        "recent_tracks",
+      ].includes(f.item_id),
     })),
   }),
 );
@@ -877,6 +884,22 @@ const displayedRows = computed(() =>
         )
       : props.editMode || !row.hidden,
   ),
+);
+
+watch(
+  computed(() =>
+    displayedRows.value.flatMap((row) => {
+      if (row.hidden || loading.value) return [];
+      if (row.kind === "pinned") return pinnedItems.value;
+      if (row.kind === "top_picks")
+        return heroEntries.value.map((entry) => entry.item);
+      if (row.kind === "recommendation")
+        return rowItemsMap.value.get(row.id) ?? [];
+      return [];
+    }),
+  ),
+  (items) => emit("catalogItems", items),
+  { immediate: true },
 );
 
 // The recommendation rows currently visible to the user (not hidden). The Top
@@ -1019,7 +1042,6 @@ const loadGenres = async () => {
 
 let unmounted = false;
 let refreshRecommendationsTimer: ReturnType<typeof setTimeout> | undefined;
-
 const cancelScheduledRecommendationRefresh = () => {
   if (refreshRecommendationsTimer) {
     clearTimeout(refreshRecommendationsTimer);
@@ -1090,7 +1112,8 @@ const unsubscribeProviderEvents = api.subscribe(
       evt.data &&
       typeof evt.data === "object" &&
       "event" in evt.data &&
-      evt.data.event === "recommendations_updated"
+      evt.data.event === "recommendations_updated" &&
+      (!("item_id" in evt.data) || evt.data.item_id !== "recently_played")
     ) {
       scheduleRecommendationRefresh();
     }

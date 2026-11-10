@@ -118,6 +118,27 @@ describe("MusicAssistantApi error handling", () => {
     vi.restoreAllMocks();
   });
 
+  it("only permits warming after initialization and between active requests", async () => {
+    expect(api.canWarmCatalog()).toBe(false);
+    for (const command of transport.sentCommands)
+      transport.receive({
+        message_id: command.message_id,
+        result: Date.now() / 1000,
+      } as SuccessResultMessage);
+    api.state.value = ConnectionState.INITIALIZED;
+    expect(api.canWarmCatalog()).toBe(true);
+    const pending = api.sendCommand("players/all");
+    expect(api.canWarmCatalog()).toBe(false);
+    transport.receive({
+      message_id: transport.lastCommand.message_id,
+      result: [],
+    } as SuccessResultMessage);
+    await pending;
+    expect(api.canWarmCatalog()).toBe(true);
+    api.disconnect();
+    expect(api.canWarmCatalog()).toBe(false);
+  });
+
   it("reuses catalog responses and invalidates them when media changes", async () => {
     api.state.value = ConnectionState.INITIALIZED;
     const args = {
@@ -135,6 +156,13 @@ describe("MusicAssistantApi error handling", () => {
     expect(await api.sendCommand("music/albums/album_tracks", args)).toEqual([
       { name: "Track" },
     ]);
+    expect(transport.sentCommands).toHaveLength(sent);
+    transport.receive({
+      event: EventType.MEDIA_ITEM_PLAYED,
+      object_id: "track",
+      data: { is_playing: true },
+    });
+    await api.sendCommand("music/albums/album_tracks", args);
     expect(transport.sentCommands).toHaveLength(sent);
     transport.receive({
       event: EventType.MEDIA_ITEM_UPDATED,

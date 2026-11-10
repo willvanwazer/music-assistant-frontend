@@ -1,5 +1,7 @@
+import type { CatalogEntry, CatalogStorage } from "./catalog-storage";
+
 const MINUTE = 60_000;
-const MAX_STALE = 60 * MINUTE;
+const MAX_STALE = 24 * 60 * MINUTE;
 
 // Only catalog reads belong here. Playback, progress, library queries and
 // recommendations must continue to reflect current server state.
@@ -19,11 +21,6 @@ const CATALOG_READS = new Map<string, number>([
   ["music/tracks/get_track", 5 * MINUTE],
 ]);
 
-interface Entry {
-  json: string;
-  storedAt: number;
-}
-
 export function invalidatesCatalog(command: string): boolean {
   return (
     [
@@ -39,23 +36,74 @@ export function invalidatesCatalog(command: string): boolean {
   );
 }
 
-/** A bounded, connection-local read-through cache with background revalidation. */
+/** Bounded read-through cache with optional disk persistence and background revalidation. */
 export class CatalogCache {
-  private entries = new Map<string, Entry>();
+  private entries = new Map<string, CatalogEntry>();
   private pending = new Map<string, Promise<string>>();
   private generation = 0;
   private size = 0;
+  private scope?: string;
+  private restoring?: Promise<void>;
+  private saveTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
-    private maxEntries = 100,
-    private maxSize = 8 * 1024 * 1024,
+    private maxEntries = 300,
+    private maxSize = 32 * 1024 * 1024,
+    private storage?: CatalogStorage,
   ) {}
 
+  setScope(scope: string | undefined): void {
+    if (this.scope === scope) return;
+    this.detach();
+    this.scope = scope;
+    if (!scope || !this.storage) return;
+    const generation = this.generation;
+    this.restoring = this.storage
+      .load(scope)
+      .then((entries) => {
+        if (generation !== this.generation) return;
+        for (const [key, entry] of entries) {
+          try {
+            const [command] = JSON.parse(key);
+            if (
+              !CATALOG_READS.has(command) ||
+              typeof entry.json !== "string" ||
+              !Number.isFinite(entry.storedAt) ||
+              entry.storedAt > Date.now() ||
+              Date.now() - entry.storedAt >= MAX_STALE ||
+              JSON.parse(entry.json).value == null
+            )
+              continue;
+            this.retain(key, entry);
+          } catch {
+            /* Ignore corrupt or incompatible cache entries. */
+          }
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (generation === this.generation) this.restoring = undefined;
+      });
+  }
+
+  /** Drop connection state without deleting the last saved snapshot. */
+  detach(): void {
+    this.reset();
+    this.scope = undefined;
+  }
+
   clear(): void {
+    this.reset();
+    if (this.scope) void this.storage?.clear(this.scope).catch(() => undefined);
+  }
+
+  private reset(): void {
     this.generation++;
     this.entries.clear();
     this.pending.clear();
     this.size = 0;
+    this.restoring = undefined;
+    clearTimeout(this.saveTimer);
   }
 
   read<Result>(
@@ -69,6 +117,14 @@ export class CatalogCache {
     // A forced read must neither join an older request nor let that request
     // repopulate the cache after the fresh result arrives.
     if (refresh) this.clear();
+    if (this.restoring) {
+      const generation = this.generation;
+      return this.restoring.then(() => {
+        if (generation !== this.generation)
+          throw new Error("Catalog cache scope changed");
+        return this.read(command, args, load);
+      });
+    }
     const key = JSON.stringify([
       command,
       Object.entries(args || {})
@@ -110,15 +166,8 @@ export class CatalogCache {
           json.length * 2 <= this.maxSize / 2 &&
           generation === this.generation
         ) {
-          this.remove(key);
-          this.entries.set(key, { json, storedAt: Date.now() });
-          this.size += json.length * 2;
-          while (
-            this.entries.size > this.maxEntries ||
-            this.size > this.maxSize
-          ) {
-            this.remove(this.entries.keys().next().value!);
-          }
+          this.retain(key, { json, storedAt: Date.now() });
+          this.scheduleSave();
         }
         return json;
       })
@@ -127,6 +176,25 @@ export class CatalogCache {
       });
     this.pending.set(key, request);
     return request;
+  }
+
+  private retain(key: string, entry: CatalogEntry): void {
+    if (entry.json.length * 2 > this.maxSize / 2) return;
+    this.remove(key);
+    this.entries.set(key, entry);
+    this.size += entry.json.length * 2;
+    while (this.entries.size > this.maxEntries || this.size > this.maxSize)
+      this.remove(this.entries.keys().next().value!);
+  }
+
+  private scheduleSave(): void {
+    clearTimeout(this.saveTimer);
+    if (!this.scope || !this.storage) return;
+    this.saveTimer = setTimeout(() => {
+      void this.storage!.save(this.scope!, [...this.entries]).catch(
+        () => undefined,
+      );
+    }, 250);
   }
 
   private remove(key: string): void {

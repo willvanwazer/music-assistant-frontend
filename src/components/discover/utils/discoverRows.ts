@@ -93,7 +93,7 @@ export interface DefaultRowOrderInput {
   hasTopPicks: boolean;
   hasGenres: boolean;
   // recommendation rows in server order; `recentlyPlayed` marks any
-  // provider's recently played row (e.g. Spotify's), kept with the library's
+  // provider's recently played row, merged into the permanent listening shelf
   folders: Array<{
     uri: string;
     spokenWord: boolean;
@@ -103,8 +103,7 @@ export interface DefaultRowOrderInput {
 
 /**
  * Default order of every candidate row: players, pinned items and top picks
- * first, then the recently played rows (library first) and the other music
- * rows in server order, the genre
+ * first, then music rows in server order (history has its own combined shelf), the genre
  * grid, and finally podcasts and audiobook rows.
  */
 export function defaultDiscoverRowOrder(input: DefaultRowOrderInput): string[] {
@@ -114,17 +113,10 @@ export function defaultDiscoverRowOrder(input: DefaultRowOrderInput): string[] {
   if (input.hasTopPicks) ids.push(TOP_PICKS_ROW_ID);
   const musicFolders = input.folders.filter((f) => !f.spokenWord);
   const spoken = input.folders.filter((f) => f.spokenWord).map((f) => f.uri);
-  const recent = musicFolders
-    .filter((f) => f.recentlyPlayed || f.uri === RECENTLY_PLAYED_ROW_ID)
-    .map((f) => f.uri)
-    .sort(
-      (a, b) =>
-        Number(b === RECENTLY_PLAYED_ROW_ID) -
-        Number(a === RECENTLY_PLAYED_ROW_ID),
-    );
-  ids.push(...recent);
   ids.push(
-    ...musicFolders.map((f) => f.uri).filter((uri) => !recent.includes(uri)),
+    ...musicFolders
+      .filter((f) => !f.recentlyPlayed && f.uri !== RECENTLY_PLAYED_ROW_ID)
+      .map((f) => f.uri),
   );
   if (input.hasGenres) ids.push(GENRES_ROW_ID);
   ids.push(PODCASTS_ROW_ID);

@@ -113,7 +113,7 @@ describe("catalog cache", () => {
     await cache.read(command, { ...args, item_id: "second" }, load);
     await cache.read(command, args, load);
     expect(load).toHaveBeenCalledTimes(3);
-    vi.advanceTimersByTime(61 * 60_000);
+    vi.advanceTimersByTime(25 * 60 * 60_000);
     await cache.read(command, args, load);
     expect(load).toHaveBeenCalledTimes(4);
   });

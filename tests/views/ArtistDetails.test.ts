@@ -1,17 +1,28 @@
 import ArtistDetails from "@/views/ArtistDetails.vue";
 import type { MusicAssistantApi } from "@/plugins/api";
-import { ArtistType, type Artist } from "@/plugins/api/interfaces";
+import {
+  ArtistType,
+  ProviderFeature,
+  ProviderType,
+  type Artist,
+  type ProviderInstance,
+} from "@/plugins/api/interfaces";
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { artist } from "../fixtures/artist";
 
-const { mockGetArtist, mockSubscribe } = vi.hoisted(() => ({
+const { mockGetArtist, mockSubscribe, mockProviders } = vi.hoisted(() => ({
+  mockProviders: {} as Record<string, ProviderInstance>,
   mockGetArtist: vi.fn<MusicAssistantApi["getArtist"]>(),
   mockSubscribe: vi.fn(() => () => {}),
 }));
 
 vi.mock("@/plugins/api", () => ({
-  api: { getArtist: mockGetArtist, subscribe: mockSubscribe, providers: {} },
+  api: {
+    getArtist: mockGetArtist,
+    subscribe: mockSubscribe,
+    providers: mockProviders,
+  },
 }));
 
 vi.mock("@/components/InfoHeader.vue", () => ({
@@ -28,7 +39,7 @@ vi.mock("@/components/MediaItemImages.vue", () => ({
 vi.mock("@/components/ItemsListing.vue", () => ({
   default: {
     name: "ItemsListing",
-    props: ["path", "itemtype"],
+    props: ["path", "itemtype", "providerFilterOptions", "showAlbumTypeFilter"],
     template:
       '<div class="items-listing-stub" :data-path="path" :data-itemtype="itemtype" />',
   },
@@ -51,7 +62,32 @@ function pathFor(wrapper: VueWrapper, itemtype: string) {
 }
 
 describe("ArtistDetails", () => {
+  it("leads with Last.fm top tracks and enables album type filters", async () => {
+    mockProviders.lastfm = {
+      instance_id: "lastfm",
+      domain: "lastfm_recommendations",
+      name: "Last.fm",
+      type: ProviderType.METADATA,
+      available: true,
+      supported_features: [
+        ProviderFeature.ARTIST_TOPTRACKS,
+        ProviderFeature.ARTIST_TOPALBUMS,
+      ],
+    } as ProviderInstance;
+    const wrapper = await mountDetails(artist({ provider: "library" }));
+    const listings = wrapper.findAllComponents({ name: "ItemsListing" });
+    expect(listings[0].props("path")).toBe("artisttoptracks");
+    expect(listings[0].props("providerFilterOptions")).toEqual(["lastfm"]);
+    const albumRows = listings.filter(
+      (row) => row.props("itemtype") === "artistalbums",
+    );
+    expect(albumRows.length).toBeGreaterThan(0);
+    expect(
+      albumRows.every((row) => row.props("showAlbumTypeFilter") === true),
+    ).toBe(true);
+  });
   beforeEach(() => {
+    for (const key of Object.keys(mockProviders)) delete mockProviders[key];
     mockGetArtist.mockReset();
     mockSubscribe.mockReset().mockReturnValue(() => {});
   });

@@ -283,6 +283,7 @@ export class AuthManager {
    * Clear authentication token, claims, and user
    */
   clearAuth(): void {
+    api.clearCatalogCache();
     this.token = null;
     this.claims = null;
     store.currentUser = undefined;

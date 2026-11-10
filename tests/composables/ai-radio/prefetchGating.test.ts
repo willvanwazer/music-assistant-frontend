@@ -54,7 +54,6 @@ describe("ai_radio prefetch gating for session-scoped sessions", () => {
     vi.resetModules();
     vi.doUnmock("@/plugins/api");
     vi.doUnmock("@/plugins/auth");
-    vi.doUnmock("@/plugins/i18n");
   });
 
   it("sends no ai_radio commands for a session-scoped session", async () => {

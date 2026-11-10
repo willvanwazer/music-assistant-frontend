@@ -14,6 +14,7 @@ import type { ITransport } from "../remote/transport";
 import { WebSocketTransport } from "../remote/websocket-transport";
 import { ApiCommandError } from "./errors";
 import { CatalogCache, invalidatesCatalog } from "./catalog-cache";
+import { IndexedDbCatalogStorage } from "./catalog-storage";
 import { getDeviceName, itemSupportsPlayLog } from "./helpers";
 import {
   type Album,
@@ -156,7 +157,11 @@ export class MusicAssistantApi {
   // and when the full state is (re)fetched, so a change made from another client is
   // picked up on the next (re)connect.
   private _coreConfigValues = new Map<string, Promise<ConfigValueType>>();
-  private _catalogCache = new CatalogCache();
+  private _catalogCache = new CatalogCache(
+    undefined,
+    undefined,
+    new IndexedDbCatalogStorage(),
+  );
   public hasStreamingProviders = computed(() => {
     return Object.values(this.providers).some((p) => p.is_streaming_provider);
   });
@@ -423,7 +428,7 @@ export class MusicAssistantApi {
    * Disconnect from the server
    */
   public disconnect(): void {
-    this._catalogCache.clear();
+    this._catalogCache.detach();
     if (this.transport) {
       this.transport.disconnect();
       this.transport = undefined;
@@ -1554,7 +1559,7 @@ export class MusicAssistantApi {
         limit,
         media_types: [MediaType.ALBUM, MediaType.PLAYLIST],
         fully_played_only: false,
-        user_initiated_only: true,
+        user_initiated_only: false,
       },
       { suppressGlobalError: true },
     );
@@ -2782,7 +2787,6 @@ export class MusicAssistantApi {
         EventType.MEDIA_ITEM_ADDED,
         EventType.MEDIA_ITEM_UPDATED,
         EventType.MEDIA_ITEM_DELETED,
-        EventType.MEDIA_ITEM_PLAYED,
         EventType.PROVIDERS_UPDATED,
       ].includes(msg.event)
     ) {
@@ -2970,7 +2974,7 @@ export class MusicAssistantApi {
   }
 
   private handleServerInfoMessage(msg: ServerInfoMessage) {
-    this._catalogCache.clear();
+    this._catalogCache.detach();
     // Handle ServerInfo message which is sent as first message on connect
     if (DEBUG) {
       console.log("[serverInfo]", msg);
@@ -3462,6 +3466,20 @@ export class MusicAssistantApi {
     if (this.state.value !== ConnectionState.INITIALIZED) {
       return this._requestCommand<Result>(command, args, options);
     }
+    const user = store.currentUser;
+    const server = this.serverInfo.value;
+    this._catalogCache.setScope(
+      server && user && user.role !== UserRole.GUEST
+        ? JSON.stringify([
+            server.server_id,
+            server.schema_version,
+            user.user_id,
+            user.role,
+            [...(user.provider_filter ?? [])].sort(),
+            i18n.global.locale.value,
+          ])
+        : undefined,
+    );
     return this._catalogCache.read(command, args, (background) =>
       this._requestCommand<Result>(
         command,
@@ -3473,6 +3491,13 @@ export class MusicAssistantApi {
 
   public clearCatalogCache(): void {
     this._catalogCache.clear();
+  }
+
+  public canWarmCatalog(): boolean {
+    return (
+      this.state.value === ConnectionState.INITIALIZED &&
+      this.commands.size === 0
+    );
   }
 
   private _requestCommand<Result>(
